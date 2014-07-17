@@ -1,0 +1,8 @@
+/bin-java
+/build
+/html-template
+*.swf
+*.html
+*.css
+*.js
+*.hid
