@@ -215,6 +215,9 @@ public class Introspected
                 else if (columnValue instanceof Clob)
                 {
                     columnValue = readClob((Clob) columnValue);
+                }else if (columnType == Long.class && fieldType == Integer.class){
+                	//4 autogen Id's
+                	columnValue=((Long) columnValue).intValue();
                 }
             }
 

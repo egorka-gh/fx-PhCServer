@@ -7,6 +7,7 @@
 	    maxActive="300" maxIdle="50" maxWait="10000"
 	    username="root" password="CtHDbCGK.C" 
 		driverClassName="com.mysql.jdbc.Driver"
-	    url="jdbc:mysql://192.168.30.168:3306/xrep?generateSimpleParameterMetadata=true"/>
+	    url="jdbc:mysql://192.168.30.168:3306/xrep?generateSimpleParameterMetadata=true"/> 
+<!-- 	    &amp;useServerPrepStmts=true -->
 
 </Context>

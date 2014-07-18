@@ -148,13 +148,17 @@ class OrmBase
                 return new BigDecimal(((BigInteger) object));
             }
             break;
+            /*
         case Types.SMALLINT:
-            if (object instanceof Boolean)
-            {
+            if (object instanceof Boolean){
                 return (((Boolean) object) ? (short) 1 : (short) 0);
             }
             break;
+            */
         default:
+            if (object instanceof Boolean){
+                return (((Boolean) object) ? (short) 1 : (short) 0);
+            }
             break;
         }
 

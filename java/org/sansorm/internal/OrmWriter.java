@@ -188,7 +188,7 @@ public class OrmWriter extends OrmBase
         String[] columnNames = introspected.getInsertableColumns();
 
         PreparedStatement stmt = createStatementForInsert(connection, introspected, columnNames);
-        setParamsExecuteClose(target, introspected, columnNames, stmt);
+        setParamsExecuteClose(target, introspected, columnNames, stmt, true);
 
         return target;
     }
@@ -199,7 +199,7 @@ public class OrmWriter extends OrmBase
         Introspected introspected = Introspector.getIntrospected(clazz);
 
         PreparedStatement stmt = createStatementForInsert(connection, introspected, columnNames);
-        setParamsExecuteClose(target, introspected, columnNames, stmt);
+        setParamsExecuteClose(target, introspected, columnNames, stmt, true);
 
         return target;
     }
@@ -211,7 +211,7 @@ public class OrmWriter extends OrmBase
         String[] columnNames = introspected.getUpdatableColumns();
 
         PreparedStatement stmt = createStatementForUpdate(connection, introspected, columnNames);
-        setParamsExecuteClose(target, introspected, columnNames, stmt);
+        setParamsExecuteClose(target, introspected, columnNames, stmt, false);
 
         return target;
     }
@@ -222,7 +222,7 @@ public class OrmWriter extends OrmBase
         Introspected introspected = Introspector.getIntrospected(clazz);
 
         PreparedStatement stmt = createStatementForUpdate(connection, introspected, columnNames);
-        setParamsExecuteClose(target, introspected, columnNames, stmt);
+        setParamsExecuteClose(target, introspected, columnNames, stmt, false);
 
         return target;
     }
@@ -361,7 +361,7 @@ public class OrmWriter extends OrmBase
         return connection.prepareStatement(sql);
     }
 
-    private static <T> void setParamsExecuteClose(T target, Introspected introspected, String[] columnNames, PreparedStatement stmt) throws SQLException
+    private static <T> void setParamsExecuteClose(T target, Introspected introspected, String[] columnNames, PreparedStatement stmt, boolean isInsert) throws SQLException
     {
         ParameterMetaData metaData = stmt.getParameterMetaData();
         int parameterIndex = 1;
@@ -392,7 +392,7 @@ public class OrmWriter extends OrmBase
 
         stmt.executeUpdate();
 
-        if (introspected.hasGeneratedId())
+        if (introspected.hasGeneratedId() && isInsert)
         {
             // Set auto-generated ID
             final String idColumn = introspected.getIdColumnNames()[0];
