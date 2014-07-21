@@ -307,7 +307,7 @@ public class OrmWriter extends OrmBase
         if (sql == null)
         {
             String tableName = introspected.getTableName();
-            StringBuilder sqlSB = new StringBuilder("INSERT INTO ").append(tableName).append('(');
+            StringBuilder sqlSB = new StringBuilder("INSERT IGNORE INTO ").append(tableName).append('(');
             StringBuilder sqlValues = new StringBuilder(") VALUES (");
             for (String column : columns)
             {

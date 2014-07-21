@@ -12,6 +12,7 @@ import com.photodispatcher.model.mysql.entities.SelectResult;
 import org.sansorm.OrmElf;
 import org.sansorm.SqlClosure;
 import org.sansorm.SqlClosureElf;
+import org.sansorm.internal.OrmWriter;
 
 
 public abstract class AbstractDAO {
@@ -68,6 +69,54 @@ public abstract class AbstractDAO {
 			e.printStackTrace();
 		}finally{
 			SqlClosureElf.quietClose(connection);
+		}
+		return result;
+	}
+	
+	protected <T> DmlResult runInsertBatch(List<T> targetList, String[] columnNames){
+		DmlResult result= new DmlResult();
+		Connection connection = null;
+		try {
+			connection=ConnectionFactory.getConnection();
+			connection.setAutoCommit(false);
+			OrmElf.insertListBatched(connection, targetList);
+			connection.commit();
+		} catch (SQLException e) {
+			result.setComplete(false);
+			result.setErrCode(e.getErrorCode());
+			result.setErrMesage(e.getMessage());
+			e.printStackTrace();
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}finally{
+			if(connection!=null){
+				try {
+					connection.setAutoCommit(true);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			SqlClosureElf.quietClose(connection);
+		}
+		return result;
+	}
+	
+	protected DmlResult runDML(String sql, boolean autoClose, Object... args){
+		DmlResult result= new DmlResult();
+		Connection connection = null;
+		try {
+			connection=ConnectionFactory.getConnection();
+			OrmWriter.executeUpdate(connection, sql, args);
+		} catch (SQLException e) {
+			result.setComplete(false);
+			result.setErrCode(e.getErrorCode());
+			result.setErrMesage(e.getMessage());
+			e.printStackTrace();
+		}finally{
+			if(autoClose) SqlClosureElf.quietClose(connection);
 		}
 		return result;
 	}
