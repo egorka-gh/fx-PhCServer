@@ -37,6 +37,15 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	}
 
 	@Override
+	public SelectResult<FieldValue> getBookPartValueList(boolean includeDefault){
+		SelectResult<FieldValue> result;
+		String sql="SELECT id value, name label FROM phcconfig.book_part";
+		if(!includeDefault) sql+=" WHERE id!=0";
+		result=runSelect(FieldValue.class, sql);
+		return result;
+	}
+
+	@Override
 	public SelectResult<FieldValue> getSrcTypeValueList(int locType, boolean includeDefault){
 		SelectResult<FieldValue> result;
 		String sql="SELECT id value, name label FROM phcconfig.src_type WHERE loc_type = ?";
@@ -48,7 +57,7 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	@Override
 	public SelectResult<FieldValue> getWeekDaysValueList(boolean includeDefault){
 		SelectResult<FieldValue> result;
-		String sql="SELECT id value, name label FROM phcconfig.week_days ORDER BY id";
+		String sql="SELECT id value, name label FROM phcconfig.week_days ORDER BY 1";
 		if(includeDefault) sql="SELECT 0 value, ' ' label UNION "+sql;
 		result=runSelect(FieldValue.class, sql);
 		return result;
@@ -57,7 +66,7 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	@Override
 	public SelectResult<FieldValue> getTechPointValueList(boolean includeDefault){
 		SelectResult<FieldValue> result;
-		String sql="SELECT id value, name label FROM phcconfig.tech_point ORDER BY id";
+		String sql="SELECT id value, name label FROM phcconfig.tech_point ORDER BY 1";
 		if(includeDefault) sql="SELECT null value, ' ' label UNION "+sql;
 		result=runSelect(FieldValue.class, sql);
 		return result;
@@ -66,7 +75,7 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	@Override
 	public SelectResult<FieldValue> getTechLayerValueList(boolean includeDefault){
 		SelectResult<FieldValue> result;
-		String sql="SELECT id value, name label FROM phcconfig.layer ORDER BY id";
+		String sql="SELECT id value, name label FROM phcconfig.layer ORDER BY 1";
 		//if(includeDefault) sql="SELECT null value, ' ' label UNION "+sql;
 		result=runSelect(FieldValue.class, sql);
 		return result;
@@ -75,7 +84,7 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	@Override
 	public SelectResult<FieldValue> getLayerGroupValueList(boolean includeDefault){
 		SelectResult<FieldValue> result;
-		String sql="SELECT id value, name label FROM phcconfig.layer_group WHERE id!=2 ORDER BY id";
+		String sql="SELECT id value, name label FROM phcconfig.layer_group WHERE id!=2 ORDER BY 1";
 		if(includeDefault) sql="SELECT null value, ' ' label UNION "+sql;
 		result=runSelect(FieldValue.class, sql);
 		return result;
@@ -84,7 +93,7 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	@Override
 	public SelectResult<FieldValue> getRollValueList(boolean includeDefault){
 		SelectResult<FieldValue> result;
-		String sql="SELECT width value, width label FROM phcconfig.roll ORDER BY width";
+		String sql="SELECT width value, CAST(width AS CHAR) label FROM phcconfig.roll ORDER BY 1";
 		if(includeDefault) sql="SELECT null value, ' ' label UNION "+sql;
 		result=runSelect(FieldValue.class, sql);
 		return result;

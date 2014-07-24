@@ -18,4 +18,5 @@ public interface DictionaryService {
 	public SelectResult<FieldValue> getTechLayerValueList(boolean includeDefault);
 	public SelectResult<FieldValue> getLayerGroupValueList(boolean includeDefault);
 	public SelectResult<FieldValue> getRollValueList(boolean includeDefault);
+	public SelectResult<FieldValue> getBookPartValueList(boolean includeDefault);
 }
