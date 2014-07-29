@@ -38,4 +38,11 @@ public class SqlResult implements Serializable {
 		this.sql = sql;
 	}
 	
+	public void cloneError(SqlResult from){
+		if(from==null) return;
+		this.setComplete(false);
+		this.setErrCode(from.getErrCode());
+		this.setErrMesage(from.getErrMesage());
+		this.setSql(from.getSql());
+	}
 }

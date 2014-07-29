@@ -204,6 +204,43 @@ public class OrmWriter extends OrmBase
         return target;
     }
 
+    public static <T> void updateObjectBatched(Connection connection, Iterable<T> iterable) throws SQLException{
+        Iterator<T> iterableIterator = iterable.iterator();
+        if (!iterableIterator.hasNext()) return;
+
+        Class<?> clazz = iterableIterator.next().getClass();
+        Introspected introspected = Introspector.getIntrospected(clazz);
+        String[] columnNames = introspected.getUpdatableColumns();
+
+        PreparedStatement stmt = createStatementForUpdate(connection, introspected, columnNames);
+        ParameterMetaData metaData = stmt.getParameterMetaData();
+        for (T item : iterable){
+            int parameterIndex = 1;
+            for (String column : columnNames){
+                int parameterType = metaData.getParameterType(parameterIndex);
+                Object object = mapSqlType(introspected.get(item, column), parameterType);
+                if (object != null ){
+                    stmt.setObject(parameterIndex, object, parameterType);
+                }else{
+                    stmt.setNull(parameterIndex, parameterType);
+                }
+                ++parameterIndex;
+            }
+            // If there is still a parameter left to be set, it's the ID used for an update
+            if (parameterIndex <= metaData.getParameterCount()){
+                for (Object id : introspected.getActualIds(item)){
+                    stmt.setObject(parameterIndex, id, metaData.getParameterType(parameterIndex));
+                    ++parameterIndex;
+                }
+            }
+            stmt.addBatch();
+            stmt.clearParameters();
+        }
+
+        stmt.executeBatch();
+        stmt.close();
+    }
+
     public static <T> T updateObject(Connection connection, T target) throws SQLException
     {
         Class<?> clazz = target.getClass();

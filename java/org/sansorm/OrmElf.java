@@ -280,6 +280,17 @@ public final class OrmElf
     }
 
     /**
+     * Update a collection of objects using JDBC batching.
+     *
+     * @param connection a SQL connection
+     * @param iterable a list (or other <code>Iterable</code> collection) of annotated objects to insert 
+     * @throws SQLException if a {@link SQLException} occurs
+     */
+    public static <T> void updateListBatched(Connection connection, Iterable<T> iterable) throws SQLException{
+        OrmWriter.updateObjectBatched(connection, iterable);
+    }
+
+    /**
      * Delete a database row using the specified annotated object, the @Id field(s) is used in the WHERE
      * clause of the generated DELETE statement.
      *
