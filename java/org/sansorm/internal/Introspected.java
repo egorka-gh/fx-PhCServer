@@ -527,6 +527,7 @@ public class Introspected
 
             fcInfo.insertable = columnAnnotation.insertable();
             fcInfo.updatable = columnAnnotation.updatable();
+            
         }
         else
         {
@@ -565,6 +566,7 @@ public class Introspected
     private static class FieldColumnInfo
     {
         private boolean updatable;
+       /// private boolean updatableForce;
         private boolean insertable;
         private String columnName;
         private String columnTableName;

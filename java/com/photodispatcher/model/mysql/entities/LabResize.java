@@ -1,6 +1,7 @@
 package com.photodispatcher.model.mysql.entities;
 
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -10,9 +11,11 @@ public class LabResize extends AbstractEntity {
 
 	//database props
     @Id
-    @Column(name="width", updatable=true)
+    @GeneratedValue
+    @Column(name="id")
+    private int id;
+    @Column(name="width")
     private int width;
-
     @Column(name="pixels")
     private int pixels;
 
@@ -30,6 +33,14 @@ public class LabResize extends AbstractEntity {
 
 	public void setPixels(int pixels) {
 		this.pixels = pixels;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 }
