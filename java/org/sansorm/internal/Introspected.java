@@ -172,12 +172,12 @@ public class Introspected
      * @param columnName The column name.
      * @param value The column value.
      */
-    public void set(Object target, String columnName, Object value)
-    {
+    public void set(Object target, String columnName, Object value){
         FieldColumnInfo fcInfo = columnToField.get(columnName);
-        if (fcInfo == null)
-        {
-            throw new RuntimeException("Cannot find field mapped to column " + columnName + " on type " + target.getClass().getCanonicalName());
+        if (fcInfo == null){
+        	//extra column - ignore??
+            //throw new RuntimeException("Cannot find field mapped to column " + columnName + " on type " + target.getClass().getCanonicalName());
+        	return;
         }
 
         try
@@ -189,9 +189,12 @@ public class Introspected
             if (fieldType != columnType)
             {
                 // Fix-up column value for enums, integer as boolean, etc.
-                if (fieldType == boolean.class && columnType == Integer.class)
-                {
-                    columnValue = (((Integer) columnValue) != 0);
+                if (fieldType == boolean.class && (columnType == Integer.class || columnType == Long.class)){
+                	if(columnType == Integer.class){
+                		columnValue = (((Integer) columnValue) != 0);
+                	}else{
+                		columnValue = (((Long) columnValue) != 0);
+                	}
                 }
                 else if (columnType == BigDecimal.class)
                 {

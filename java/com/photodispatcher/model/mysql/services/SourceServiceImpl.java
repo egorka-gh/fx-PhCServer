@@ -50,6 +50,7 @@ public class SourceServiceImpl extends AbstractDAO implements SourceService {
 					}
 				}else{
 					result.cloneError(childs);
+					break;
 				}
 			}
 		}

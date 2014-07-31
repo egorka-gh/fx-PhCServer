@@ -1,0 +1,119 @@
+package com.photodispatcher.model.mysql.services;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.photodispatcher.model.mysql.entities.BookPgTemplate;
+import com.photodispatcher.model.mysql.entities.BookSynonym;
+import com.photodispatcher.model.mysql.entities.DmlResult;
+import com.photodispatcher.model.mysql.entities.SelectResult;
+
+@Service("bookSynonymService")
+public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymService {
+	
+	@Override
+	public SelectResult<BookSynonym> loadFull(){
+		SelectResult<BookSynonym> result;
+		String sql="SELECT * FROM phcconfig.book_synonym";
+		result=runSelect(BookSynonym.class, sql);
+		if (result.isComplete()){
+			//load childs
+			for (BookSynonym item : result.getData()){
+				sql="SELECT * FROM phcconfig.book_pg_template t WHERE t.book=?";
+				SelectResult<BookPgTemplate> childs=runSelect(BookPgTemplate.class, sql, item.getId());
+				if(childs.isComplete()){
+					item.setTemplates(childs.getData());
+				}else{
+					result.cloneError(childs);
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public SelectResult<BookSynonym> loadAll(int src_type, int contentFilter){
+		SelectResult<BookSynonym> result;
+		String sql;
+		if(contentFilter==0){
+			sql="SELECT l.*, st.name src_type_name, bt.name book_type_name, 1 is_allow, bst.name synonym_type_name"+
+				" FROM phcconfig.book_synonym l"+
+				" INNER JOIN phcconfig.src_type st ON l.src_type = st.id"+
+				" INNER JOIN phcconfig.book_type bt ON l.book_type = bt.id"+
+				" INNER JOIN phcconfig.book_synonym_type bst ON l.synonym_type = bst.id"+
+				" WHERE l.src_type = ?"+
+				" ORDER BY l.synonym";
+			result=runSelect(BookSynonym.class, sql, src_type);
+		}else{
+			sql="SELECT l.*, st.name src_type_name, bt.name book_type_name, ifnull(fa.alias,0) is_allow"+
+				" FROM phcconfig.book_synonym l"+
+				" INNER JOIN phcconfig.src_type st ON l.src_type = st.id"+
+				" INNER JOIN phcconfig.book_type bt ON l.book_type = bt.id"+
+				" LEFT OUTER JOIN phcconfig.content_filter_alias fa ON fa.filter= ? AND l.id=fa.alias"+
+				" WHERE l.src_type = ?"+
+				" ORDER BY l.synonym";
+			result=runSelect(BookSynonym.class, sql, contentFilter, src_type);
+		}
+		return result;
+	}
+
+	@Override
+	public SelectResult<BookPgTemplate> loadTemplates(int book){
+		SelectResult<BookPgTemplate> result;
+		String sql="SELECT pg.*, p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name, bp.name book_part_name"+
+					" FROM phcconfig.book_pg_template pg"+
+					" INNER JOIN phcconfig.attr_value p ON pg.paper = p.id"+
+					" INNER JOIN phcconfig.attr_value fr ON pg.frame = fr.id"+
+					" INNER JOIN phcconfig.attr_value cr ON pg.correction = cr.id"+
+					" INNER JOIN phcconfig.attr_value cu ON pg.cutting = cu.id"+
+					" INNER JOIN phcconfig.book_part bp ON pg.book_part = bp.id"+
+					" WHERE pg.book=?";
+		result=runSelect(BookPgTemplate.class, sql, book);
+		return result;
+	}
+
+	@Override
+	public DmlResult persistBatch(List<BookSynonym> items){
+		DmlResult result=new DmlResult();
+		List<BookSynonym> insertList=new ArrayList<BookSynonym>();
+		List<BookSynonym> updateList=new ArrayList<BookSynonym>();
+		List<BookPgTemplate> insertChildList=new ArrayList<BookPgTemplate>();
+		List<BookPgTemplate> updateChildList=new ArrayList<BookPgTemplate>();
+
+		for(BookSynonym item : items){
+			if(item.getPersistState()==0){
+				insertList.add(item);
+			}else if(item.getPersistState()==-1){
+				updateList.add(item);
+			}
+			//childs
+			if(item.getPersistState()!=0 && item.getTemplates()!=null){
+				for(BookPgTemplate child : item.getTemplates()){
+					if(child.getPersistState()==0){
+						insertChildList.add(child);
+					}else if(child.getPersistState()==-1){
+						updateChildList.add(child);
+					}
+					
+				}
+			}
+		}
+		if(!insertList.isEmpty()){
+			result=runInsertBatch(insertList, null);
+		}
+		if(result.isComplete() && !updateList.isEmpty()){
+			result=runUpdateBatch(updateList, null);
+		}
+		if(result.isComplete() && !insertChildList.isEmpty()){
+			result=runInsertBatch(insertChildList, null);
+		}
+		if(result.isComplete() && !updateChildList.isEmpty()){
+			result=runUpdateBatch(updateChildList, null);
+		}
+		return result;
+	}
+
+}

@@ -35,6 +35,15 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 		result=runSelect(FieldValue.class, sql);
 		return result;
 	}
+	
+	@Override
+	public SelectResult<FieldValue> getBookSynonimTypeValueList(){
+		SelectResult<FieldValue> result;
+		String sql="SELECT id value, name label FROM phcconfig.book_synonym_type";
+		result=runSelect(FieldValue.class, sql);
+		return result;
+	}
+
 
 	@Override
 	public SelectResult<FieldValue> getBookPartValueList(boolean includeDefault){
@@ -95,6 +104,16 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 		SelectResult<FieldValue> result;
 		String sql="SELECT width value, CAST(width AS CHAR) label FROM phcconfig.roll ORDER BY 1";
 		if(includeDefault) sql="SELECT null value, ' ' label UNION "+sql;
+		result=runSelect(FieldValue.class, sql);
+		return result;
+	}
+
+	@Override
+	public SelectResult<FieldValue> getFieldValueSynonims(){
+		SelectResult<FieldValue> result;
+		String sql="SELECT a.src_type, a.synonym, at.field, CAST((CASE at.list WHEN 1 THEN a.attr_val ELSE av.value END) AS SIGNED) value"+
+					 " FROM phcconfig.attr_synonym a, phcconfig.attr_value av, phcconfig.attr_type at"+
+					 " WHERE  a.attr_val = av.id AND av.attr_tp = at.id AND at.attr_fml = 1";
 		result=runSelect(FieldValue.class, sql);
 		return result;
 	}

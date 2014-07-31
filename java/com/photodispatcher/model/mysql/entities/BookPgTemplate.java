@@ -14,7 +14,7 @@ public class BookPgTemplate extends AbstractEntity {
     @GeneratedValue
     @Column(name="id")
     private int id;
-    @Column(name="book")
+    @Column(name="book", updatable=false)
     private int book;
     @Column(name="book_part")
     private int book_part;

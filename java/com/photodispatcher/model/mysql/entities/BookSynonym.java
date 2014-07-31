@@ -32,7 +32,12 @@ public class BookSynonym extends AbstractEntity {
     @Column(name="src_type_name", updatable=false, insertable=false)
     private String src_type_name;
     @Column(name="book_type_name", updatable=false, insertable=false)
-    private int book_type_name;
+    private String book_type_name;
+    @Column(name="synonym_type_name", updatable=false, insertable=false)
+    private String synonym_type_name;
+	//content filter mark
+    @Column(name="is_allow", updatable=false, insertable=false)
+    private boolean is_allow;
 
     @Transient
     private List<BookPgTemplate> templates;
@@ -93,11 +98,11 @@ public class BookSynonym extends AbstractEntity {
 		this.src_type_name = src_type_name;
 	}
 
-	public int getBook_type_name() {
+	public String getBook_type_name() {
 		return book_type_name;
 	}
 
-	public void setBook_type_name(int book_type_name) {
+	public void setBook_type_name(String book_type_name) {
 		this.book_type_name = book_type_name;
 	}
 
@@ -107,5 +112,21 @@ public class BookSynonym extends AbstractEntity {
 
 	public void setTemplates(List<BookPgTemplate> templates) {
 		this.templates = templates;
+	}
+
+	public boolean isIs_allow() {
+		return is_allow;
+	}
+
+	public void setIs_allow(boolean is_allow) {
+		this.is_allow = is_allow;
+	}
+
+	public String getSynonym_type_name() {
+		return synonym_type_name;
+	}
+
+	public void setSynonym_type_name(String synonym_type_name) {
+		this.synonym_type_name = synonym_type_name;
 	}
 }
