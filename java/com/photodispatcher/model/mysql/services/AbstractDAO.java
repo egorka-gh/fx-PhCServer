@@ -135,6 +135,37 @@ public abstract class AbstractDAO {
 		return result;
 	}
 
+	protected <T> DmlResult runDeleteBatch(List<T> targetList){
+		DmlResult result= new DmlResult();
+		Connection connection = null;
+		try {
+			connection=ConnectionFactory.getConnection();
+			connection.setAutoCommit(false);
+			OrmElf.deleteListBatched(connection, targetList);
+			connection.commit();
+		} catch (SQLException e) {
+			result.setComplete(false);
+			result.setErrCode(e.getErrorCode());
+			result.setErrMesage(e.getMessage());
+			e.printStackTrace();
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}finally{
+			if(connection!=null){
+				try {
+					connection.setAutoCommit(true);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			SqlClosureElf.quietClose(connection);
+		}
+		return result;
+	}
+
 	protected DmlResult runDML(String sql, boolean autoClose, Object... args){
 		DmlResult result= new DmlResult();
 		Connection connection = null;

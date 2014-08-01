@@ -309,6 +309,17 @@ public final class OrmElf
         return OrmWriter.deleteObjectById(connection, clazz, args);
     }
 
+    /**
+     * Delete a collection of objects using JDBC batching.
+     *
+     * @param connection a SQL connection
+     * @param iterable a list (or other <code>Iterable</code> collection) of annotated objects to insert 
+     * @throws SQLException if a {@link SQLException} occurs
+     */
+    public static <T> void deleteListBatched(Connection connection, Iterable<T> iterable) throws SQLException{
+        OrmWriter.deleteObjectBatched(connection, iterable);
+    }
+
     // ------------------------------------------------------------------------
     //                             Utility Methods
     // ------------------------------------------------------------------------

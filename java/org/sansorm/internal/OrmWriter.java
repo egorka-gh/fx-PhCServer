@@ -288,6 +288,41 @@ public class OrmWriter extends OrmBase
         return executeUpdate(connection, sql.toString(), args);
     }
 
+    public static <T> void deleteObjectBatched(Connection connection, Iterable<T> iterable) throws SQLException{
+        Iterator<T> iterableIterator = iterable.iterator();
+        if (!iterableIterator.hasNext()) return;
+
+        Class<?> clazz = iterableIterator.next().getClass();
+        Introspected introspected = Introspector.getIntrospected(clazz);
+        
+        //build sql
+        StringBuilder sql = new StringBuilder();
+        sql.append("DELETE FROM ").append(introspected.getTableName()).append(" WHERE ");
+        for (String idColumn : introspected.getIdColumnNames()){
+            sql.append(idColumn).append("=? AND ");
+        }
+        sql.setLength(sql.length() - 5);
+        PreparedStatement stmt = connection.prepareStatement(sql.toString());
+        ParameterMetaData metaData = stmt.getParameterMetaData();
+        for (T item : iterable){
+            int parameterIndex = 1;
+            // If there is still a parameter left to be set, it's the ID used for an update
+            if (parameterIndex <= metaData.getParameterCount()){
+                for (Object id : introspected.getActualIds(item)){
+                    stmt.setObject(parameterIndex, id, metaData.getParameterType(parameterIndex));
+                    ++parameterIndex;
+                }
+            }
+            stmt.addBatch();
+            stmt.clearParameters();
+        }
+        try{
+            stmt.executeBatch();
+        }finally{
+            if (stmt != null) stmt.close();
+        }
+    }
+
     public static int executeUpdate(Connection connection, String sql, Object... args) throws SQLException
     {
         PreparedStatement stmt = null;
