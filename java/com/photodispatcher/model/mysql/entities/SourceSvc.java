@@ -13,9 +13,11 @@ public class SourceSvc extends AbstractEntity {
 
 	private static final long serialVersionUID = 1L;
 
+	/*
 	public SourceSvc() {
 		setHasAutoId(true);
 	}
+	*/
 
 	//database props
     @Id

@@ -11,9 +11,11 @@ public class ContentFilter extends AbstractEntity {
 
 	private static final long serialVersionUID = 1L;
 	
+	/*
 	public ContentFilter() {
 		setHasAutoId(true);
 	}
+	*/
 
 	//database props
     @Id

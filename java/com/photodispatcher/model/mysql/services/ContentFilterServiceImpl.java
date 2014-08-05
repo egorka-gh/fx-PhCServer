@@ -8,6 +8,7 @@ import com.photodispatcher.model.mysql.entities.ContentFilter;
 import com.photodispatcher.model.mysql.entities.ContentFilterAlias;
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SqlResult;
 
 @Service("contentFilterService")
 public class ContentFilterServiceImpl extends AbstractDAO implements ContentFilterService{
@@ -22,15 +23,14 @@ public class ContentFilterServiceImpl extends AbstractDAO implements ContentFilt
 	}
 
 	@Override
-	public DmlResult insert(ContentFilter item) {
-		DmlResult result= runInsert(item, null);
-		if(result.isComplete()) result.setLastId(item.getId());
+	public DmlResult<ContentFilter> insert(ContentFilter item) {
+		DmlResult<ContentFilter> result= runInsert(item);
 		return result;
 	}
 
 	@Override
-	public DmlResult update(ContentFilter item) {
-		DmlResult result= runUpdate(item, null);
+	public DmlResult<ContentFilter> update(ContentFilter item) {
+		DmlResult<ContentFilter> result= runUpdate(item);
 		return result;
 	}
 
@@ -52,10 +52,10 @@ public class ContentFilterServiceImpl extends AbstractDAO implements ContentFilt
 	}
 
 	@Override
-	public DmlResult saveAliases(int filter, List<ContentFilterAlias> aliases) {
+	public SqlResult saveAliases(int filter, List<ContentFilterAlias> aliases) {
 		String sql="DELETE FROM phcconfig.content_filter_alias l WHERE l.filter = ?";
-		DmlResult result= runDML(sql, true, filter);
-		if(result.isComplete()) result= runInsertBatch(aliases, null);
+		SqlResult result= runDML(sql, filter);
+		if(result.isComplete()) result= runInsertBatch(aliases);
 		return result;
 	}
 

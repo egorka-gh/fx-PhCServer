@@ -10,9 +10,11 @@ import javax.persistence.Table;
 public class AttrType extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 
+	/*
 	public AttrType() {
 		setHasAutoId(true);
 	}
+	*/
 
 	//database props
     @Id

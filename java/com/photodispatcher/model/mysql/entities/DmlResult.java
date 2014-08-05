@@ -2,9 +2,20 @@ package com.photodispatcher.model.mysql.entities;
 
 import java.io.Serializable;
 
-public class DmlResult extends SqlResult implements Serializable {
+public class DmlResult<T> extends SqlResult implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
+	private T item;
+
+	public T getItem() {
+		return item;
+	}
+
+	public void setItem(T item) {
+		this.item = item;
+	}
+	
+	/*
 	private int lastId;
 
 	public int getLastId() {
@@ -13,4 +24,5 @@ public class DmlResult extends SqlResult implements Serializable {
 	public void setLastId(int lastId) {
 		this.lastId = lastId;
 	}
+	*/
 }

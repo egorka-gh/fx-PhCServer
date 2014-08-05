@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.LabResize;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SqlResult;
 
 @Service("labResizeService")
 public class LabResizeServiceImpl extends AbstractDAO implements LabResizeService {
@@ -21,20 +22,20 @@ public class LabResizeServiceImpl extends AbstractDAO implements LabResizeServic
 	}
 	
 	@Override
-	public DmlResult persist(LabResize item){
-		DmlResult result=new DmlResult();
+	public DmlResult<LabResize> persist(LabResize item){
+		DmlResult<LabResize> result=new DmlResult<LabResize>();
 		if(item.getPersistState()==0){
 			//insert 
-			result=runInsert(item,null);
+			result=runInsert(item);
 		}else if(item.getPersistState()==-1){
-			result=runUpdate(item,null);
+			result=runUpdate(item);
 		}
 		return result;
 	}
 	
 	@Override
-	public DmlResult persistBatch(List<LabResize> items){
-		DmlResult result=new DmlResult();
+	public SqlResult persistBatch(List<LabResize> items){
+		SqlResult result=new SqlResult();
 		List<LabResize> insertList=new ArrayList<LabResize>();
 		List<LabResize> updateList=new ArrayList<LabResize>();
 
@@ -46,10 +47,10 @@ public class LabResizeServiceImpl extends AbstractDAO implements LabResizeServic
 			}
 		}
 		if(!insertList.isEmpty()){
-			result=runInsertBatch(insertList, null);
+			result=runInsertBatch(insertList);
 		}
 		if(result.isComplete() && !updateList.isEmpty()){
-			result=runUpdateBatch(updateList, null);
+			result=runUpdateBatch(updateList);
 		}
 
 		return result;

@@ -10,5 +10,5 @@ import com.photodispatcher.model.mysql.entities.Source;
 public interface SourceService{
 
 	SelectResult<Source> loadAll(int locationType);
-	public DmlResult persist(Source source);
+	public DmlResult<Source> persist(Source source);
 }

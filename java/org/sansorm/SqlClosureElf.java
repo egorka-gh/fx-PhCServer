@@ -183,7 +183,7 @@ public final class SqlClosureElf
         @Override
         protected T execute(Connection connection) throws SQLException
         {
-            return OrmElf.updateObject(connection, object, null);
+            return OrmElf.updateObject(connection, object);
         }
     }
 
@@ -202,7 +202,7 @@ public final class SqlClosureElf
         @Override
         protected T execute(Connection connection) throws SQLException
         {
-            return OrmElf.insertObject(connection, object, null);
+            return OrmElf.insertObject(connection, object);
         }
     }
 

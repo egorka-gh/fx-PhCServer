@@ -5,10 +5,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.LabRoll;
 import com.photodispatcher.model.mysql.entities.Roll;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SqlResult;
 
 @Service("rollService")
 public class RollServiceImpl extends AbstractDAO implements RollService {
@@ -46,7 +46,7 @@ public class RollServiceImpl extends AbstractDAO implements RollService {
 	}
 
 	@Override
-	public DmlResult fillByChannels(int device) {
+	public SqlResult fillByChannels(int device) {
 		String sql="INSERT INTO phcconfig.lab_rolls (lab_device, width, paper)"+
 					" SELECT d.id, lr.roll, lr.paper"+
 					" FROM phcconfig.lab_device d"+
@@ -55,13 +55,13 @@ public class RollServiceImpl extends AbstractDAO implements RollService {
 					                  " WHERE lpc.roll IS NOT NULL AND lpc.roll!=0) lr ON lr.src_type=l.src_type"+                   
 					" WHERE d.id=?"+
 					   " AND NOT EXISTS(SELECT 1 FROM phcconfig.lab_rolls dr WHERE dr.lab_device=d.id AND dr.width=lr.roll AND dr.paper=lr.paper)";
-		DmlResult result= runDML(sql, true, device);
+		SqlResult result= runDML(sql, device);
 		return result;
 	}
 
 	@Override
-	public DmlResult persistBatch(List<LabRoll> items){
-		DmlResult result= new DmlResult();
+	public SqlResult persistBatch(List<LabRoll> items){
+		SqlResult result= new SqlResult();
 		List<LabRoll> deleteList=new ArrayList<LabRoll>();
 		List<LabRoll> insertList=new ArrayList<LabRoll>();
 		for(LabRoll item : items){
@@ -74,9 +74,9 @@ public class RollServiceImpl extends AbstractDAO implements RollService {
 		if(!deleteList.isEmpty()) result= runDeleteBatch(deleteList);
 		if(!insertList.isEmpty()){
 			///update persisted
-			if(result.isComplete()) runUpdateBatch(insertList,null);
+			if(result.isComplete()) runUpdateBatch(insertList);
 			///insert new
-			if(result.isComplete()) runInsertBatch(insertList,null);
+			if(result.isComplete()) runInsertBatch(insertList);
 		}
 		return result;
 	}

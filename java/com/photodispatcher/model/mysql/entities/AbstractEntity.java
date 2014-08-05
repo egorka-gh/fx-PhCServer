@@ -9,8 +9,10 @@ public abstract class AbstractEntity implements Serializable {
 
 	@Transient
 	private int persistState=1; //0-new, -1 - changed, 1-persisted
+	/*
 	@Transient
-	private boolean hasAutoId=false;//has surrogate auto increment id (int) 
+	private boolean hasAutoId=false;//has surrogate auto increment id (int)
+	*/ 
 
 	public int getPersistState() {
 		return persistState;
@@ -19,11 +21,12 @@ public abstract class AbstractEntity implements Serializable {
 		this.persistState = persistState;
 	}
 	
+	/*
 	public boolean isHasAutoId() {
 		return hasAutoId;
 	}
 	public void setHasAutoId(boolean hasAutoId) {
 		this.hasAutoId = hasAutoId;
 	}
-
+	 */
 }

@@ -14,9 +14,11 @@ public class Source extends AbstractEntity {
 	public static final int LOCATION_TYPE_LAB=2;
 	public static final int LOCATION_TYPE_TECH_POINT=3;
 
+	/*
 	public Source() {
 		setHasAutoId(true);
 	}
+	*/
 
 	//database props
     @Id

@@ -8,15 +8,16 @@ import com.photodispatcher.model.mysql.entities.ContentFilter;
 import com.photodispatcher.model.mysql.entities.ContentFilterAlias;
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SqlResult;
 
 @RemoteDestination(id="contentFilterService", source="contentFilterService")
 public interface ContentFilterService {
 	
-	public DmlResult insert(ContentFilter item);
-	public DmlResult update(ContentFilter item);
+	public DmlResult<ContentFilter> insert(ContentFilter item);
+	public DmlResult<ContentFilter> update(ContentFilter item);
 	public SelectResult<ContentFilter> findeAll(boolean includeDefault);
 
 	public SelectResult<ContentFilterAlias> loadAliases(int filter, boolean editMode);
-	public DmlResult saveAliases(int filter, List<ContentFilterAlias> aliases);
+	public SqlResult saveAliases(int filter, List<ContentFilterAlias> aliases);
 	
 }

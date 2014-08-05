@@ -260,9 +260,9 @@ public final class OrmElf
      * @return the same object that was passed in, but with possibly updated @Id field due to auto-generated keys
      * @throws SQLException if a {@link SQLException} occurs
      */
-    public static <T> T insertObject(Connection connection, T target, String[] columnNames) throws SQLException
+    public static <T> T insertObject(Connection connection, T target) throws SQLException
     {
-        return OrmWriter.insertObject(connection, target, columnNames);
+        return OrmWriter.insertObject(connection, target);
     }
 
     /**
@@ -274,9 +274,9 @@ public final class OrmElf
      * @return the same object passed in
      * @throws SQLException if a {@link SQLException} occurs
      */
-    public static <T> T updateObject(Connection connection, T target, String[] columnNames) throws SQLException
+    public static <T> T updateObject(Connection connection, T target) throws SQLException
     {
-        return OrmWriter.updateObject(connection, target, columnNames);
+        return OrmWriter.updateObject(connection, target);
     }
 
     /**

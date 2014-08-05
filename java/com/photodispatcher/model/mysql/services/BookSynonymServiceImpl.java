@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.photodispatcher.model.mysql.entities.BookPgTemplate;
 import com.photodispatcher.model.mysql.entities.BookSynonym;
-import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SqlResult;
 
 @Service("bookSynonymService")
 public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymService {
@@ -76,8 +76,8 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 	}
 
 	@Override
-	public DmlResult persistBatch(List<BookSynonym> items){
-		DmlResult result=new DmlResult();
+	public SqlResult persistBatch(List<BookSynonym> items){
+		SqlResult result=new SqlResult();
 		List<BookSynonym> insertList=new ArrayList<BookSynonym>();
 		List<BookSynonym> updateList=new ArrayList<BookSynonym>();
 		List<BookPgTemplate> insertChildList=new ArrayList<BookPgTemplate>();
@@ -97,21 +97,20 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 					}else if(child.getPersistState()==-1){
 						updateChildList.add(child);
 					}
-					
 				}
 			}
 		}
 		if(!insertList.isEmpty()){
-			result=runInsertBatch(insertList, null);
+			result=runInsertBatch(insertList);
 		}
 		if(result.isComplete() && !updateList.isEmpty()){
-			result=runUpdateBatch(updateList, null);
+			result=runUpdateBatch(updateList);
 		}
 		if(result.isComplete() && !insertChildList.isEmpty()){
-			result=runInsertBatch(insertChildList, null);
+			result=runInsertBatch(insertChildList);
 		}
 		if(result.isComplete() && !updateChildList.isEmpty()){
-			result=runUpdateBatch(updateChildList, null);
+			result=runUpdateBatch(updateChildList);
 		}
 		return result;
 	}

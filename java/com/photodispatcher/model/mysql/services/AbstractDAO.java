@@ -6,8 +6,10 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.photodispatcher.model.mysql.ConnectionFactory;
+import com.photodispatcher.model.mysql.entities.AbstractEntity;
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SqlResult;
 
 import org.sansorm.OrmElf;
 import org.sansorm.SqlClosure;
@@ -38,13 +40,36 @@ public abstract class AbstractDAO {
 		
 		return result;
 	}
-	
-	protected <T> DmlResult runInsert(T target, String[] columnNames){
-		DmlResult result= new DmlResult();
+
+	protected <T> DmlResult<T> getObject(final Class<T> type, final Object... ids){
+		final DmlResult<T> result= new DmlResult<T>();
+		
+		result.setItem(new SqlClosure<T>(ConnectionFactory.getDataSource()) {
+			public T execute(Connection connection) {
+				try {
+					return OrmElf.objectById(connection, type, ids);
+				} catch (SQLException e) {
+					result.setComplete(false);
+					result.setErrCode(e.getErrorCode());
+					result.setErrMesage(e.getMessage());
+					e.printStackTrace();
+					return null;
+				}
+			}
+		}.execute());		
+		
+		return result;
+	}
+
+	protected <T> DmlResult<T> runInsert(T target){
+		DmlResult<T> result= new DmlResult<T>();
+		result.setItem(target);
 		Connection connection = null;
 		try {
 			connection=ConnectionFactory.getConnection();
-			OrmElf.insertObject(connection, target, columnNames);
+			//TODO refactor to SqlClosure
+			OrmElf.insertObject(connection, target);
+			if (target instanceof AbstractEntity) ((AbstractEntity )target).setPersistState(1);
 		} catch (SQLException e) {
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
@@ -56,12 +81,15 @@ public abstract class AbstractDAO {
 		return result;
 	}
 
-	protected <T> DmlResult runUpdate(T target, String[] columnNames){
-		DmlResult result= new DmlResult();
+	protected <T> DmlResult<T> runUpdate(T target){
+		DmlResult<T> result= new DmlResult<T>();
+		result.setItem(target);
 		Connection connection = null;
 		try {
 			connection=ConnectionFactory.getConnection();
-			OrmElf.updateObject(connection, target, columnNames);
+			//TODO refactor to SqlClosure
+			OrmElf.updateObject(connection, target);
+			if (target instanceof AbstractEntity) ((AbstractEntity )target).setPersistState(1);
 		} catch (SQLException e) {
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
@@ -73,14 +101,16 @@ public abstract class AbstractDAO {
 		return result;
 	}
 	
-	protected <T> DmlResult runUpdateBatch(List<T> targetList, String[] columnNames){
-		DmlResult result= new DmlResult();
+	protected <T> SqlResult runUpdateBatch(List<T> targetList){
+		SqlResult result= new SqlResult();
 		Connection connection = null;
 		try {
 			connection=ConnectionFactory.getConnection();
 			connection.setAutoCommit(false);
+			//TODO refactor to SqlClosure
 			OrmElf.updateListBatched(connection, targetList);
 			connection.commit();
+			for(T item : targetList) if(item instanceof AbstractEntity) ((AbstractEntity) item).setPersistState(1);
 		} catch (SQLException e) {
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
@@ -104,14 +134,16 @@ public abstract class AbstractDAO {
 		return result;
 	}
 
-	protected <T> DmlResult runInsertBatch(List<T> targetList, String[] columnNames){
-		DmlResult result= new DmlResult();
+	protected <T> SqlResult runInsertBatch(List<T> targetList){
+		SqlResult result= new SqlResult();
 		Connection connection = null;
 		try {
 			connection=ConnectionFactory.getConnection();
 			connection.setAutoCommit(false);
+			//TODO refactor to SqlClosure
 			OrmElf.insertListBatched(connection, targetList);
 			connection.commit();
+			for(T item : targetList) if(item instanceof AbstractEntity) ((AbstractEntity) item).setPersistState(1);
 		} catch (SQLException e) {
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
@@ -135,12 +167,13 @@ public abstract class AbstractDAO {
 		return result;
 	}
 
-	protected <T> DmlResult runDeleteBatch(List<T> targetList){
-		DmlResult result= new DmlResult();
+	protected <T> SqlResult runDeleteBatch(List<T> targetList){
+		SqlResult result= new SqlResult();
 		Connection connection = null;
 		try {
 			connection=ConnectionFactory.getConnection();
 			connection.setAutoCommit(false);
+			//TODO refactor to SqlClosure
 			OrmElf.deleteListBatched(connection, targetList);
 			connection.commit();
 		} catch (SQLException e) {
@@ -166,11 +199,12 @@ public abstract class AbstractDAO {
 		return result;
 	}
 
-	protected DmlResult runDML(String sql, boolean autoClose, Object... args){
-		DmlResult result= new DmlResult();
+	protected SqlResult runDML(String sql, Object... args){
+		SqlResult result= new SqlResult();
 		Connection connection = null;
 		try {
 			connection=ConnectionFactory.getConnection();
+			//TODO refactor to SqlClosure
 			OrmWriter.executeUpdate(connection, sql, args);
 		} catch (SQLException e) {
 			result.setComplete(false);
@@ -178,7 +212,7 @@ public abstract class AbstractDAO {
 			result.setErrMesage(e.getMessage());
 			e.printStackTrace();
 		}finally{
-			if(autoClose) SqlClosureElf.quietClose(connection);
+			SqlClosureElf.quietClose(connection);
 		}
 		return result;
 	}
