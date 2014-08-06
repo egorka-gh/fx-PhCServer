@@ -21,5 +21,6 @@ public interface DictionaryService {
 	public SelectResult<FieldValue> getBookPartValueList(boolean includeDefault);
 	public SelectResult<FieldValue> getBookSynonimTypeValueList();
 	public SelectResult<FieldValue> getFieldValueSynonims();
+	public SelectResult<FieldValue> getTechTypeValueList();
 
 }

@@ -46,7 +46,7 @@ public class RollServiceImpl extends AbstractDAO implements RollService {
 	}
 
 	@Override
-	public SqlResult fillByChannels(int device) {
+	public SelectResult<LabRoll> fillByChannels(int device) {
 		String sql="INSERT INTO phcconfig.lab_rolls (lab_device, width, paper)"+
 					" SELECT d.id, lr.roll, lr.paper"+
 					" FROM phcconfig.lab_device d"+
@@ -56,7 +56,12 @@ public class RollServiceImpl extends AbstractDAO implements RollService {
 					" WHERE d.id=?"+
 					   " AND NOT EXISTS(SELECT 1 FROM phcconfig.lab_rolls dr WHERE dr.lab_device=d.id AND dr.width=lr.roll AND dr.paper=lr.paper)";
 		SqlResult result= runDML(sql, device);
-		return result;
+		if(!result.isComplete()){
+			SelectResult<LabRoll> err= new SelectResult<LabRoll>();
+			err.cloneError(result);
+			return err;
+		}
+		return getByDevice(device, true);
 	}
 
 	@Override

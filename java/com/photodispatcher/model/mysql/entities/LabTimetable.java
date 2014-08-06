@@ -13,6 +13,7 @@ public class LabTimetable extends AbstractEntity {
     @Id
     @Column(name="lab_device")
     private int lab_device;
+    @Id
     @Column(name="day_id")
     private int day_id;
     @Column(name="time_from")

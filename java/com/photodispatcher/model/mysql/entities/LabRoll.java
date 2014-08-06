@@ -5,13 +5,16 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table(name = "phcconfig.lab_rolls")
-public class LabRoll extends Roll {
+public class LabRoll extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 
 	//db fileds
     @Id
     @Column(name="lab_device")
     private int lab_device;
+    @Id
+    @Column(name="width")
+    private int width;
     @Id
     @Column(name="paper")
     private int paper;
@@ -69,6 +72,12 @@ public class LabRoll extends Roll {
 	}
 	public void setPaper_name(String paper_name) {
 		this.paper_name = paper_name;
+	}
+	public int getWidth() {
+		return width;
+	}
+	public void setWidth(int width) {
+		this.width = width;
 	}
 
 }

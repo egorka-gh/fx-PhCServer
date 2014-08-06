@@ -82,6 +82,14 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	}
 
 	@Override
+	public SelectResult<FieldValue> getTechTypeValueList(){
+		SelectResult<FieldValue> result;
+		String sql="SELECT id value, name label FROM phcconfig.order_state WHERE tech=1 ORDER BY value";
+		result=runSelect(FieldValue.class, sql);
+		return result;
+	}
+
+	@Override
 	public SelectResult<FieldValue> getTechLayerValueList(boolean includeDefault){
 		SelectResult<FieldValue> result;
 		String sql="SELECT id value, name label FROM phcconfig.layer ORDER BY 1";

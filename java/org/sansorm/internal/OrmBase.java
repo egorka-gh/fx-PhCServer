@@ -24,8 +24,10 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 //import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -158,6 +160,9 @@ class OrmBase
         default:
             if (object instanceof Boolean){
                 return (((Boolean) object) ? (short) 1 : (short) 0);
+            }else if(object instanceof Date && sqlType==Types.VARCHAR){
+            	//mysql formatting
+            	return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(object);
             }
             break;
         }

@@ -120,8 +120,8 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 		device.setRolls(rollres.getData());
 		//timetable
 		String sql="SELECT wd.id day_id, wd.name day_id_name, ? lab_device,"+
-						" IFNULL(ltt.time_from,'2000-01-01 08:00:00') time_from,"+
-						" IFNULL(ltt.time_to,  '2000-01-01 18:00:00') time_to,"+
+						" CAST(IFNULL(ltt.time_from,'2000-01-01 08:00:00') AS DATETIME) time_from,"+
+						" CAST(IFNULL(ltt.time_to,  '2000-01-01 18:00:00') AS DATETIME) time_to,"+
 						" IFNULL(ltt.is_online,0) is_online"+ 
 					" FROM phcconfig.week_days wd"+
 					" LEFT OUTER JOIN phcconfig.lab_timetable ltt ON  wd.id=ltt.day_id and ltt.lab_device=?"+
@@ -139,7 +139,7 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 					" FROM phcconfig.lab s" +
 					" INNER JOIN phcconfig.src_type st ON st.id = s.src_type"+
 					" WHERE s.id=?";
-		sResult=runSelect(Lab.class, sql);
+		sResult=runSelect(Lab.class, sql, id);
 		if (sResult.isComplete()){
 			if(sResult.getData()!=null && !sResult.getData().isEmpty()){
 				result.setItem(sResult.getData().get(0));
@@ -219,7 +219,7 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	@Override
 	public SelectResult<LabDevice> delDevice(int deviceId, int labId){
 		SelectResult<LabDevice> result= new SelectResult<LabDevice>();
-		String sql="DELETE FROM phcconfig.lab_device s WHERE s.id=?";
+		String sql="DELETE FROM phcconfig.lab_device WHERE id=?";
 		SqlResult delRes= runDML(sql, deviceId);
 		if(!delRes.isComplete()){
 			result.cloneError(delRes);
