@@ -3,6 +3,7 @@ package com.photodispatcher.model.mysql.services;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.photodispatcher.model.mysql.ConnectionFactory;
@@ -97,6 +98,32 @@ public abstract class AbstractDAO {
 			e.printStackTrace();
 		}finally{
 			SqlClosureElf.quietClose(connection);
+		}
+		return result;
+	}
+	
+	
+	protected <T> SqlResult runPersistBatch(List<T> targetList){
+		SqlResult result=new SqlResult();
+		if(targetList==null) return result;
+		
+		List<T> insertList=new ArrayList<T>();
+		List<T> updateList=new ArrayList<T>();
+
+		for(T item : targetList){
+			if(item instanceof AbstractEntity){
+				if(((AbstractEntity) item).getPersistState()==0){
+					insertList.add(item);
+				}else if(((AbstractEntity) item).getPersistState()==-1){
+					updateList.add(item);
+				}
+			}
+		}
+		if(!insertList.isEmpty()){
+			result=runInsertBatch(insertList);
+		}
+		if(result.isComplete() && !updateList.isEmpty()){
+			result=runUpdateBatch(updateList);
 		}
 		return result;
 	}
