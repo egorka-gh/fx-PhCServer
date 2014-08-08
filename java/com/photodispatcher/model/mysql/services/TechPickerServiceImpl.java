@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.photodispatcher.model.mysql.entities.Endpaper;
 import com.photodispatcher.model.mysql.entities.Layer;
 import com.photodispatcher.model.mysql.entities.LayerSequence;
 import com.photodispatcher.model.mysql.entities.Layerset;
@@ -15,6 +14,15 @@ import com.photodispatcher.model.mysql.entities.SqlResult;
 
 @Service("techPickerService")
 public class TechPickerServiceImpl extends AbstractDAO implements TechPickerService {
+	public static final int LAYER_EMPTY=0;
+	public static final int LAYER_SHEET=1;
+	public static final int LAYER_ENDPAPER=2;
+	public static final int LAYERSET_TYPE_TEMPLATE=0;
+	public static final int LAYERSET_TYPE_INTERLAYER=1;
+	public static final int LAYERSET_TYPE_ENDPAPER=2;
+	public static final int SEQGROUP_START=0;
+	public static final int SEQGROUP_MID=1;
+	public static final int SEQGROUP_END=2;
 
 	
 	@Override
@@ -32,12 +40,36 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 
 	@Override
 	public SelectResult<Layerset> loadLayersets(int type){
+		SelectResult<Layerset> result;
 		String sql="SELECT s.*, bt.name book_type_name"+
 					" FROM phcconfig.layerset s"+
 					" INNER JOIN phcconfig.book_type bt ON bt.id=s.book_type"+
 					" WHERE s.subset_type=?"+
-				" ORDER BY s.is_passover DESC, s.name";
-		return runSelect(Layerset.class, sql, type);
+				" ORDER BY s.passover DESC, s.name";
+		result= runSelect(Layerset.class, sql, type);
+		if (result.isComplete()){
+			for(Layerset ls : result.getData()){
+				SelectResult<LayerSequence> subRes=loadSequence(ls.getId());
+				if(subRes.isComplete()){
+					List<LayerSequence> seqStart=new ArrayList<LayerSequence>();
+					List<LayerSequence> seqMid=new ArrayList<LayerSequence>();
+					List<LayerSequence> seqEnd=new ArrayList<LayerSequence>();
+					for(LayerSequence seq :subRes.getData()){
+						if(seq.getLayer_group()==SEQGROUP_START){
+							seqStart.add(seq);
+						}else if(seq.getLayer_group()==SEQGROUP_MID){
+							seqMid.add(seq);
+						}else if(seq.getLayer_group()==SEQGROUP_END){
+							seqEnd.add(seq);
+						}
+						if(seq.getSeqlayer()==LAYER_ENDPAPER) ls.setUsesEndPaper(true);
+					}
+				}else{
+					result.cloneError(subRes);
+				}
+			}
+		}
+		return result;
 	}
 
 	@Override
@@ -64,15 +96,26 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 		return loadLayers();
 	}
 
-	@Override
-	public SelectResult<LayerSequence> loadtSequence(int layerset){
+	
+	private SelectResult<LayerSequence> loadSequence(int layerset){
 		SelectResult<LayerSequence> result;
-		String sql="SELECT la.layerset, la.layer_group, la.seqorder, la.seqlayer, l.name  seqlayer_name"+
+		String sql="SELECT la.*, l.name  seqlayer_name"+
 					" FROM phcconfig.layer_sequence la"+ 
 					" INNER JOIN phcconfig.layer l ON l.id=la.seqlayer"+
 					" WHERE la.layerset=?"+
 					" ORDER BY la.layer_group, la.seqorder";
 		result=runSelect(LayerSequence.class, sql, layerset);
+		return result;
+	}
+
+	private SelectResult<LayerSequence> loadSequence(int layerset, int layergroup){
+		SelectResult<LayerSequence> result;
+		String sql="SELECT la.*, l.name  seqlayer_name"+
+					" FROM phcconfig.layer_sequence la"+ 
+					" INNER JOIN phcconfig.layer l ON l.id=la.seqlayer"+
+					" WHERE la.layerset=? AND la.layer_group=?"+
+					" ORDER BY la.layer_group, la.seqorder";
+		result=runSelect(LayerSequence.class, sql, layerset, layergroup);
 		return result;
 	}
 
@@ -103,13 +146,14 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 			result=runDML(sql, layerset, layerGroup, seq);
 		}
 		if(result.isComplete()){
-			sRes=loadtSequence(layerset);
+			sRes=loadSequence(layerset, layerGroup);
 		}else{
 			sRes.cloneError(result);
 		}
 		return sRes;
 	}
 
+	/*
 	@Override
 	public SelectResult<Endpaper> loadEndpapers(){
 		SelectResult<Endpaper> result;
@@ -129,5 +173,5 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 		}
 		return runPersistBatch(items);
 	}
-
+*/
 }

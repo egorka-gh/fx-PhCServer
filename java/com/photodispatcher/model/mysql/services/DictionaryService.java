@@ -1,10 +1,14 @@
 package com.photodispatcher.model.mysql.services;
 
+import java.util.List;
+
 import org.granite.messaging.service.annotations.RemoteDestination;
 
 import com.photodispatcher.model.mysql.entities.AttrType;
 import com.photodispatcher.model.mysql.entities.FieldValue;
+import com.photodispatcher.model.mysql.entities.LayersetSynonym;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SqlResult;
 
 @RemoteDestination(id="dictionaryService", source="dictionaryService")
 public interface DictionaryService {
@@ -22,5 +26,7 @@ public interface DictionaryService {
 	public SelectResult<FieldValue> getBookSynonimTypeValueList();
 	public SelectResult<FieldValue> getFieldValueSynonims();
 	public SelectResult<FieldValue> getTechTypeValueList();
+	public SelectResult<LayersetSynonym> loadLayersetSynonyms(int itemId);
+	public SqlResult persistsLayersetSynonyms(List<LayersetSynonym> targetList);
 
 }

@@ -1,11 +1,16 @@
 package com.photodispatcher.model.mysql.services;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 
 import com.photodispatcher.model.mysql.entities.AttrType;
 import com.photodispatcher.model.mysql.entities.FieldValue;
+import com.photodispatcher.model.mysql.entities.LayersetSynonym;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SqlResult;
 
 @Service("dictionaryService")
 public class DictionaryServiceImpl extends AbstractDAO implements DictionaryService {
@@ -123,6 +128,43 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 					 " FROM phcconfig.attr_synonym a, phcconfig.attr_value av, phcconfig.attr_type at"+
 					 " WHERE  a.attr_val = av.id AND av.attr_tp = at.id AND at.attr_fml = 1";
 		result=runSelect(FieldValue.class, sql);
+		return result;
+	}
+
+	@Override
+	public SelectResult<LayersetSynonym> loadLayersetSynonyms(int itemId){
+		String sql="SELECT s.* FROM phcconfig.layerset_synonym s";
+		if(itemId!=-1){
+			sql+=" WHERE s.item_id=?";
+		}
+		sql+=" ORDER BY s.item_id, s.synonym";
+		if(itemId!=-1){
+			return runSelect(LayersetSynonym.class, sql, itemId);
+		}else{
+			return runSelect(LayersetSynonym.class, sql);
+		}
+	}
+
+	@Override
+	public SqlResult persistsLayersetSynonyms(List<LayersetSynonym> targetList){
+		String delId=""; 
+		List<LayersetSynonym> persistList=new ArrayList<LayersetSynonym>();
+		for(LayersetSynonym item : targetList){
+			if(item.getSynonym()==null || item.getSynonym().length()==0){
+				if(item.getPersistState()!=0){
+					if(delId.length()>0) delId+=",";
+					delId+=Integer.toString(item.getId());
+				}
+			}else{
+				persistList.add(item);
+			}
+		}
+
+		SqlResult result=runPersistBatch(persistList);
+		if(result.isComplete() && delId.length()>0){
+			String sql="DELETE FROM phcconfig.layerset_synonym WHERE id IN("+delId+")";
+			result=runDML(sql);
+		}
 		return result;
 	}
 

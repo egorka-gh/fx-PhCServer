@@ -45,6 +45,9 @@ public class Layerset extends AbstractEntity {
     private List<LayerSequence> sequenceMiddle;
     @Transient
     private List<LayerSequence> sequenceEnd;
+    @Transient
+    private boolean usesEndPaper;
+    
 	public int getId() {
 		return id;
 	}
@@ -122,6 +125,12 @@ public class Layerset extends AbstractEntity {
 	}
 	public void setSequenceEnd(List<LayerSequence> sequenceEnd) {
 		this.sequenceEnd = sequenceEnd;
+	}
+	public boolean isUsesEndPaper() {
+		return usesEndPaper;
+	}
+	public void setUsesEndPaper(boolean usesEndPaper) {
+		this.usesEndPaper = usesEndPaper;
 	}
 
 }
