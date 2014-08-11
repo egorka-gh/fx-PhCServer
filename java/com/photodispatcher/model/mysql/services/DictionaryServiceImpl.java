@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 
+import com.photodispatcher.model.mysql.entities.AttrJsonMap;
 import com.photodispatcher.model.mysql.entities.AttrType;
 import com.photodispatcher.model.mysql.entities.FieldValue;
 import com.photodispatcher.model.mysql.entities.LayersetSynonym;
@@ -98,7 +99,7 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	public SelectResult<FieldValue> getTechLayerValueList(boolean includeDefault){
 		SelectResult<FieldValue> result;
 		String sql="SELECT id value, name label FROM phcconfig.layer ORDER BY 1";
-		//if(includeDefault) sql="SELECT null value, ' ' label UNION "+sql;
+		//if(includeDefault) sql="SELECT null value, " " label UNION "+sql;
 		result=runSelect(FieldValue.class, sql);
 		return result;
 	}
@@ -165,6 +166,18 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 			String sql="DELETE FROM phcconfig.layerset_synonym WHERE id IN("+delId+")";
 			result=runDML(sql);
 		}
+		return result;
+	}
+
+	@Override
+	public SelectResult<AttrJsonMap> getOrderJsonAttr(int family){
+		SelectResult<AttrJsonMap> result;
+		String sql="SELECT jm.*, at.field, at.list, at.persist"+
+				" FROM phcconfig.attr_json_map jm"+
+				" INNER JOIN phcconfig.attr_type at ON jm.attr_type=at.id"+
+				" WHERE at.attr_fml=?"+
+				" ORDER BY jm.src_type, at.field";
+		result=runSelect(AttrJsonMap.class, sql, family);
 		return result;
 	}
 

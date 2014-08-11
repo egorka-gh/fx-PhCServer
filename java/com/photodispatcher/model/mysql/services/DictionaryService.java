@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.granite.messaging.service.annotations.RemoteDestination;
 
+import com.photodispatcher.model.mysql.entities.AttrJsonMap;
 import com.photodispatcher.model.mysql.entities.AttrType;
 import com.photodispatcher.model.mysql.entities.FieldValue;
 import com.photodispatcher.model.mysql.entities.LayersetSynonym;
@@ -28,5 +29,6 @@ public interface DictionaryService {
 	public SelectResult<FieldValue> getTechTypeValueList();
 	public SelectResult<LayersetSynonym> loadLayersetSynonyms(int itemId);
 	public SqlResult persistsLayersetSynonyms(List<LayersetSynonym> targetList);
+	public SelectResult<AttrJsonMap> getOrderJsonAttr(int family);
 
 }

@@ -21,8 +21,8 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 	public static final int LAYERSET_TYPE_INTERLAYER=1;
 	public static final int LAYERSET_TYPE_ENDPAPER=2;
 	public static final int SEQGROUP_START=0;
-	public static final int SEQGROUP_MID=1;
-	public static final int SEQGROUP_END=2;
+	public static final int SEQGROUP_MID=2;
+	public static final int SEQGROUP_END=3;
 
 	
 	@Override
@@ -64,10 +64,14 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 						}
 						if(seq.getSeqlayer()==LAYER_ENDPAPER) ls.setUsesEndPaper(true);
 					}
+					ls.setSequenceEnd(seqEnd);
+					ls.setSequenceMiddle(seqMid);
+					ls.setSequenceStart(seqStart);
 				}else{
 					result.cloneError(subRes);
 				}
 			}
+			
 		}
 		return result;
 	}
