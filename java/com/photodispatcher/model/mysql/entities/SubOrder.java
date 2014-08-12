@@ -5,6 +5,7 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Table(name = "phcdata.suborders")
 public class SubOrder extends AbstractEntity {
@@ -33,6 +34,15 @@ public class SubOrder extends AbstractEntity {
     @Column(name="proj_type")
     private int proj_type;
     
+	//ref
+    @Column(name="src_type_name", insertable=false, updatable=false)
+    private String src_type_name;
+    @Column(name="proj_type_name", insertable=false, updatable=false)
+    private String proj_type_name;
+    
+    @Transient
+    private OrderExtraInfo extraInfo;
+
 	public String getOrder_id() {
 		return order_id;
 	}
@@ -80,6 +90,24 @@ public class SubOrder extends AbstractEntity {
 	}
 	public void setProj_type(int proj_type) {
 		this.proj_type = proj_type;
+	}
+	public String getSrc_type_name() {
+		return src_type_name;
+	}
+	public void setSrc_type_name(String src_type_name) {
+		this.src_type_name = src_type_name;
+	}
+	public String getProj_type_name() {
+		return proj_type_name;
+	}
+	public void setProj_type_name(String proj_type_name) {
+		this.proj_type_name = proj_type_name;
+	}
+	public OrderExtraInfo getExtraInfo() {
+		return extraInfo;
+	}
+	public void setExtraInfo(OrderExtraInfo extraInfo) {
+		this.extraInfo = extraInfo;
 	}
 
 }

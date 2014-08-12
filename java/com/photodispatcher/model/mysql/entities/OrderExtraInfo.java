@@ -11,6 +11,10 @@ public class OrderExtraInfo extends AbstractEntity {
     @Id
     @Column(name="id")
     private String id;
+    @Id
+    @Column(name="sub_id")
+    private String sub_id;
+    
     @Column(name="endpaper")
     private String endpaper;
     @Column(name="interlayer")
@@ -73,6 +77,12 @@ public class OrderExtraInfo extends AbstractEntity {
 	}
 	public void setKaptal(String kaptal) {
 		this.kaptal = kaptal;
+	}
+	public String getSub_id() {
+		return sub_id;
+	}
+	public void setSub_id(String sub_id) {
+		this.sub_id = sub_id;
 	}
     
 }

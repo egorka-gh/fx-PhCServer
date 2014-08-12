@@ -1,15 +1,13 @@
 package com.photodispatcher.model.mysql.entities;
 
 import java.util.Date;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
-@Table(name = "phcdata.orders")
-public class Order extends AbstractEntity {
+@Table(name = "phcdata.tmp_orders")
+public class OrderTemp extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 
     @Id
@@ -37,31 +35,6 @@ public class Order extends AbstractEntity {
     private int sync;
     @Column(name="is_preload")
     private boolean is_preload;
-    /*
-    @Column(name="is_new")
-    private boolean is_new;
-    @Column(name="reload")
-    private boolean reload;
-    */
-    
-    //ref
-    @Column(name="source_name", updatable=false, insertable=false)
-    private String source_name;
-    @Column(name="source_code", updatable=false, insertable=false)
-    private String source_code;
-    @Column(name="state_name", updatable=false, insertable=false)
-    private String state_name;
-    @Column(name="book_type", updatable=false, insertable=false)
-    private int book_type;
-    
-    //childs
-
-    @Transient
-    private OrderExtraInfo extraInfo;
-    @Transient
-    private List<SubOrder> suborders;
-    @Transient
-    private List<PrintGroup> printGroups;
     
     
 	public String getId() {
@@ -136,48 +109,5 @@ public class Order extends AbstractEntity {
 	public void setIs_preload(boolean is_preload) {
 		this.is_preload = is_preload;
 	}
-	public String getSource_name() {
-		return source_name;
-	}
-	public void setSource_name(String source_name) {
-		this.source_name = source_name;
-	}
-	public String getSource_code() {
-		return source_code;
-	}
-	public void setSource_code(String source_code) {
-		this.source_code = source_code;
-	}
-	public String getState_name() {
-		return state_name;
-	}
-	public void setState_name(String state_name) {
-		this.state_name = state_name;
-	}
-	public OrderExtraInfo getExtraInfo() {
-		return extraInfo;
-	}
-	public void setExtraInfo(OrderExtraInfo extraInfo) {
-		this.extraInfo = extraInfo;
-	}
-	public List<SubOrder> getSuborders() {
-		return suborders;
-	}
-	public void setSuborders(List<SubOrder> suborders) {
-		this.suborders = suborders;
-	}
-	public List<PrintGroup> getPrintGroups() {
-		return printGroups;
-	}
-	public void setPrintGroups(List<PrintGroup> printGroups) {
-		this.printGroups = printGroups;
-	}
-	public int getBook_type() {
-		return book_type;
-	}
-	public void setBook_type(int book_type) {
-		this.book_type = book_type;
-	}
-    
 
 }
