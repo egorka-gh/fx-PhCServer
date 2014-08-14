@@ -16,6 +16,7 @@
 
 package org.sansorm.internal;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
@@ -29,6 +30,14 @@ import java.util.Map;
 
 /**
  * OrmWriter
+ */
+/**
+ * @author igorz
+ *
+ */
+/**
+ * @author igorz
+ *
  */
 public class OrmWriter extends OrmBase
 {
@@ -340,6 +349,33 @@ public class OrmWriter extends OrmBase
         {
             if (stmt != null)
             {
+                stmt.close();
+            }
+        }
+    }
+
+    
+    
+    /**
+     * simple stored procedure call
+     * use only IN parameters
+     * no resultset expected
+     *   
+     * @param connection
+     * @param sql
+     * @param args (params)
+     * @return
+     * @throws SQLException
+     */
+    public static int executeCall(Connection connection, String sql, Object... args) throws SQLException{
+    	CallableStatement stmt = null;
+        try{
+            stmt = connection.prepareCall(sql);
+            populateStatementParameters(stmt, args);
+            int rc = stmt.executeUpdate();
+            return rc;
+        } finally{
+            if (stmt != null){
                 stmt.close();
             }
         }

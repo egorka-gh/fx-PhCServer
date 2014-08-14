@@ -1,5 +1,7 @@
 package com.photodispatcher.model.mysql.entities;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -37,10 +39,14 @@ public class Source extends AbstractEntity {
     //ref name
     @Column(name="type_name", updatable=false, insertable=false)
     private String type_name;
-    @Column(name="sync", updatable=false, insertable=false)
-    private int sync;
     @Column(name="loc_type", updatable=false, insertable=false)
     private int loc_type;
+    @Column(name="sync", updatable=false, insertable=false)
+    private int sync;
+    @Column(name="sync_date", updatable=false, insertable=false)
+    private Date sync_date;
+    @Column(name="sync_state", updatable=false, insertable=false)
+    private boolean sync_state;
 
     //childs
     private SourceSvc ftpService;
@@ -119,6 +125,18 @@ public class Source extends AbstractEntity {
 	}
 	public void setLoc_type(int loc_type) {
 		this.loc_type = loc_type;
+	}
+	public Date getSync_date() {
+		return sync_date;
+	}
+	public void setSync_date(Date sync_date) {
+		this.sync_date = sync_date;
+	}
+	public boolean isSync_state() {
+		return sync_state;
+	}
+	public void setSync_state(boolean sync_state) {
+		this.sync_state = sync_state;
 	}
 
 }

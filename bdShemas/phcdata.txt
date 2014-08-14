@@ -1,0 +1,474 @@
+--
+-- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.233.0
+-- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
+-- Дата скрипта: 14.08.2014 15:49:21
+-- Версия сервера: 5.1.62-community
+-- Версия клиента: 4.1
+--
+
+
+USE phcdata;
+
+CREATE TABLE order_exstate_prolong (
+  id varchar(50) NOT NULL DEFAULT '',
+  sub_id varchar(50) NOT NULL DEFAULT '',
+  state int(10) DEFAULT 0,
+  state_date datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  comment char(255) DEFAULT NULL,
+  PRIMARY KEY (id, sub_id, state_date)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 3276
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE order_extra_info (
+  id varchar(50) NOT NULL DEFAULT '',
+  sub_id varchar(50) NOT NULL DEFAULT '',
+  endpaper varchar(100) DEFAULT NULL,
+  interlayer varchar(100) DEFAULT NULL,
+  calc_type varchar(100) DEFAULT NULL,
+  cover varchar(100) DEFAULT NULL,
+  format varchar(100) DEFAULT NULL,
+  corner_type varchar(100) DEFAULT NULL,
+  kaptal varchar(100) DEFAULT NULL,
+  tempId varchar(50) DEFAULT NULL,
+  PRIMARY KEY (id, sub_id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 395
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE order_extra_state (
+  id varchar(50) NOT NULL DEFAULT '',
+  sub_id varchar(50) NOT NULL DEFAULT '',
+  state int(10) NOT NULL DEFAULT 0,
+  start_date datetime DEFAULT NULL,
+  state_date datetime DEFAULT NULL,
+  reported tinyint(1) DEFAULT 0,
+  PRIMARY KEY (state, id, sub_id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 161
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE orders (
+  id varchar(50) NOT NULL DEFAULT '',
+  source int(7) NOT NULL DEFAULT 0,
+  src_id varchar(50) NOT NULL DEFAULT '',
+  src_date datetime DEFAULT NULL,
+  data_ts varchar(20) DEFAULT NULL,
+  state int(5) DEFAULT 0,
+  state_date datetime DEFAULT NULL,
+  ftp_folder varchar(50) DEFAULT NULL,
+  local_folder varchar(50) DEFAULT NULL,
+  fotos_num int(5) DEFAULT 0,
+  sync int(11) DEFAULT 0,
+  is_preload tinyint(1) DEFAULT 0,
+  reported_state int(5) DEFAULT 0,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 157
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE sources_sync (
+  id int(7) NOT NULL,
+  sync int(11) NOT NULL DEFAULT 0,
+  sync_date datetime DEFAULT NULL,
+  sync_state tinyint(1) DEFAULT 0,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 2048
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE tmp_orders (
+  id varchar(50) NOT NULL DEFAULT '',
+  source int(7) NOT NULL DEFAULT 0,
+  src_id varchar(50) NOT NULL DEFAULT '',
+  src_date datetime DEFAULT NULL,
+  data_ts varchar(20) DEFAULT NULL,
+  state int(5) DEFAULT 0,
+  state_date datetime DEFAULT NULL,
+  ftp_folder varchar(50) DEFAULT NULL,
+  local_folder varchar(50) DEFAULT NULL,
+  fotos_num int(5) DEFAULT 0,
+  sync int(11) DEFAULT 0,
+  reload tinyint(1) DEFAULT 0,
+  is_new tinyint(1) DEFAULT 0,
+  is_preload tinyint(1) DEFAULT 0,
+  PRIMARY KEY (id),
+  INDEX IDX_tmp_orders_source (source)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 100
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE print_group (
+  id varchar(50) NOT NULL DEFAULT '',
+  order_id varchar(50) NOT NULL,
+  sub_id varchar(50) DEFAULT NULL,
+  state int(5) DEFAULT NULL,
+  state_date datetime DEFAULT NULL,
+  width int(5) NOT NULL,
+  height int(5) NOT NULL,
+  paper int(5) DEFAULT 0,
+  frame int(5) DEFAULT 0,
+  correction int(5) DEFAULT 0,
+  cutting int(5) DEFAULT 0,
+  path varchar(100) DEFAULT '',
+  file_num int(5) DEFAULT 0,
+  destination int(5) DEFAULT NULL,
+  book_type int(5) DEFAULT 0,
+  book_part int(5) DEFAULT 0,
+  book_num int(5) DEFAULT 0,
+  sheet_num int(5) DEFAULT 0,
+  is_pdf tinyint(1) DEFAULT 0,
+  is_duplex tinyint(1) DEFAULT 0,
+  is_reprint tinyint(1) DEFAULT 0,
+  prints int(10) DEFAULT 0,
+  PRIMARY KEY (id),
+  INDEX IDX_print_group_state (state),
+  CONSTRAINT FK_print_group_orders_id FOREIGN KEY (order_id)
+  REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 153
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE state_log (
+  id int(10) NOT NULL AUTO_INCREMENT,
+  order_id varchar(50) NOT NULL DEFAULT '',
+  pg_id varchar(50) DEFAULT NULL,
+  state int(5) NOT NULL DEFAULT 0,
+  state_date datetime NOT NULL,
+  comment varchar(250) DEFAULT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_state_log_orders_id FOREIGN KEY (order_id)
+  REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 1476923
+AVG_ROW_LENGTH = 74
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE suborders (
+  id varchar(50) NOT NULL DEFAULT '',
+  order_id varchar(50) NOT NULL DEFAULT '',
+  sub_id varchar(50) NOT NULL DEFAULT '',
+  src_type int(5) NOT NULL DEFAULT 0,
+  state int(5) DEFAULT 0,
+  state_date datetime DEFAULT NULL,
+  ftp_folder varchar(100) DEFAULT NULL,
+  prt_qty int(5) DEFAULT 0,
+  proj_type int(5) DEFAULT 1,
+  PRIMARY KEY (order_id, sub_id),
+  CONSTRAINT FK_suborders_orders_id FOREIGN KEY (order_id)
+  REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 138
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE print_group_file (
+  id int(10) NOT NULL AUTO_INCREMENT,
+  print_group varchar(50) NOT NULL DEFAULT '',
+  file_name varchar(100) DEFAULT '',
+  prt_qty int(5) DEFAULT 0,
+  book_num int(5) DEFAULT 0,
+  page_num int(5) DEFAULT 0,
+  caption varchar(100) DEFAULT '',
+  PRIMARY KEY (id),
+  CONSTRAINT FK_print_group_file_print_group_id FOREIGN KEY (print_group)
+  REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 2081179
+AVG_ROW_LENGTH = 85
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE tech_log (
+  id int(10) NOT NULL AUTO_INCREMENT,
+  print_group varchar(50) NOT NULL DEFAULT '',
+  sheet int(5) NOT NULL DEFAULT 0,
+  src_id int(7) NOT NULL,
+  log_date datetime DEFAULT NULL,
+  PRIMARY KEY (id),
+  INDEX IDX_tech_log (src_id, log_date),
+  CONSTRAINT FK_tech_log_print_group_id FOREIGN KEY (print_group)
+  REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 483028
+AVG_ROW_LENGTH = 54
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+DELIMITER $$
+
+CREATE DEFINER = 'root'@'localhost'
+PROCEDURE sync ()
+MODIFIES SQL DATA
+COMMENT 'синхронизация всех активных сайтов'
+BEGIN
+  DECLARE vId integer(7) DEFAULT (0);
+  DECLARE vIsEnd int DEFAULT (0);
+  DECLARE vCur CURSOR FOR
+  SELECT s.id
+  FROM phcconfig.sources s
+  WHERE s.online = 1;
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET vIsEnd = 1;
+
+  OPEN vCur;
+wet:
+  LOOP
+    FETCH vCur INTO vId;
+    IF vIsEnd THEN
+      LEAVE wet;
+    END IF;
+    CALL phcdata.syncSource(vId);
+  END LOOP wet;
+  CLOSE vCur;
+
+END
+$$
+
+CREATE DEFINER = 'root'@'localhost'
+PROCEDURE syncSource (IN pSourceId int)
+MODIFIES SQL DATA
+main:
+BEGIN
+  DECLARE vSync integer(11) DEFAULT (0);
+  DECLARE vCnt integer(11) DEFAULT (0);
+
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+  END;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET vSync = 0;
+
+  IF NOT EXISTS
+    (SELECT 1
+      FROM phcdata.tmp_orders t
+      WHERE t.source = pSourceId) THEN
+    LEAVE main;
+  END IF;
+
+  -- reset sync state
+  UPDATE phcdata.sources_sync ss
+  SET ss.sync_date = NOW(),
+      ss.sync_state = 0
+  WHERE ss.id = pSourceId;
+
+  -- keep in transaction
+  START TRANSACTION;
+
+    -- get next sync
+    SELECT ss.sync INTO vSync
+    FROM phcdata.sources_sync ss
+    WHERE ss.id = pSourceId;
+    SET vSync = IFNULL(vSync, 0) + 1;
+
+    -- set sync
+    UPDATE phcdata.tmp_orders to1
+    SET to1.sync = vSync
+    WHERE to1.source = pSourceId;
+
+    -- add new
+    -- search new
+    UPDATE phcdata.tmp_orders to1
+    SET to1.is_new = IFNULL(
+    (SELECT 0
+      FROM phcdata.orders o
+      WHERE o.id = to1.id), 1)
+    WHERE to1.source = pSourceId;
+    -- insert new
+    INSERT INTO phcdata.orders
+    (id, source, src_id, src_date, state, state_date, ftp_folder, fotos_num, sync, is_preload, data_ts)
+      SELECT id, source, src_id, src_date, state, state_date, ftp_folder, fotos_num, sync, is_preload, data_ts
+      FROM phcdata.tmp_orders to1
+      WHERE to1.source = pSourceId
+      AND to1.is_new = 1;
+    -- log state
+    INSERT INTO phcdata.state_log
+    (order_id, state, state_date)
+      SELECT id, state, state_date
+      FROM phcdata.tmp_orders to1
+      WHERE to1.source = pSourceId
+      AND to1.is_new = 1;
+    -- remove new
+    DELETE
+      FROM phcdata.tmp_orders
+    WHERE source = pSourceId
+      AND is_new = 1;
+
+    -- update sync
+    UPDATE phcdata.orders
+    SET sync = vSync
+    WHERE orders.id IN
+    (SELECT id
+      FROM phcdata.tmp_orders to1
+      WHERE to1.source = pSourceId);
+
+    -- check/process preload
+    -- log printgroup state
+    INSERT INTO phcdata.state_log
+    (order_id, pg_id, state, state_date)
+      SELECT pg.order_id, pg.id, 200, NOW()
+      FROM phcdata.print_group pg
+      WHERE pg.state = 199
+      AND pg.order_id IN
+      (SELECT t.id
+        FROM phcdata.tmp_orders t
+        WHERE t.source = pSourceId
+        AND t.is_preload = 0);
+    -- update printgroup state/preload
+    UPDATE phcdata.print_group
+    SET state = 200,
+        state_date = NOW()
+    WHERE state = 199
+    AND order_id IN
+    (SELECT t.id
+      FROM phcdata.tmp_orders t
+      WHERE t.source = pSourceId
+      AND t.is_preload = 0);
+    -- log order state
+    INSERT INTO phcdata.state_log
+    (order_id, state, state_date)
+      SELECT o.id, 200, NOW()
+      FROM phcdata.orders o
+      WHERE o.state = 199
+      AND o.id IN
+      (SELECT t.id
+        FROM phcdata.tmp_orders t
+        WHERE t.source = pSourceId
+        AND t.is_preload = 0);
+    UPDATE phcdata.orders o
+    SET state = 200,
+        state_date = NOW(),
+        is_preload = 0
+    WHERE o.state = 199
+    AND o.id IN
+    (SELECT t.id
+      FROM phcdata.tmp_orders t
+      WHERE t.source = pSourceId
+      AND t.is_preload = 0);
+
+    -- cancel not in sync
+    -- log canceled state
+    INSERT INTO phcdata.state_log
+    (order_id, state, state_date)
+      SELECT id, 510, NOW()
+      FROM phcdata.orders o
+      WHERE o.source = pSourceId
+      AND o.state BETWEEN 100 AND 200
+      AND o.sync != vSync;
+    -- cancel print groups
+    UPDATE phcdata.print_group
+    SET state = 510,
+        state_date = NOW()
+    WHERE order_id IN
+    (SELECT id
+      FROM phcdata.orders o
+      WHERE o.source = pSourceId
+      AND o.state BETWEEN 100 AND 200
+      AND o.sync != vSync);
+    -- cancel orders
+    UPDATE phcdata.orders o
+    SET state = 510,
+        state_date = NOW()
+    WHERE o.source = pSourceId
+    AND o.state BETWEEN 100 AND 200
+    AND o.sync != vSync;
+
+    -- finde reload candidate by project data time
+    UPDATE phcdata.tmp_orders t
+    SET t.reload = 1
+    WHERE t.source = pSourceId
+    AND t.data_ts IS NOT NULL
+    AND EXISTS
+    (SELECT 1
+      FROM phcdata.orders o
+      WHERE o.id = t.id
+      AND o.data_ts IS NOT NULL
+      AND o.data_ts != o.data_ts
+      AND o.state BETWEEN 199 AND 200);
+    -- clean orders 4 reload
+    -- clean print_group
+    DELETE
+      FROM phcdata.print_group
+    WHERE order_id IN
+      (SELECT id
+        FROM phcdata.tmp_orders t
+        WHERE t.source = pSourceId
+        AND t.reload = 1);
+    -- clean extra info
+    DELETE
+      FROM phcdata.order_extra_info
+    WHERE id IN
+      (SELECT id
+        FROM phcdata.tmp_orders t
+        WHERE t.source = pSourceId
+        AND t.reload = 1);
+    -- clean suborder
+    DELETE
+      FROM phcdata.suborders
+    WHERE order_id IN
+      (SELECT id
+        FROM phcdata.tmp_orders t
+        WHERE t.source = pSourceId
+        AND t.reload = 1);
+    -- reset order state
+    UPDATE phcdata.orders o
+    SET o.state = 100,
+        o.state_date = NOW()
+    WHERE o.id IN
+    (SELECT id
+      FROM phcdata.tmp_orders t
+      WHERE t.source = pSourceId
+      AND t.reload = 1);
+    -- log
+    INSERT INTO phcdata.state_log
+    (order_id, state, state_date, comment)
+      SELECT id, 100, NOW(), 'перезагрузка, заказ изменен на сайте'
+      FROM phcdata.tmp_orders t
+      WHERE t.source = pSourceId
+      AND t.reload = 1;
+    -- set project data time
+    UPDATE phcdata.orders o
+    SET o.data_ts =
+    (SELECT tt.data_ts
+      FROM phcdata.tmp_orders tt
+      WHERE tt.id = o.id)
+    WHERE o.source = pSourceId
+    AND EXISTS
+    (SELECT 1
+      FROM phcdata.tmp_orders t
+      WHERE t.id = o.id
+      AND t.data_ts IS NOT NULL
+      AND t.data_ts != IFNULL(o.data_ts, ''));
+
+    -- finalize
+    DELETE
+      FROM phcdata.tmp_orders
+    WHERE source = pSourceId;
+    INSERT INTO phcdata.sources_sync
+    (id, sync, sync_date, sync_state)
+      VALUES (pSourceId, vSync, NOW(), 1)
+    ON DUPLICATE KEY UPDATE sync = vSync, sync_date = NOW(), sync_state = 1;
+  COMMIT;
+END
+$$
+
+DELIMITER ;

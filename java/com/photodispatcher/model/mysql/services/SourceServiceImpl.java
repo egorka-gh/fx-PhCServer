@@ -18,7 +18,8 @@ public class SourceServiceImpl extends AbstractDAO implements SourceService {
 	@Override
 	public SelectResult<Source> loadAll(int locationType){
 		SelectResult<Source> result;
-		String sql="SELECT s.id, s.name, s.type, s.code, ifnull(ss.sync,0) sync, s.online, st.name type_name, st.loc_type"+
+		String sql="SELECT s.id, s.name, s.type, s.code, s.online, st.name type_name, st.loc_type,"+
+							" ifnull(ss.sync,0) sync, ss.sync_date, ifnull(ss.sync_state,0) sync_state"+
 					" FROM phcconfig.sources s" +
 					" INNER JOIN phcconfig.src_type st ON st.id = s.type"+
 					" LEFT OUTER JOIN phcdata.sources_sync ss on s.id=ss.id" +

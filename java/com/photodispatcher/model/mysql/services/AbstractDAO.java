@@ -243,4 +243,23 @@ public abstract class AbstractDAO {
 		}
 		return result;
 	}
+	
+	protected SqlResult runCall(String sql, Object... args){
+		SqlResult result= new SqlResult();
+		Connection connection = null;
+		try {
+			connection=ConnectionFactory.getConnection();
+			//TODO refactor to SqlClosure
+			OrmWriter.executeCall(connection, sql, args);
+		} catch (SQLException e) {
+			result.setComplete(false);
+			result.setErrCode(e.getErrorCode());
+			result.setErrMesage(e.getMessage());
+			e.printStackTrace();
+		}finally{
+			SqlClosureElf.quietClose(connection);
+		}
+		return result;
+	}
+
 }
