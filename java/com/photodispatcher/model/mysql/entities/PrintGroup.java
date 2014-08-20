@@ -57,7 +57,9 @@ public class PrintGroup extends AbstractEntity {
     private boolean is_reprint;
     @Column(name="prints")
     private int prints;
-
+    @Column(name="reprint_id")
+    private String reprint_id;
+    
 	//runtime
     @Column(name="prints_done", insertable=false, updatable=false)
     private int prints_done;
@@ -372,6 +374,14 @@ public class PrintGroup extends AbstractEntity {
 
 	public void setFiles(List<PrintGroupFile> files) {
 		this.files = files;
+	}
+
+	public String getReprint_id() {
+		return reprint_id;
+	}
+
+	public void setReprint_id(String reprint_id) {
+		this.reprint_id = reprint_id;
 	}
     
 }

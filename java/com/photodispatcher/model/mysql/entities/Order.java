@@ -62,6 +62,14 @@ public class Order extends AbstractEntity {
     private List<SubOrder> suborders;
     @Transient
     private List<PrintGroup> printGroups;
+    @Transient
+    private List<TechLog> techLog;
+    @Transient
+    private List<StateLog> stateLog; 
+    @Transient
+    private List<OrderExtraState> extraState; 
+    @Transient
+    private List<OrderExtraStateProlong>  extraStateProlong;
     
     
 	public String getId() {
@@ -177,6 +185,30 @@ public class Order extends AbstractEntity {
 	}
 	public void setBook_type(int book_type) {
 		this.book_type = book_type;
+	}
+	public List<TechLog> getTechLog() {
+		return techLog;
+	}
+	public void setTechLog(List<TechLog> techLog) {
+		this.techLog = techLog;
+	}
+	public List<StateLog> getStateLog() {
+		return stateLog;
+	}
+	public void setStateLog(List<StateLog> stateLog) {
+		this.stateLog = stateLog;
+	}
+	public List<OrderExtraState> getExtraState() {
+		return extraState;
+	}
+	public void setExtraState(List<OrderExtraState> extraState) {
+		this.extraState = extraState;
+	}
+	public List<OrderExtraStateProlong> getExtraStateProlong() {
+		return extraStateProlong;
+	}
+	public void setExtraStateProlong(List<OrderExtraStateProlong> extraStateProlong) {
+		this.extraStateProlong = extraStateProlong;
 	}
     
 
