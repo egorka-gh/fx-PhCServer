@@ -1,7 +1,10 @@
 package com.photodispatcher.model.mysql.services;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -102,12 +105,12 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	@Override
-	public SelectResult<Order> loadOrderFull(String id){
+	public SelectResult<Order> loadOrderVsChilds(String id){
 		SelectResult<Order> result=loadOrder(id);
 		Order order;
 		if(result.isComplete() && !result.getData().isEmpty()){
 			order=result.getData().get(0);
-			//load childs
+			//load direct childs
 			String sql;
 			//subOrders
 			sql="SELECT so.*, st.name src_type_name, bt.name proj_type_name"+
@@ -154,6 +157,17 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 				return result;
 			}
 			order.setPrintGroups(pgRes.getData());
+		}
+		return result;
+	}
+
+	@Override
+	public SelectResult<Order> loadOrderFull(String id){
+		SelectResult<Order> result=loadOrderVsChilds(id);
+		Order order;
+		if(result.isComplete() && !result.getData().isEmpty()){
+			order=result.getData().get(0);
+			String sql;
 			//files
 			if(order.getPrintGroups()!=null && !order.getPrintGroups().isEmpty()){
 				sql="SELECT pgf.*, pg.path"+
@@ -285,7 +299,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 
 	@Override
 	public SelectResult<OrderExtraInfo> loadExtraIfoByPG(String pgId){
-		String sql="SELECT ei.*"+
+		String sql="SELECT ei.*, pg.book_type"+
 					" FROM phcdata.print_group pg"+
 					" INNER JOIN phcdata.order_extra_info ei ON pg.order_id=ei.order_id AND pg.sub_id=ei.sub_id"+
 					" WHERE pg.id=?";
@@ -339,6 +353,64 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		if(result.isComplete()) result=runInsertBatch(pgFiles);
 		if(result.isComplete()) logState(log);
 		
+		return result;
+	}
+
+	@Override
+	public SqlResult addReprintPGroups(List<PrintGroup> items){
+		SqlResult result= new SqlResult();
+		if(items==null ||items.isEmpty()) return result;
+		
+		String order_id="";
+		Set<String> subIds= new HashSet<String>();
+		StateLog log;
+		List<PrintGroupFile> pgFiles = new ArrayList<PrintGroupFile>();
+		List<StateLog> logs = new ArrayList<StateLog>();
+		Date dt =new Date();
+		for (PrintGroup pg : items){
+			order_id=pg.getOrder_id();
+			if(pg.getSub_id()!=null && pg.getSub_id().length()>0) subIds.add(pg.getSub_id());
+			log = new StateLog();
+			log.setOrder_id(order_id);
+			log.setSub_id(pg.getSub_id());
+			log.setPg_id(pg.getId());
+			log.setState(pg.getState());
+			log.setState_date(pg.getState_date());
+			log.setComment("Перепечать");
+			logs.add(log);
+			if(pg.getFiles()!=null){
+				for(PrintGroupFile pgFile : pg.getFiles()) pgFiles.add(pgFile);
+			}
+		}
+		log = new StateLog();
+		log.setOrder_id(order_id);
+		log.setState(210);
+		log.setState_date(dt);
+		log.setComment("Перепечать");
+		logs.add(log);
+		for(String subId : subIds){
+			log = new StateLog();
+			log.setOrder_id(order_id);
+			log.setSub_id(subId);
+			log.setState(210);
+			log.setState_date(dt);
+			log.setComment("Перепечать");
+			logs.add(log);
+		}
+		
+		if(result.isComplete()) result=runInsertBatch(items);
+		if(result.isComplete()) result=runInsertBatch(pgFiles);
+		if(result.isComplete()) result=runInsertBatch(logs);
+		if(result.isComplete()){
+			String sql="UPDATE phcdata.orders SET state = ?, state_date = ?, reported_state=0 WHERE id = ? AND state > ?";
+			result=runDML(sql,210,dt,order_id,210);
+		}
+		if(result.isComplete()){
+			for(String subId : subIds){
+				String sql="UPDATE phcdata.suborders SET state = ?, state_date = ? WHERE order_id = ? AND sub_id = ?";
+				result=runDML(sql,210,dt,order_id,subId);
+			}
+		}
 		return result;
 	}
 

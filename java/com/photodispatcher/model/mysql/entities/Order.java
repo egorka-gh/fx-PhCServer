@@ -51,8 +51,10 @@ public class Order extends AbstractEntity {
     private String source_code;
     @Column(name="state_name", updatable=false, insertable=false)
     private String state_name;
+    /*
     @Column(name="book_type", updatable=false, insertable=false)
     private int book_type;
+    */
     
     //childs
 
@@ -179,12 +181,6 @@ public class Order extends AbstractEntity {
 	}
 	public void setPrintGroups(List<PrintGroup> printGroups) {
 		this.printGroups = printGroups;
-	}
-	public int getBook_type() {
-		return book_type;
-	}
-	public void setBook_type(int book_type) {
-		this.book_type = book_type;
 	}
 	public List<TechLog> getTechLog() {
 		return techLog;

@@ -30,6 +30,10 @@ public class OrderExtraInfo extends AbstractEntity {
     @Column(name="kaptal")
     private String kaptal;
     
+    //ref
+    @Column(name="book_type", updatable=false, insertable=false)
+    private int book_type;
+
 	public String getId() {
 		return id;
 	}
@@ -83,6 +87,12 @@ public class OrderExtraInfo extends AbstractEntity {
 	}
 	public void setSub_id(String sub_id) {
 		this.sub_id = sub_id;
+	}
+	public int getBook_type() {
+		return book_type;
+	}
+	public void setBook_type(int book_type) {
+		this.book_type = book_type;
 	}
     
 }

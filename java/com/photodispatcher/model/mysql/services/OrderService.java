@@ -8,6 +8,7 @@ import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.Order;
 import com.photodispatcher.model.mysql.entities.OrderExtraInfo;
 import com.photodispatcher.model.mysql.entities.OrderTemp;
+import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.Source;
 import com.photodispatcher.model.mysql.entities.SqlResult;
@@ -31,5 +32,7 @@ public interface OrderService {
 	public SelectResult<OrderExtraInfo> loadExtraIfoByPG(String pgId);
 	public SelectResult<Order> loadOrdersByIds(List<String> ids);
 	public SelectResult<Order> loadOrderFull(String id);
+	public SqlResult addReprintPGroups(List<PrintGroup> items);
+	public SelectResult<Order> loadOrderVsChilds(String id);
 
 }
