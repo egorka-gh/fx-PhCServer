@@ -18,17 +18,17 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 	}
 	
 	@Override
-	public SqlResult extraStateStart(String orderId, String subId, int techPoint){
-		//PROCEDURE phcdata.extraStateStart(IN pOrder VARCHAR(50), IN pSubOrder VARCHAR(50), IN pTechPoint INT)
+	public SqlResult extraStateStart(String orderId, String subId, int state){
+		//PROCEDURE phcdata.extraStateStart(IN pOrder VARCHAR(50), IN pSubOrder VARCHAR(50), IN pState INT)
 		String sql= "{CALL phcdata.extraStateStart(?,?,?)}";
-		return runCall(sql, orderId, subId, techPoint);
+		return runCall(sql, orderId, subId, state);
 	}
 
 	@Override
-	public SqlResult extraStateSet(String orderId, String subId, int techPoint){
-		//PROCEDURE phcdata.extraStateSet(IN pOrder VARCHAR(50), IN pSubOrder VARCHAR(50), IN pTechPoint INT)
+	public SqlResult extraStateSet(String orderId, String subId, int state){
+		//PROCEDURE phcdata.extraStateSet(IN pOrder VARCHAR(50), IN pSubOrder VARCHAR(50), IN pState INT)
 		String sql= "{CALL phcdata.extraStateSet(?,?,?)}";
-		return runCall(sql, orderId, subId, techPoint);
+		return runCall(sql, orderId, subId, state);
 	}
 
 	@Override
@@ -43,6 +43,13 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 		//PROCEDURE phcdata.extraStateProlong(IN pOrder VARCHAR(50), IN pSubOrder VARCHAR(50), IN pState int, IN pComment VARCHAR(250))
 		String sql= "{CALL phcdata.extraStateReset(?,?,?,?)}";
 		return runCall(sql, orderId, subId, state, comment);
+	}
+
+	@Override
+	public SqlResult extraStateSetByPGroup(String pgId, int state){
+		//PROCEDURE phcdata.extraStateSetByPGroup(IN pPrintGroup VARCHAR(50), IN pState INT)
+		String sql= "{CALL phcdata.extraStateSetByPGroup(?,?)}";
+		return runCall(sql, pgId, state);
 	}
 
 }

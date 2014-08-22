@@ -11,8 +11,9 @@ public interface OrderStateService {
 
 	public SelectResult<OrderState> loadAll();
 
-	public SqlResult extraStateStart(String orderId, String subId, int techPoint);
-	public SqlResult extraStateSet(String orderId, String subId, int techPoint);
+	public SqlResult extraStateStart(String orderId, String subId, int state);
+	public SqlResult extraStateSet(String orderId, String subId, int state);
 	public SqlResult extraStateReset(String orderId, String subId, int state);
 	public SqlResult extraStateProlong(String orderId, String subId, int state, String comment);
+	public SqlResult extraStateSetByPGroup(String pgId, int state);
 }

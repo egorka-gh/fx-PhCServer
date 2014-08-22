@@ -23,5 +23,6 @@ public interface TechPickerService {
 	public SelectResult<LayerSequence> persistSequence(List<LayerSequence> items, int layerset, int layerGroup);
 	//public SelectResult<Endpaper> loadEndpapers();
 	//public SqlResult persistEndpapers(List<Endpaper> items);
+	public SelectResult<Integer> bookNumByPGroup(String pgId);
 
 }

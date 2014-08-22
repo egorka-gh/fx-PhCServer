@@ -9,6 +9,7 @@ import com.photodispatcher.model.mysql.entities.Layer;
 import com.photodispatcher.model.mysql.entities.LayerSequence;
 import com.photodispatcher.model.mysql.entities.Layerset;
 import com.photodispatcher.model.mysql.entities.LayersetGroup;
+import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 
@@ -155,6 +156,21 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 			sRes.cloneError(result);
 		}
 		return sRes;
+	}
+
+	@Override
+	public SelectResult<Integer> bookNumByPGroup(String pgId){
+		String sql="SELECT * FROM phcdata.print_group WHERE id=?";
+		SelectResult<PrintGroup> pgRes= runSelect(PrintGroup.class, sql, pgId);
+
+		SelectResult<Integer> result= new SelectResult<Integer>();
+		result.setData(new ArrayList<Integer>());
+		if(pgRes.isComplete() && pgRes.getData()!=null && !pgRes.getData().isEmpty()){
+			result.getData().add(pgRes.getData().get(0).getBook_num());
+		}else{
+			result.getData().add(-1);
+		}
+		return result;
 	}
 
 	/*

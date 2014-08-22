@@ -341,17 +341,12 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			}
 		}
 		
-		StateLog log = new StateLog();
-		log.setOrder_id(order.getId());
-		log.setState(order.getState());
-		log.setState_date(order.getState_date());
 
 		result=runUpdate(order);
 		if(result.isComplete()) result=runInsertBatch(subOrders);
 		if(result.isComplete()) result=runInsertBatch(einfos);
 		if(result.isComplete()) result=runInsertBatch(printGroups);
 		if(result.isComplete()) result=runInsertBatch(pgFiles);
-		if(result.isComplete()) logState(log);
 		
 		return result;
 	}
@@ -363,52 +358,43 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		
 		String order_id="";
 		Set<String> subIds= new HashSet<String>();
-		StateLog log;
+		Set<String> parentIds= new HashSet<String>();
 		List<PrintGroupFile> pgFiles = new ArrayList<PrintGroupFile>();
-		List<StateLog> logs = new ArrayList<StateLog>();
 		Date dt =new Date();
 		for (PrintGroup pg : items){
 			order_id=pg.getOrder_id();
 			if(pg.getSub_id()!=null && pg.getSub_id().length()>0) subIds.add(pg.getSub_id());
-			log = new StateLog();
-			log.setOrder_id(order_id);
-			log.setSub_id(pg.getSub_id());
-			log.setPg_id(pg.getId());
-			log.setState(pg.getState());
-			log.setState_date(pg.getState_date());
-			log.setComment("Перепечать");
-			logs.add(log);
+			if(pg.getReprint_id()!=null && pg.getReprint_id().length()>0) parentIds.add(pg.getReprint_id());
 			if(pg.getFiles()!=null){
 				for(PrintGroupFile pgFile : pg.getFiles()) pgFiles.add(pgFile);
 			}
 		}
-		log = new StateLog();
-		log.setOrder_id(order_id);
-		log.setState(210);
-		log.setState_date(dt);
-		log.setComment("Перепечать");
-		logs.add(log);
-		for(String subId : subIds){
-			log = new StateLog();
-			log.setOrder_id(order_id);
-			log.setSub_id(subId);
-			log.setState(210);
-			log.setState_date(dt);
-			log.setComment("Перепечать");
-			logs.add(log);
-		}
 		
 		if(result.isComplete()) result=runInsertBatch(items);
 		if(result.isComplete()) result=runInsertBatch(pgFiles);
-		if(result.isComplete()) result=runInsertBatch(logs);
 		if(result.isComplete()){
+			//set order state
 			String sql="UPDATE phcdata.orders SET state = ?, state_date = ?, reported_state=0 WHERE id = ? AND state > ?";
 			result=runDML(sql,210,dt,order_id,210);
+			//reset extra
+			sql="UPDATE phcdata.order_extra_state SET state_date=NULL WHERE id=? AND sub_id='' AND state IN (210,250)";
+			result=runDML(sql,order_id);
 		}
 		if(result.isComplete()){
+			//set suborders state
 			for(String subId : subIds){
 				String sql="UPDATE phcdata.suborders SET state = ?, state_date = ? WHERE order_id = ? AND sub_id = ?";
 				result=runDML(sql,210,dt,order_id,subId);
+				//reset extra
+				sql="UPDATE phcdata.order_extra_state SET state_date=NULL WHERE id=? AND sub_id=? AND state IN (210,250)";
+				result=runDML(sql, order_id, subId);
+			}
+		}
+		if(result.isComplete()){
+			//set parent pg state
+			for(String subId : parentIds){
+				String sql="UPDATE phcdata.print_group SET state = ?, state_date = ? WHERE id = ?";
+				result=runDML(sql,251,dt,subId);
 			}
 		}
 		return result;

@@ -11,6 +11,7 @@ import com.photodispatcher.model.mysql.entities.LabDevice;
 import com.photodispatcher.model.mysql.entities.LabPrintCode;
 import com.photodispatcher.model.mysql.entities.LabRoll;
 import com.photodispatcher.model.mysql.entities.LabTimetable;
+import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 
@@ -233,4 +234,14 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 		if(labRes.getItem()!=null) result.setData(labRes.getItem().getDevices());
 		return result;
 	}
+
+	@Override
+	public SelectResult<PrintGroup> getLastPGroupByTPoint(int techPontId){
+		String sql="SELECT pg.* FROM phcdata.tech_log tl INNER JOIN phcdata.print_group pg ON pg.id = tl.print_group" +
+					" WHERE tl.src_id = ? AND tl.log_date ="+
+						" (SELECT MAX(tl.log_date) FROM phcdata.tech_log tl1 WHERE tl1.src_id = ?)";
+		return runSelect(PrintGroup.class, sql, techPontId, techPontId);
+	}
+
+	
 }

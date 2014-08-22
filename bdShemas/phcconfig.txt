@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.233.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 14.08.2014 15:48:52
+-- Дата скрипта: 22.08.2014 18:47:28
 -- Версия сервера: 5.1.62-community
 -- Версия клиента: 4.1
 --
@@ -148,7 +148,7 @@ CREATE TABLE order_state (
   PRIMARY KEY (id)
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 303
+AVG_ROW_LENGTH = 297
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 

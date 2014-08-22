@@ -8,6 +8,7 @@ import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.Lab;
 import com.photodispatcher.model.mysql.entities.LabDevice;
 import com.photodispatcher.model.mysql.entities.LabPrintCode;
+import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 
@@ -21,4 +22,5 @@ public interface LabService {
 	public DmlResult<Lab> persistLab(Lab lab);
 	public DmlResult<LabDevice> addDevice(LabDevice device);
 	public SelectResult<LabDevice> delDevice(int deviceId, int sourceId);
+	public SelectResult<PrintGroup> getLastPGroupByTPoint(int techPontId);
 }
