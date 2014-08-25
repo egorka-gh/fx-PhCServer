@@ -312,11 +312,6 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	@Override
-	public SqlResult logState(StateLog item){
-		return runInsert(item);
-	}
-
-	@Override
 	public SqlResult fillUpOrder(Order order){
 		SqlResult result= new SqlResult();
 		List<OrderExtraInfo> einfos = new ArrayList<OrderExtraInfo>();

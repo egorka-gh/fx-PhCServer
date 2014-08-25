@@ -12,7 +12,6 @@ import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.Source;
 import com.photodispatcher.model.mysql.entities.SqlResult;
-import com.photodispatcher.model.mysql.entities.StateLog;
 
 @RemoteDestination(id="orderService", source="orderService")
 public interface OrderService {
@@ -28,7 +27,6 @@ public interface OrderService {
 	public SqlResult cancelOrders(String[] ids);
 	public SelectResult<Order> loadOrderBySrcCode(String code, String id);
 	public SqlResult fillUpOrder(Order order);
-	public SqlResult logState(StateLog item);
 	public SelectResult<OrderExtraInfo> loadExtraIfoByPG(String pgId);
 	public SelectResult<Order> loadOrdersByIds(List<String> ids);
 	public SelectResult<Order> loadOrderFull(String id);

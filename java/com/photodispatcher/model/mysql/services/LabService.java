@@ -23,4 +23,5 @@ public interface LabService {
 	public DmlResult<LabDevice> addDevice(LabDevice device);
 	public SelectResult<LabDevice> delDevice(int deviceId, int sourceId);
 	public SelectResult<PrintGroup> getLastPGroupByTPoint(int techPontId);
+	public SelectResult<Lab> loadList();
 }

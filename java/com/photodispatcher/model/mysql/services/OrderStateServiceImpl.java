@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import com.photodispatcher.model.mysql.entities.OrderState;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
+import com.photodispatcher.model.mysql.entities.StateLog;
 
 @Service("orderStateService")
 public class OrderStateServiceImpl extends AbstractDAO implements OrderStateService {
@@ -17,6 +18,18 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 		return result;
 	}
 	
+	@Override
+	public SqlResult logState(StateLog item){
+		return runInsert(item);
+	}
+
+	@Override
+	public SqlResult logStateByPGroup(String pgId, int state, String comment){
+		//PROCEDURE phcdata.logStateByPg(IN pPgId VARCHAR(50), IN pSate int, IN pMsg VARCHAR(250))
+		String sql= "{CALL phcdata.logStateByPg(?,?,?)}";
+		return runCall(sql, pgId, state, comment.substring(0, Math.max(250, comment.length())));
+	}
+
 	@Override
 	public SqlResult extraStateStart(String orderId, String subId, int state){
 		//PROCEDURE phcdata.extraStateStart(IN pOrder VARCHAR(50), IN pSubOrder VARCHAR(50), IN pState INT)
@@ -50,6 +63,37 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 		//PROCEDURE phcdata.extraStateSetByPGroup(IN pPrintGroup VARCHAR(50), IN pState INT)
 		String sql= "{CALL phcdata.extraStateSetByPGroup(?,?)}";
 		return runCall(sql, pgId, state);
+	}
+
+	@Override
+	public SqlResult printPost(String pgId, int lab){
+		//PROCEDURE phcdata.printStateStart(IN pPgroupId VARCHAR(50), IN lab int)
+		String sql= "{CALL phcdata.printStateStart(?,?)}";
+		return runCall(sql, pgId, lab);
+	}
+
+	@Override
+	public SqlResult printEndManual(String[] pgIds){
+		SqlResult result= new SqlResult();
+		//PROCEDURE phcdata.printStateEnd(IN pPgroupId VARCHAR(50))
+		String sql= "{CALL phcdata.printStateEnd(?)}";
+		for (String pgId:pgIds){
+			result=runCall(sql, pgId);
+			if(!result.isComplete()) return result;
+		}
+		return result;
+	}
+
+	@Override
+	public SqlResult printCancel(String[] pgIds){
+		SqlResult result= new SqlResult();
+		//PROCEDURE phcdata.printStateCancel(IN pPgroupId VARCHAR(50))
+		String sql= "{CALL phcdata.printStateCancel(?)}";
+		for (String pgId:pgIds){
+			result=runCall(sql, pgId);
+			if(!result.isComplete()) return result;
+		}
+		return result;
 	}
 
 }

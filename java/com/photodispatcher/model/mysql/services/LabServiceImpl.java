@@ -69,6 +69,16 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	}
 
 	@Override
+	public SelectResult<Lab> loadList(){
+		String sql="SELECT s.*, st.name src_type_name"+
+					" FROM phcconfig.lab s" +
+					" INNER JOIN phcconfig.src_type st ON st.id = s.src_type"+
+					" ORDER BY s.name";
+		
+		return runSelect(Lab.class, sql);
+	}
+
+	@Override
 	public SelectResult<Lab> loadAll(boolean forEdit){
 		SelectResult<Lab> result;
 		String sql="SELECT s.*, st.name src_type_name"+

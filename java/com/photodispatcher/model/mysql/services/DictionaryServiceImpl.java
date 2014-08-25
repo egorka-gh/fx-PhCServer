@@ -11,7 +11,9 @@ import com.photodispatcher.model.mysql.entities.AttrType;
 import com.photodispatcher.model.mysql.entities.FieldValue;
 import com.photodispatcher.model.mysql.entities.LayersetSynonym;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SourceProperty;
 import com.photodispatcher.model.mysql.entities.SqlResult;
+import com.photodispatcher.model.mysql.entities.SubordersTemplate;
 
 @Service("dictionaryService")
 public class DictionaryServiceImpl extends AbstractDAO implements DictionaryService {
@@ -179,6 +181,21 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 				" ORDER BY jm.src_type, at.field";
 		result=runSelect(AttrJsonMap.class, sql, family);
 		return result;
+	}
+
+	@Override
+	public SelectResult<SourceProperty> loadSourceProperties(){
+		String sql="SELECT stpv.*, stp.name"+
+					" FROM phcconfig.src_type_prop_val stpv"+
+					" INNER JOIN phcconfig.src_type_prop stp ON stpv.src_type_prop = stp.id"+
+					" ORDER BY stpv.src_type, stp.name";
+		return runSelect(SourceProperty.class, sql);
+	}
+
+	@Override
+	public SelectResult<SubordersTemplate> loadSubordersTemplate(){
+		String sql="SELECT * FROM phcconfig.suborders_template";
+		return runSelect(SubordersTemplate.class, sql);
 	}
 
 }

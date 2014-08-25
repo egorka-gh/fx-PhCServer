@@ -9,7 +9,9 @@ import com.photodispatcher.model.mysql.entities.AttrType;
 import com.photodispatcher.model.mysql.entities.FieldValue;
 import com.photodispatcher.model.mysql.entities.LayersetSynonym;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SourceProperty;
 import com.photodispatcher.model.mysql.entities.SqlResult;
+import com.photodispatcher.model.mysql.entities.SubordersTemplate;
 
 @RemoteDestination(id="dictionaryService", source="dictionaryService")
 public interface DictionaryService {
@@ -30,5 +32,7 @@ public interface DictionaryService {
 	public SelectResult<LayersetSynonym> loadLayersetSynonyms(int itemId);
 	public SqlResult persistsLayersetSynonyms(List<LayersetSynonym> targetList);
 	public SelectResult<AttrJsonMap> getOrderJsonAttr(int family);
+	public SelectResult<SourceProperty> loadSourceProperties();
+	public SelectResult<SubordersTemplate> loadSubordersTemplate();
 
 }
