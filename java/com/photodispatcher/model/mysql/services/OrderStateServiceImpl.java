@@ -1,5 +1,7 @@
 package com.photodispatcher.model.mysql.services;
 
+import java.util.Date;
+
 import org.springframework.stereotype.Service;
 
 import com.photodispatcher.model.mysql.entities.OrderState;
@@ -31,6 +33,17 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 	}
 
 	@Override
+	public SelectResult<StateLog> loadStateLogs(Date from, boolean onlyErrors){
+		String sql="SELECT sl.*, os.name state_name"+
+					" FROM phcdata.state_log sl"+
+					 " INNER JOIN phcconfig.order_state os ON sl.state = os.id"+
+					" WHERE sl.state_date BETWEEN DATE(?) AND DATE_ADD(DATE(?), INTERVAL 1 DAY)";
+		if (onlyErrors) sql+=" AND sl.state < 0";
+		return runSelect(StateLog.class, sql, from, from);
+	}
+
+	/*
+	@Override
 	public SqlResult extraStateStart(String orderId, String subId, int state){
 		//PROCEDURE phcdata.extraStateStart(IN pOrder VARCHAR(50), IN pSubOrder VARCHAR(50), IN pState INT)
 		String sql= "{CALL phcdata.extraStateStart(?,?,?)}";
@@ -45,6 +58,14 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 	}
 
 	@Override
+	public SqlResult extraStateSetByPGroup(String pgId, int state){
+		//PROCEDURE phcdata.extraStateSetByPGroup(IN pPrintGroup VARCHAR(50), IN pState INT)
+		String sql= "{CALL phcdata.extraStateSetByPGroup(?,?)}";
+		return runCall(sql, pgId, state);
+	}
+	*/
+
+	@Override
 	public SqlResult extraStateReset(String orderId, String subId, int state){
 		//PROCEDURE phcdata.extraStateReset(IN pOrder VARCHAR(50), IN pSubOrder VARCHAR(50), IN pState int)
 		String sql= "{CALL phcdata.extraStateReset(?,?,?)}";
@@ -56,13 +77,6 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 		//PROCEDURE phcdata.extraStateProlong(IN pOrder VARCHAR(50), IN pSubOrder VARCHAR(50), IN pState int, IN pComment VARCHAR(250))
 		String sql= "{CALL phcdata.extraStateReset(?,?,?,?)}";
 		return runCall(sql, orderId, subId, state, comment);
-	}
-
-	@Override
-	public SqlResult extraStateSetByPGroup(String pgId, int state){
-		//PROCEDURE phcdata.extraStateSetByPGroup(IN pPrintGroup VARCHAR(50), IN pState INT)
-		String sql= "{CALL phcdata.extraStateSetByPGroup(?,?)}";
-		return runCall(sql, pgId, state);
 	}
 
 	@Override

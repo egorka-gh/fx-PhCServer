@@ -18,6 +18,8 @@ public class TechLog extends AbstractEntity {
     private int id;
     @Column(name="order_id")
     private String order_id="";
+    @Column(name="sub_id")
+    private String sub_id="";
     @Column(name="print_group")
     private String print_group="";
     @Column(name="sheet")
@@ -35,6 +37,12 @@ public class TechLog extends AbstractEntity {
     private int tech_state;
     @Column(name="tech_state_name", insertable=false, updatable=false)
     private String tech_state_name;
+    /*
+    @Column(name="books", insertable=false, updatable=false)
+    private int books;
+    @Column(name="sheets", insertable=false, updatable=false)
+    private int sheets;
+    */
     
 	public int getId() {
 		return id;
@@ -90,5 +98,25 @@ public class TechLog extends AbstractEntity {
 	public void setTech_state_name(String tech_state_name) {
 		this.tech_state_name = tech_state_name;
 	}
+	public String getSub_id() {
+		return sub_id;
+	}
+	public void setSub_id(String sub_id) {
+		this.sub_id = sub_id;
+	}
+	/*
+	public int getBooks() {
+		return books;
+	}
+	public void setBooks(int books) {
+		this.books = books;
+	}
+	public int getSheets() {
+		return sheets;
+	}
+	public void setSheets(int sheets) {
+		this.sheets = sheets;
+	}
+	*/
 
 }
