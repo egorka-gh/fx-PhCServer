@@ -9,6 +9,7 @@ import com.photodispatcher.model.mysql.entities.Layer;
 import com.photodispatcher.model.mysql.entities.LayerSequence;
 import com.photodispatcher.model.mysql.entities.Layerset;
 import com.photodispatcher.model.mysql.entities.LayersetGroup;
+import com.photodispatcher.model.mysql.entities.LayersetSynonym;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
@@ -40,14 +41,14 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 	}
 
 	@Override
-	public SelectResult<Layerset> loadLayersets(int type){
+	public SelectResult<Layerset> loadLayersets(int type, int techGroup){
 		SelectResult<Layerset> result;
 		String sql="SELECT s.*, bt.name book_type_name"+
 					" FROM phcconfig.layerset s"+
 					" INNER JOIN phcconfig.book_type bt ON bt.id=s.book_type"+
-					" WHERE s.subset_type=?"+
+					" WHERE s.subset_type=? AND ? IN (-1, s.layerset_group)"+
 				" ORDER BY s.passover DESC, s.name";
-		result= runSelect(Layerset.class, sql, type);
+		result= runSelect(Layerset.class, sql, type, techGroup);
 		if (result.isComplete()){
 			for(Layerset ls : result.getData()){
 				SelectResult<LayerSequence> subRes=loadSequence(ls.getId());
@@ -70,7 +71,20 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 					ls.setSequenceStart(seqStart);
 				}else{
 					result.cloneError(subRes);
+					break;
 				}
+				//load synonyms
+				List<String> synonyms= new ArrayList<String>();
+				synonyms.add(ls.getName());
+				SelectResult<LayersetSynonym> synRes=loadLayersetSynonyms(ls.getId());
+				if(!synRes.isComplete()){
+					result.cloneError(synRes);
+					break;
+				}
+				if(synRes.getData()!=null && !synRes.getData().isEmpty()){
+					for(LayersetSynonym syn:synRes.getData()) synonyms.add(syn.getSynonym());
+				}
+				ls.setSynonyms(synonyms);
 			}
 			
 		}
@@ -82,6 +96,44 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 		return runPersistBatch(items);
 	}
 
+	@Override
+	public SelectResult<LayersetSynonym> loadLayersetSynonyms(int itemId){
+		String sql="SELECT s.* FROM phcconfig.layerset_synonym s";
+		if(itemId!=-1){
+			sql+=" WHERE s.item_id=?";
+		}
+		sql+=" ORDER BY s.item_id, s.synonym";
+		if(itemId!=-1){
+			return runSelect(LayersetSynonym.class, sql, itemId);
+		}else{
+			return runSelect(LayersetSynonym.class, sql);
+		}
+	}
+
+	@Override
+	public SqlResult persistsLayersetSynonyms(List<LayersetSynonym> targetList){
+		String delId=""; 
+		List<LayersetSynonym> persistList=new ArrayList<LayersetSynonym>();
+		for(LayersetSynonym item : targetList){
+			if(item.getSynonym()==null || item.getSynonym().length()==0){
+				if(item.getPersistState()!=0){
+					if(delId.length()>0) delId+=",";
+					delId+=Integer.toString(item.getId());
+				}
+			}else{
+				persistList.add(item);
+			}
+		}
+
+		SqlResult result=runPersistBatch(persistList);
+		if(result.isComplete() && delId.length()>0){
+			String sql="DELETE FROM phcconfig.layerset_synonym WHERE id IN("+delId+")";
+			result=runDML(sql);
+		}
+		return result;
+	}
+
+	
 	@Override
 	public SelectResult<Layer> loadLayers(){
 		SelectResult<Layer> result;

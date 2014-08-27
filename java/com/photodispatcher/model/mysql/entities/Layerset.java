@@ -46,6 +46,8 @@ public class Layerset extends AbstractEntity {
     @Transient
     private List<LayerSequence> sequenceEnd;
     @Transient
+    private List<String> synonyms;
+    @Transient
     private boolean usesEndPaper;
     
 	public int getId() {
@@ -131,6 +133,12 @@ public class Layerset extends AbstractEntity {
 	}
 	public void setUsesEndPaper(boolean usesEndPaper) {
 		this.usesEndPaper = usesEndPaper;
+	}
+	public List<String> getSynonyms() {
+		return synonyms;
+	}
+	public void setSynonyms(List<String> synonyms) {
+		this.synonyms = synonyms;
 	}
 
 }

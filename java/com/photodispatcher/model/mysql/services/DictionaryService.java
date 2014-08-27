@@ -29,8 +29,6 @@ public interface DictionaryService {
 	public SelectResult<FieldValue> getBookSynonimTypeValueList();
 	public SelectResult<FieldValue> getFieldValueSynonims();
 	public SelectResult<FieldValue> getTechTypeValueList();
-	public SelectResult<LayersetSynonym> loadLayersetSynonyms(int itemId);
-	public SqlResult persistsLayersetSynonyms(List<LayersetSynonym> targetList);
 	public SelectResult<AttrJsonMap> getOrderJsonAttr(int family);
 	public SelectResult<SourceProperty> loadSourceProperties();
 	public SelectResult<SubordersTemplate> loadSubordersTemplate();
