@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.233.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 22.08.2014 18:47:57
+-- Дата скрипта: 27.08.2014 18:19:25
 -- Версия сервера: 5.1.62-community
 -- Версия клиента: 4.1
 --
@@ -50,7 +50,7 @@ CREATE TABLE order_extra_state (
   PRIMARY KEY (id, sub_id, state)
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 259
+AVG_ROW_LENGTH = 174
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -71,7 +71,7 @@ CREATE TABLE orders (
   PRIMARY KEY (id)
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 160
+AVG_ROW_LENGTH = 163
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -84,6 +84,22 @@ CREATE TABLE sources_sync (
 )
 ENGINE = INNODB
 AVG_ROW_LENGTH = 2048
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE tech_unit (
+  order_id varchar(50) NOT NULL DEFAULT '',
+  sub_id varchar(50) NOT NULL DEFAULT '',
+  pg_id varchar(50) NOT NULL DEFAULT '',
+  state int(5) NOT NULL,
+  start_date datetime DEFAULT NULL,
+  end_date datetime DEFAULT NULL,
+  books int(5) DEFAULT 0,
+  sheets int(5) DEFAULT 0,
+  done int(5) DEFAULT 0,
+  PRIMARY KEY (order_id, sub_id, pg_id, state)
+)
+ENGINE = INNODB
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -158,7 +174,7 @@ CREATE TABLE state_log (
 )
 ENGINE = INNODB
 AUTO_INCREMENT = 1477184
-AVG_ROW_LENGTH = 66
+AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -215,7 +231,7 @@ CREATE TABLE print_group_file (
 )
 ENGINE = INNODB
 AUTO_INCREMENT = 2081179
-AVG_ROW_LENGTH = 84
+AVG_ROW_LENGTH = 85
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -295,31 +311,34 @@ END
 $$
 
 CREATE DEFINER = 'root'@'localhost'
-PROCEDURE extraStateSet (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int)
+PROCEDURE extraStateSet (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int, IN pDate datetime)
 MODIFIES SQL DATA
 BEGIN
   DECLARE vMinExtraState int;
   DECLARE vBookPart int;
-  DECLARE vNow datetime DEFAULT NOW();
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET vBookPart = -1;
+
+  IF pDate IS NULL THEN
+    SET pDate = NOW();
+  END IF;
 
   -- fix
   INSERT INTO order_extra_state
   (id, sub_id, state, start_date, state_date)
-    VALUES (pOrder, pSubOrder, pState, vNow, vNow)
-  ON DUPLICATE KEY UPDATE state_date = vNow;
+    VALUES (pOrder, pSubOrder, pState, pDate, pDate)
+  ON DUPLICATE KEY UPDATE state_date = pDate;
 
   IF pSubOrder = '' THEN
     -- set order state
     UPDATE orders o
     SET o.state = pState,
-        o.state_date = vNow
+        o.state_date = pDate
     WHERE o.id = pOrder;
   ELSE
     -- set suborder state
     UPDATE suborders s
     SET s.state = pState,
-        s.state_date = vNow
+        s.state_date = pDate
     WHERE s.order_id = pOrder
     AND s.sub_id = pSubOrder;
 
@@ -332,7 +351,7 @@ BEGIN
       -- start order
       INSERT IGNORE INTO order_extra_state
       (id, sub_id, state, start_date)
-        VALUES (pOrder, '', pState, vNow);
+        VALUES (pOrder, '', pState, pDate);
       -- forvard order extra state check suborders
       SELECT IFNULL(MIN(oes.state), 0) INTO vMinExtraState
       FROM suborders so
@@ -344,7 +363,7 @@ BEGIN
         -- set order extra state
         -- update IF started
         UPDATE order_extra_state
-        SET state_date = vNow
+        SET state_date = pDate
         WHERE id = pOrder
         AND sub_id = ''
         AND state = vMinExtraState
@@ -352,11 +371,11 @@ BEGIN
         -- insert if not exists
         INSERT IGNORE INTO order_extra_state
         (id, sub_id, state, start_date, state_date)
-          VALUES (pOrder, '', vMinExtraState, vNow, vNow);
+          VALUES (pOrder, '', vMinExtraState, pDate, pDate);
         -- set order state
         UPDATE orders o
         SET o.state = vMinExtraState,
-            o.state_date = vNow
+            o.state_date = pDate
         WHERE o.id = pOrder
         AND o.state > 209
         AND o.state != vMinExtraState; -- 210 > Print post
@@ -394,18 +413,33 @@ END
 $$
 
 CREATE DEFINER = 'root'@'localhost'
-PROCEDURE extraStateStart (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int)
+PROCEDURE extraStateStart (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int, IN pDate datetime)
 MODIFIES SQL DATA
 BEGIN
+  IF pDate IS NULL THEN
+    SET pDate = NOW();
+  END IF;
   INSERT IGNORE INTO order_extra_state
   (id, sub_id, state, start_date)
-    VALUES (pOrder, pSubOrder, pState, NOW());
+    VALUES (pOrder, pSubOrder, pState, pDate);
   IF pSubOrder != '' THEN
     -- start order
     INSERT IGNORE INTO order_extra_state
     (id, sub_id, state, start_date)
-      VALUES (pOrder, '', pState, NOW());
+      VALUES (pOrder, '', pState, pDate);
   END IF;
+END
+$$
+
+CREATE DEFINER = 'root'@'localhost'
+PROCEDURE logStateByPg (IN pPgId varchar(50), IN pSate int, IN pMsg varchar(250))
+MODIFIES SQL DATA
+BEGIN
+  INSERT INTO state_log
+  (order_id, sub_id, pg_id, state, state_date, comment)
+    SELECT pg.order_id, pg.sub_id, pg.id, pSate, NOW(), pMsg
+    FROM print_group pg
+    WHERE pg.id = pPgId;
 END
 $$
 
@@ -455,6 +489,21 @@ BEGIN
   INSERT INTO state_log
   (order_id, state, state_date, comment)
     VALUES (pId, 100, vDate, 'reset');
+END
+$$
+
+CREATE DEFINER = 'root'@'localhost'
+PROCEDURE printMarkInPrint (IN pPgroupId varchar(50))
+MODIFIES SQL DATA
+BEGIN
+  DECLARE vPgId varchar(50);
+
+  SET vPgId = phcdata.printPg2Reprint(pPgroupId);
+  UPDATE print_group pg
+  SET pg.state = 255,
+      pg.state_date = NOW()
+  WHERE pg.id = vPgId
+  AND pg.state != 255;
 END
 $$
 
@@ -543,10 +592,10 @@ BEGIN
     AND pg.sub_id = vSubId;
     IF vMinState >= 300 THEN
       -- all pg printed end order/suborder
-      CALL extraStateSet(vOrderId, vSubId, 300);
+      CALL extraStateSet(vOrderId, vSubId, 300, NOW());
     ELSE
       -- start order/suborder, 4 manual set printed
-      CALL extraStateStart(vOrderId, vSubId, 300);
+      CALL extraStateStart(vOrderId, vSubId, 300, NOW());
     END IF;
 
   END IF;
@@ -568,7 +617,8 @@ BEGIN
   SET pg.state = 250,
       pg.state_date = NOW(),
       pg.destination = lab
-  WHERE pg.id = pPgroupId;
+  WHERE pg.id = pPgroupId
+  AND pg.state != 250;
 
   SELECT pg.order_id, pg.sub_id INTO vOrderId, vSubId
   FROM print_group pg
@@ -597,10 +647,10 @@ BEGIN
     AND pg.sub_id = vSubId;
     IF vMinState >= 250 THEN
       -- all pg started end order/suborder
-      CALL extraStateSet(vOrderId, vSubId, 210);
+      CALL extraStateSet(vOrderId, vSubId, 210, NOW());
     ELSE
       -- start order/suborder
-      CALL extraStateStart(vOrderId, vSubId, 210);
+      CALL extraStateStart(vOrderId, vSubId, 210, NOW());
     END IF;
 
   END IF;
@@ -815,6 +865,135 @@ BEGIN
       VALUES (pSourceId, vSync, NOW(), 1)
     ON DUPLICATE KEY UPDATE sync = vSync, sync_date = NOW(), sync_state = 1;
   COMMIT;
+END
+$$
+
+CREATE DEFINER = 'root'@'localhost'
+PROCEDURE techLogPg (IN pPgroup varchar(50), IN pSheet int, IN pTechPoint int, IN pDate datetime)
+MODIFIES SQL DATA
+BEGIN
+  DECLARE vOrderId varchar(50);
+  DECLARE vSubId varchar(50);
+  DECLARE vState int;
+  DECLARE vBooks int;
+  DECLARE vSheets int;
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET vOrderId = NULL;
+
+  SELECT pg.order_id, pg.sub_id, pg.book_num, pg.sheet_num INTO vOrderId, vSubId, vBooks, vSheets
+  FROM print_group pg
+  WHERE pg.id = pPgroup;
+
+  SELECT tp.tech_type INTO vState
+  FROM phcconfig.tech_point tp
+  WHERE tp.id = pTechPoint;
+
+  IF vOrderId IS NOT NULL THEN
+    IF vState <= 300 THEN
+      -- may be reprint
+      SET pPgroup = phcdata.printPg2Reprint(pPgroup);
+    END IF;
+    -- log
+    INSERT INTO tech_log
+    (order_id, sub_id, print_group, sheet, src_id, log_date)
+      VALUES (vOrderId, vSubId, pPgroup, pSheet, pTechPoint, pDate);
+    -- check
+    CALL techUnitCalc(vOrderId, vSubId, pPgroup, vState, vBooks, vSheets);
+  END IF;
+
+END
+$$
+
+CREATE DEFINER = 'root'@'localhost'
+PROCEDURE techUnitCalc (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pPgroup varchar(50), IN pState int, IN pBooks int, IN pSheets int)
+MODIFIES SQL DATA
+BEGIN
+  DECLARE vDone int;
+  DECLARE vStart datetime;
+  DECLARE vEnd datetime;
+  DECLARE vCount int;
+  DECLARE vMinState int;
+
+
+  IF pPgroup IS NULL THEN
+    SET pPgroup = '';
+  END IF;
+  IF pSubOrder IS NULL THEN
+    SET pSubOrder = '';
+  END IF;
+
+  SELECT IFNULL(COUNT(DISTINCT tl.sheet), 0), IFNULL(MIN(tl.log_date), NOW()), IFNULL(MAX(tl.log_date), NOW()) INTO vDone, vStart, vEnd
+  FROM tech_log tl
+    INNER JOIN phcconfig.tech_point tp ON tl.src_id = tp.id
+  WHERE tl.order_id = pOrder
+  AND tl.sub_id = pSubOrder
+  AND tl.print_group = pPgroup
+  AND tp.tech_type = pState;
+  /*
+  INSERT INTO tech_unit (order_id, sub_id, pg_id, state, start_date, end_date, books, sheets, done)
+                    VALUES( pOrder, pSubOrder, pPgroup, pState, vStart, vEnd, pBooks, pSheets, vDone)
+    ON DUPLICATE KEY UPDATE start_date=vStart, end_date=vEnd, done=vDone;
+
+  SELECT ROW_COUNT() INTO vCount;
+  IF vCount =1 THEN
+    -- inserted
+    CALL extraStateStart(pOrder, pSubOrder, pState, vStart);
+  END IF;
+  */
+
+  IF vDone = pBooks * pSheets
+    OR (pState = 320
+    AND vDone = pBooks * 2) THEN -- 320 - TECH_FOLDING (log first & end sheet per book)
+    -- complited
+    IF pPgroup != '' THEN
+      UPDATE print_group pg
+      SET pg.state = pState,
+          pg.state_date = vEnd
+      WHERE pg.id = pPrintGroup;
+    END IF;
+    IF pState = 300 THEN
+      -- print state, check pringroups
+      SELECT IFNULL(MIN(pg.state), 0) INTO vMinState
+      FROM print_group pg
+      WHERE pg.order_id = pOrder
+      AND pg.sub_id = pSubOrder;
+      IF vMinState >= 300 THEN
+        -- all pg printed end order/suborder
+        CALL extraStateSet(pOrder, pSubOrder, pState, vEnd);
+      ELSE
+        -- start
+        CALL extraStateStart(pOrder, pSubOrder, pState, vStart);
+      END IF;
+    ELSE
+      CALL extraStateSet(pOrder, pSubOrder, pState, vEnd);
+    END IF;
+  ELSE
+    -- start
+    CALL extraStateStart(pOrder, pSubOrder, pState, vStart);
+  END IF;
+
+END
+$$
+
+CREATE DEFINER = 'root'@'localhost'
+FUNCTION printPg2Reprint (pPgroupId varchar(50))
+RETURNS varchar(50) charset utf8
+READS SQL DATA
+BEGIN
+  DECLARE vPgId varchar(50);
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET vPgId = pPgroupId;
+
+  SELECT pg1.id INTO vPgId
+  FROM print_group pg
+    INNER JOIN print_group pg1 ON pg.order_id = pg1.order_id
+      AND pg.id = pg1.reprint_id
+      AND pg1.state < 300
+  WHERE pg.id = pPgroupId
+  AND pg.is_reprint = 0
+  LIMIT 1;
+
+
+  RETURN vPgId;
 END
 $$
 
