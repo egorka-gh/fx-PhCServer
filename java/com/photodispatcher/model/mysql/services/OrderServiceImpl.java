@@ -86,7 +86,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	@Override
 	public SelectResult<Order> loadOrder(String id){
 		SelectResult<Order> result;
-		String sql="SELECT o.*, s.name source_name, os.name state_name,"+
+		String sql="SELECT o.*, s.name source_name, s.code source_code, os.name state_name"+
 					" FROM phcdata.orders o"+
 					" INNER JOIN phcconfig.order_state os ON o.state = os.id"+
 					" INNER JOIN phcconfig.sources s ON o.source = s.id"+
@@ -104,6 +104,62 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		return result;
 	}
 
+	@Override
+	public SelectResult<SubOrder> loadSubOrderByPg(String pgId){
+		SelectResult<SubOrder> result;
+		String sql="SELECT pg.order_id, pg.sub_id, sr.name source_name, sr.code source_code,"+
+						" os.name state_name, IFNULL(s.state, o.state) state, IFNULL(s.state_date, o.state_date) state_date"+
+					" FROM phcdata.print_group pg"+
+					" INNER JOIN phcdata.orders o ON pg.order_id = o.id"+
+					" INNER JOIN phcconfig.sources sr ON o.source = sr.id"+
+					" LEFT OUTER JOIN phcdata.suborders s ON pg.sub_id = s.sub_id"+
+					" LEFT OUTER JOIN phcconfig.order_state os ON os.id= IFNULL(s.state, o.state)"+
+					" WHERE pg.id = ?";
+		result=runSelect(SubOrder.class,sql, pgId);
+		
+		if(result.isComplete() && !result.getData().isEmpty()){
+			SubOrder order=result.getData().get(0);
+			SelectResult<OrderExtraInfo> eir=loadExtraIfo(order.getOrder_id(),order.getSub_id());
+			if(eir.isComplete() && !eir.getData().isEmpty()){
+				order.setExtraInfo(eir.getData().get(0));
+			}else{
+				result.cloneError(eir);
+			}
+		}
+		return result;
+	}
+	@Override
+	public SelectResult<SubOrder> loadSubOrderByOrder(String orderId){
+		SelectResult<SubOrder> result;
+		String sql="SELECT o.id order_id, '' sub_id, sr.name source_name, sr.code source_code,"+
+					  " os.name state_name, o.state, o.state_date"+
+					" FROM phcdata.orders o"+ 
+					" INNER JOIN phcconfig.sources sr ON o.source = sr.id"+
+					" INNER JOIN phcconfig.order_state os ON os.id= o.state"+
+					" WHERE o.id LIKE ? AND NOT EXISTS(SELECT 1 FROM phcdata.suborders s WHERE s.order_id = o.id)"+
+					" UNION ALL"+
+					" SELECT s.order_id, s.sub_id, sr.name source_name, sr.code source_code,"+
+					   " os.name state_name, s.state, s.state_date"+
+					" FROM phcdata.suborders s"+
+					" INNER JOIN phcdata.orders o ON s.order_id = o.id"+
+					" INNER JOIN phcconfig.sources sr ON o.source = sr.id"+
+					" INNER JOIN phcconfig.order_state os ON os.id= s.state"+
+					" WHERE s.order_id LIKE ?";
+		result=runSelect(SubOrder.class,sql, orderId, orderId);
+		
+		if(result.isComplete() && !result.getData().isEmpty()){
+			SubOrder order=result.getData().get(0);
+			SelectResult<OrderExtraInfo> eir=loadExtraIfo(order.getOrder_id(),order.getSub_id());
+			if(eir.isComplete() && !eir.getData().isEmpty()){
+				order.setExtraInfo(eir.getData().get(0));
+			}else{
+				result.cloneError(eir);
+			}
+		}
+		return result;
+	}
+
+	
 	@Override
 	public SelectResult<Order> loadOrderVsChilds(String id){
 		SelectResult<Order> result=loadOrder(id);
@@ -239,7 +295,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	@Override
 	public SelectResult<Order> loadOrderBySrcCode(String code, String id){
 		SelectResult<Order> result;
-		String sql="SELECT o.*, s.name source_name, os.name state_name,"+
+		String sql="SELECT o.*, s.name source_name, os.name state_name"+
 					" FROM phcconfig.sources s"+
 					" INNER JOIN phcdata.orders o ON o.id= s.id || '_' || ?"+
 					" INNER JOIN phcconfig.order_state os ON o.state = os.id"+
@@ -274,7 +330,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		}
 		if(in.length()>0) inList.add(in.toString());
 		
-		String sql="SELECT o.*, s.name source_name, os.name state_name,"+
+		String sql="SELECT o.*, s.name source_name, os.name state_name"+
 					" FROM phcdata.orders o"+
 					" INNER JOIN phcconfig.order_state os ON o.state = os.id"+
 					" INNER JOIN phcconfig.sources s ON o.source = s.id"+

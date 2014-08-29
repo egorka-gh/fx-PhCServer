@@ -33,7 +33,17 @@ public class OrderExtraState extends AbstractEntity {
     private int books;
     @Column(name="books_done", updatable=false, insertable=false)
     private int books_done;
-    
+
+    //tech monitor 
+    @Column(name="state2", updatable=false, insertable=false)
+    private int state2;
+    @Column(name="start_date2", updatable=false, insertable=false)
+    private Date start_date2;
+    @Column(name="state_date2", updatable=false, insertable=false)
+    private Date state_date2;
+    @Column(name="state_name2", updatable=false, insertable=false)
+    private String state_name2;
+
     
 	public String getId() {
 		return id;
@@ -88,6 +98,30 @@ public class OrderExtraState extends AbstractEntity {
 	}
 	public void setBooks_done(int books_done) {
 		this.books_done = books_done;
+	}
+	public int getState2() {
+		return state2;
+	}
+	public void setState2(int state2) {
+		this.state2 = state2;
+	}
+	public Date getStart_date2() {
+		return start_date2;
+	}
+	public void setStart_date2(Date start_date2) {
+		this.start_date2 = start_date2;
+	}
+	public Date getState_date2() {
+		return state_date2;
+	}
+	public void setState_date2(Date state_date2) {
+		this.state_date2 = state_date2;
+	}
+	public String getState_name2() {
+		return state_name2;
+	}
+	public void setState_name2(String state_name2) {
+		this.state_name2 = state_name2;
 	}
 
 }

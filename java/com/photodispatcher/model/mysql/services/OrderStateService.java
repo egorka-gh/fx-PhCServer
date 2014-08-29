@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.granite.messaging.service.annotations.RemoteDestination;
 
+import com.photodispatcher.model.mysql.entities.OrderExtraState;
 import com.photodispatcher.model.mysql.entities.OrderState;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
@@ -26,5 +27,7 @@ public interface OrderStateService {
 	public SqlResult printEndManual(String[] pgIds);
 	public SqlResult printCancel(String[] pgIds);
 	public SelectResult<StateLog> loadStateLogs(Date from, boolean onlyErrors);
+	public SqlResult printGroupMarkInPrint(String pgId);
+	public SelectResult<OrderExtraState> loadMonitorEState(int startState, int techState, int endState);
 
 }

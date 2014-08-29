@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.springframework.stereotype.Service;
 
+import com.photodispatcher.model.mysql.entities.OrderExtraState;
 import com.photodispatcher.model.mysql.entities.OrderState;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
@@ -108,6 +109,28 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 			if(!result.isComplete()) return result;
 		}
 		return result;
+	}
+
+	@Override
+	public SqlResult printGroupMarkInPrint(String pgId){
+		//PROCEDURE phcdata.printMarkInPrint(IN pPgroupId VARCHAR(50))
+		String sql= "{CALL phcdata.printMarkInPrint(?)}";
+		return runCall(sql, pgId);
+	}
+
+	@Override
+	public SelectResult<OrderExtraState> loadMonitorEState(int startState, int techState, int endState){
+		String sql="SELECT es.id, es.state, es.state_date, os.name state_name,"+ 
+						" (CASE WHEN es2.id IS NULL THEN 1000 WHEN es2.state_date IS NULL THEN 900 ELSE es2.state END) state2,"+ 
+						" es2.start_date start_date2, es2.state_date state_date2, os2.name state_name2"+
+					" FROM phcdata.order_extra_state es"+
+					  " INNER JOIN phcconfig.order_state os ON os.id = es.state"+
+					  " LEFT OUTER JOIN phcdata.order_extra_state es2 ON es.id = es2.id AND es2.state = ?"+
+					  " LEFT OUTER JOIN phcconfig.order_state os2 ON os2.id = es2.state"+
+					  " LEFT OUTER JOIN phcdata.order_extra_state es3 ON es.id = es3.id AND es3.state = ?"+
+					" WHERE es.state = ? AND es3.state_date IS NULL"+
+					" ORDER BY (CASE WHEN es2.id IS NULL THEN 1000 WHEN es2.state_date IS NULL THEN 900 ELSE es2.state END), es.state_date";
+		return runSelect(OrderExtraState.class, sql, endState, techState, startState);
 	}
 
 }

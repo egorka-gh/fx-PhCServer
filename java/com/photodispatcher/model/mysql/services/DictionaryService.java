@@ -1,16 +1,12 @@
 package com.photodispatcher.model.mysql.services;
 
-import java.util.List;
-
 import org.granite.messaging.service.annotations.RemoteDestination;
 
 import com.photodispatcher.model.mysql.entities.AttrJsonMap;
 import com.photodispatcher.model.mysql.entities.AttrType;
 import com.photodispatcher.model.mysql.entities.FieldValue;
-import com.photodispatcher.model.mysql.entities.LayersetSynonym;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SourceProperty;
-import com.photodispatcher.model.mysql.entities.SqlResult;
 import com.photodispatcher.model.mysql.entities.SubordersTemplate;
 
 @RemoteDestination(id="dictionaryService", source="dictionaryService")

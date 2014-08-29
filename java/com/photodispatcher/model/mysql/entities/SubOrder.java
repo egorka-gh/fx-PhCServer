@@ -40,6 +40,13 @@ public class SubOrder extends AbstractEntity {
     @Column(name="proj_type_name", insertable=false, updatable=false)
     private String proj_type_name;
     
+    @Column(name="source_name", updatable=false, insertable=false)
+    private String source_name;
+    @Column(name="source_code", updatable=false, insertable=false)
+    private String source_code;
+    @Column(name="state_name", updatable=false, insertable=false)
+    private String state_name;
+
     @Transient
     private OrderExtraInfo extraInfo;
 
@@ -108,6 +115,24 @@ public class SubOrder extends AbstractEntity {
 	}
 	public void setExtraInfo(OrderExtraInfo extraInfo) {
 		this.extraInfo = extraInfo;
+	}
+	public String getSource_name() {
+		return source_name;
+	}
+	public void setSource_name(String source_name) {
+		this.source_name = source_name;
+	}
+	public String getSource_code() {
+		return source_code;
+	}
+	public void setSource_code(String source_code) {
+		this.source_code = source_code;
+	}
+	public String getState_name() {
+		return state_name;
+	}
+	public void setState_name(String state_name) {
+		this.state_name = state_name;
 	}
 
 }

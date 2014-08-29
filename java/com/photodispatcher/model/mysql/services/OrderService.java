@@ -12,6 +12,7 @@ import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.Source;
 import com.photodispatcher.model.mysql.entities.SqlResult;
+import com.photodispatcher.model.mysql.entities.SubOrder;
 
 @RemoteDestination(id="orderService", source="orderService")
 public interface OrderService {
@@ -32,5 +33,7 @@ public interface OrderService {
 	public SelectResult<Order> loadOrderFull(String id);
 	public SqlResult addReprintPGroups(List<PrintGroup> items);
 	public SelectResult<Order> loadOrderVsChilds(String id);
+	public SelectResult<SubOrder> loadSubOrderByPg(String pgId);
+	public SelectResult<SubOrder> loadSubOrderByOrder(String orderId);
 
 }
