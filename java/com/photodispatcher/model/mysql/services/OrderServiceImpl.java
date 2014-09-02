@@ -92,13 +92,15 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 					" INNER JOIN phcconfig.sources s ON o.source = s.id"+
 					" WHERE o.id LIKE ?";
 		result=runSelect(Order.class,sql, id);
-		if(result.isComplete() && !result.getData().isEmpty()){
-			Order order=result.getData().get(0);
-			SelectResult<OrderExtraInfo> eir=loadExtraIfo(id,"");
-			if(eir.isComplete() && !eir.getData().isEmpty()){
-				order.setExtraInfo(eir.getData().get(0));
-			}else{
-				result.cloneError(eir);
+		if(result.isComplete()){
+			if(!result.getData().isEmpty()){
+				Order order=result.getData().get(0);
+				SelectResult<OrderExtraInfo> eir=loadExtraIfo(id,"");
+				if(eir.isComplete()){
+					if(!eir.getData().isEmpty()) order.setExtraInfo(eir.getData().get(0));
+				}else{
+					result.cloneError(eir);
+				}
 			}
 		}
 		return result;
@@ -116,12 +118,12 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 					" LEFT OUTER JOIN phcconfig.order_state os ON os.id= IFNULL(s.state, o.state)"+
 					" WHERE pg.id = ?";
 		result=runSelect(SubOrder.class,sql, pgId);
-		
-		if(result.isComplete() && !result.getData().isEmpty()){
+		if(!result.isComplete()) return result;
+		if(!result.getData().isEmpty()){
 			SubOrder order=result.getData().get(0);
 			SelectResult<OrderExtraInfo> eir=loadExtraIfo(order.getOrder_id(),order.getSub_id());
-			if(eir.isComplete() && !eir.getData().isEmpty()){
-				order.setExtraInfo(eir.getData().get(0));
+			if(eir.isComplete()){
+			 	if(!eir.getData().isEmpty()) order.setExtraInfo(eir.getData().get(0));
 			}else{
 				result.cloneError(eir);
 			}
@@ -147,11 +149,12 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 					" WHERE s.order_id LIKE ?";
 		result=runSelect(SubOrder.class,sql, orderId, orderId);
 		
-		if(result.isComplete() && !result.getData().isEmpty()){
+		if(!result.isComplete()) return result;
+		if(!result.getData().isEmpty()){
 			SubOrder order=result.getData().get(0);
 			SelectResult<OrderExtraInfo> eir=loadExtraIfo(order.getOrder_id(),order.getSub_id());
-			if(eir.isComplete() && !eir.getData().isEmpty()){
-				order.setExtraInfo(eir.getData().get(0));
+			if(eir.isComplete()){
+				if(!eir.getData().isEmpty()) order.setExtraInfo(eir.getData().get(0));
 			}else{
 				result.cloneError(eir);
 			}
@@ -164,7 +167,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	public SelectResult<Order> loadOrderVsChilds(String id){
 		SelectResult<Order> result=loadOrder(id);
 		Order order;
-		if(result.isComplete() && !result.getData().isEmpty()){
+		if(!result.isComplete()) return result;
+		if(!result.getData().isEmpty()){
 			order=result.getData().get(0);
 			//load direct childs
 			String sql;
@@ -220,8 +224,9 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	@Override
 	public SelectResult<Order> loadOrderFull(String id){
 		SelectResult<Order> result=loadOrderVsChilds(id);
+		if(!result.isComplete()) return result; 
 		Order order;
-		if(result.isComplete() && !result.getData().isEmpty()){
+		if(!result.getData().isEmpty()){
 			order=result.getData().get(0);
 			String sql;
 			//files
@@ -301,13 +306,15 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 					" INNER JOIN phcconfig.order_state os ON o.state = os.id"+
 					" WHERE s.code=?";
 		result=runSelect(Order.class,sql, id, code);
-		if(result.isComplete() && !result.getData().isEmpty()){
-			Order order=result.getData().get(0);
-			SelectResult<OrderExtraInfo> eir=loadExtraIfo(id,"");
-			if(eir.isComplete() && !eir.getData().isEmpty()){
-				order.setExtraInfo(eir.getData().get(0));
-			}else{
-				result.cloneError(eir);
+		if(result.isComplete()){
+			if(!result.getData().isEmpty()){
+				Order order=result.getData().get(0);
+				SelectResult<OrderExtraInfo> eir=loadExtraIfo(id,"");
+				if(eir.isComplete() && !eir.getData().isEmpty()){
+					order.setExtraInfo(eir.getData().get(0));
+				}else{
+					result.cloneError(eir);
+				}
 			}
 		}
 		return result;
@@ -349,7 +356,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 
 	@Override
 	public SelectResult<OrderExtraInfo> loadExtraIfo(String id, String subId){
-		String sql="SELECT ei.* FROM phcdata.order_extra_info ei WHERE ei.order_id=? AND ei.sub_id=?";
+		String sql="SELECT ei.* FROM phcdata.order_extra_info ei WHERE ei.id=? AND ei.sub_id=?";
 		return runSelect(OrderExtraInfo.class,sql, id, subId);
 	}
 
@@ -357,7 +364,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	public SelectResult<OrderExtraInfo> loadExtraIfoByPG(String pgId){
 		String sql="SELECT ei.*, pg.book_type"+
 					" FROM phcdata.print_group pg"+
-					" INNER JOIN phcdata.order_extra_info ei ON pg.order_id=ei.order_id AND pg.sub_id=ei.sub_id"+
+					" INNER JOIN phcdata.order_extra_info ei ON pg.order_id=ei.id AND pg.sub_id=ei.sub_id"+
 					" WHERE pg.id=?";
 		return runSelect(OrderExtraInfo.class,sql, pgId);
 	}

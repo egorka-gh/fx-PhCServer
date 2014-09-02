@@ -19,7 +19,7 @@ public class SubordersTemplate extends AbstractEntity {
     @Column(name="sub_src_type")
     private int sub_src_type;
     @Column(name="folder")
-    private int folder;
+    private String folder;
 
     public int getId() {
 		return id;
@@ -39,10 +39,10 @@ public class SubordersTemplate extends AbstractEntity {
 	public void setSub_src_type(int sub_src_type) {
 		this.sub_src_type = sub_src_type;
 	}
-	public int getFolder() {
+	public String getFolder() {
 		return folder;
 	}
-	public void setFolder(int folder) {
+	public void setFolder(String folder) {
 		this.folder = folder;
 	}
 	
