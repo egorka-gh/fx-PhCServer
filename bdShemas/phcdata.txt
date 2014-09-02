@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.233.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 27.08.2014 18:19:25
+-- Дата скрипта: 02.09.2014 18:30:24
 -- Версия сервера: 5.1.62-community
 -- Версия клиента: 4.1
 --
@@ -36,7 +36,7 @@ CREATE TABLE order_extra_info (
   PRIMARY KEY (id, sub_id)
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 409
+AVG_ROW_LENGTH = 350
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -50,7 +50,7 @@ CREATE TABLE order_extra_state (
   PRIMARY KEY (id, sub_id, state)
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 174
+AVG_ROW_LENGTH = 212
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -71,7 +71,7 @@ CREATE TABLE orders (
   PRIMARY KEY (id)
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 163
+AVG_ROW_LENGTH = 152
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -129,7 +129,7 @@ COLLATE utf8_general_ci;
 CREATE TABLE print_group (
   id varchar(50) NOT NULL DEFAULT '',
   order_id varchar(50) NOT NULL,
-  sub_id varchar(50) DEFAULT NULL,
+  sub_id varchar(50) NOT NULL DEFAULT '',
   state int(5) DEFAULT NULL,
   state_date datetime DEFAULT NULL,
   width int(5) NOT NULL,
@@ -156,7 +156,7 @@ CREATE TABLE print_group (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 156
+AVG_ROW_LENGTH = 154
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -173,8 +173,8 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 1477184
-AVG_ROW_LENGTH = 69
+AUTO_INCREMENT = 1477690
+AVG_ROW_LENGTH = 64
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -213,7 +213,7 @@ CREATE TABLE tech_log (
 )
 ENGINE = INNODB
 AUTO_INCREMENT = 483028
-AVG_ROW_LENGTH = 67
+AVG_ROW_LENGTH = 70
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -230,7 +230,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2081179
+AUTO_INCREMENT = 2081197
 AVG_ROW_LENGTH = 85
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
