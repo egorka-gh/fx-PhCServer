@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.233.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 02.09.2014 18:29:54
+-- Дата скрипта: 03.09.2014 18:15:15
 -- Версия сервера: 5.1.62-community
 -- Версия клиента: 4.1
 --
@@ -72,7 +72,7 @@ CREATE TABLE lab_resize (
   UNIQUE INDEX width (width)
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 15
+AUTO_INCREMENT = 13
 AVG_ROW_LENGTH = 1365
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -113,7 +113,7 @@ CREATE TABLE layerset_group (
   PRIMARY KEY (id)
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 3
+AUTO_INCREMENT = 2
 AVG_ROW_LENGTH = 8192
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -180,7 +180,7 @@ CREATE TABLE tech_point (
   PRIMARY KEY (id)
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 15
+AUTO_INCREMENT = 13
 AVG_ROW_LENGTH = 1260
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -228,7 +228,7 @@ CREATE TABLE book_synonym (
 )
 ENGINE = INNODB
 AUTO_INCREMENT = 288
-AVG_ROW_LENGTH = 222
+AVG_ROW_LENGTH = 155
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -550,7 +550,7 @@ CREATE TABLE lab_print_code (
 )
 ENGINE = INNODB
 AUTO_INCREMENT = 2247
-AVG_ROW_LENGTH = 92
+AVG_ROW_LENGTH = 80
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -568,7 +568,7 @@ CREATE TABLE services (
   REFERENCES srvc_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 364
+AVG_ROW_LENGTH = 356
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 

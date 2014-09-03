@@ -30,7 +30,7 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 	public SqlResult logStateByPGroup(String pgId, int state, String comment){
 		//PROCEDURE phcdata.logStateByPg(IN pPgId VARCHAR(50), IN pSate int, IN pMsg VARCHAR(250))
 		String sql= "{CALL phcdata.logStateByPg(?,?,?)}";
-		return runCall(sql, pgId, state, comment.substring(0, Math.max(250, comment.length())));
+		return runCall(sql, pgId, state, comment.substring(0, Math.min(250, comment.length())));
 	}
 
 	@Override

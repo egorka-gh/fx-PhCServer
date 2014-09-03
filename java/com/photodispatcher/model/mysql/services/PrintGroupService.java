@@ -1,6 +1,7 @@
 package com.photodispatcher.model.mysql.services;
 
 import java.util.Date;
+import java.util.List;
 
 import org.granite.messaging.service.annotations.RemoteDestination;
 
@@ -14,5 +15,6 @@ public interface PrintGroupService {
 	SelectResult<PrintGroup> loadByOrderState(int stateFrom, int stateTo);
 	SelectResult<PrintGroup> loadInPrint(int lab);
 	SelectResult<PrintGroup> loadPrinted(Date after);
+	SelectResult<PrintGroup> loadPrintPost(List<String> ids);
 
 }

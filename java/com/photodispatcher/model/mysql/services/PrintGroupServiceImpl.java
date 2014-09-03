@@ -1,10 +1,13 @@
 package com.photodispatcher.model.mysql.services;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.photodispatcher.model.mysql.entities.PrintGroup;
+import com.photodispatcher.model.mysql.entities.PrintGroupFile;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 
 @Service("printGroupService")
@@ -130,6 +133,47 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 			return runSelect(PrintGroup.class,sql, 300, after );
 		}
 		return runSelect(PrintGroup.class, sql, 300);
+	}
+
+	@Override
+	public SelectResult<PrintGroup> loadPrintPost(List<String> ids){
+		SelectResult<PrintGroup> result= new SelectResult<PrintGroup>();
+		result.setData(new ArrayList<PrintGroup>());
+		SelectResult<PrintGroup> subResult;
+		List<String> inList= new ArrayList<String>();
+		StringBuilder in= new StringBuilder("");
+		for(String id : ids){
+			if(in.length()>200){
+				inList.add(in.toString());
+				in= new StringBuilder("");
+			}
+			if(in.length()>0) in.append(",");
+			in.append("'"); in.append(id); in.append("'");
+		}
+		if(in.length()>0) inList.add(in.toString());
+		//load print groups
+		String sql="SELECT pg.id, pg.state FROM phcdata.print_group pg WHERE pg.id";
+		for (String where :inList){
+			subResult=runSelect(PrintGroup.class,sql+" IN ("+where+")");
+			if(subResult.isComplete()){
+				result.getData().addAll(subResult.getData());
+			}else{
+				result.cloneError(subResult);
+				return result;
+			}
+		}
+		//load print files
+		sql="SELECT pgf.* FROM phcdata.print_group_file pgf WHERE pgf.print_group = ?";
+		for (PrintGroup pg : result.getData()){
+			SelectResult<PrintGroupFile> fRes=runSelect(PrintGroupFile.class,sql, pg.getId());
+			if(!fRes.isComplete()){
+				result.cloneError(fRes);
+				return result;
+			}
+			pg.setFiles(fRes.getData());
+		}
+
+		return result;
 	}
 
 }

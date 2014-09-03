@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.233.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 02.09.2014 18:30:24
+-- Дата скрипта: 03.09.2014 18:15:40
 -- Версия сервера: 5.1.62-community
 -- Версия клиента: 4.1
 --
@@ -36,7 +36,7 @@ CREATE TABLE order_extra_info (
   PRIMARY KEY (id, sub_id)
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 350
+AVG_ROW_LENGTH = 377
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -50,7 +50,7 @@ CREATE TABLE order_extra_state (
   PRIMARY KEY (id, sub_id, state)
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 212
+AVG_ROW_LENGTH = 216
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -71,7 +71,7 @@ CREATE TABLE orders (
   PRIMARY KEY (id)
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 152
+AVG_ROW_LENGTH = 170
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -156,7 +156,7 @@ CREATE TABLE print_group (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 154
+AVG_ROW_LENGTH = 228
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -173,8 +173,8 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 1477690
-AVG_ROW_LENGTH = 64
+AUTO_INCREMENT = 1477822
+AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -193,7 +193,7 @@ CREATE TABLE suborders (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 138
+AVG_ROW_LENGTH = 109
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -212,8 +212,8 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 483028
-AVG_ROW_LENGTH = 70
+AUTO_INCREMENT = 482916
+AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -230,8 +230,8 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2081197
-AVG_ROW_LENGTH = 85
+AUTO_INCREMENT = 2081465
+AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -756,7 +756,7 @@ BEGIN
       WHERE to1.source = pSourceId);
 
     -- check/process preload
-    -- update printgroup state/preload
+    -- update printgroup 
     UPDATE phcdata.print_group
     SET state = 200,
         state_date = NOW()
@@ -766,6 +766,17 @@ BEGIN
       FROM phcdata.tmp_orders t
       WHERE t.source = pSourceId
       AND t.is_preload = 0);
+    -- suborders
+    UPDATE phcdata.suborders s
+    SET s.state = 200,
+        s.state_date = NOW()
+    WHERE s.state = 199
+    AND s.order_id IN
+    (SELECT t.id
+      FROM phcdata.tmp_orders t
+      WHERE t.source = pSourceId
+      AND t.is_preload = 0);
+    -- orders
     UPDATE phcdata.orders o
     SET state = 200,
         state_date = NOW(),
@@ -783,6 +794,16 @@ BEGIN
     SET state = 510,
         state_date = NOW()
     WHERE order_id IN
+    (SELECT id
+      FROM phcdata.orders o
+      WHERE o.source = pSourceId
+      AND o.state BETWEEN 100 AND 200
+      AND o.sync != vSync);
+    -- cancel suborders
+    UPDATE phcdata.suborders s
+    SET s.state = 510,
+        s.state_date = NOW()
+    WHERE s.order_id IN
     (SELECT id
       FROM phcdata.orders o
       WHERE o.source = pSourceId
