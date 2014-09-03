@@ -185,6 +185,7 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 				if(lab.getDevices()!=null){
 					for(LabDevice dev : lab.getDevices()){
 						if(dev.getPersistState()==0){
+							dev.setLab(lab.getId());
 							insertDev.add(dev);
 						}else if(dev.getPersistState()==-1){
 							updateDev.add(dev);

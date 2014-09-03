@@ -377,24 +377,43 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	@Override
 	public SqlResult fillUpOrder(Order order){
 		SqlResult result= new SqlResult();
+		if(order==null) return result;
+		if(order.getState()<199){
+			result.setComplete(false);
+			result.setErrMesage("Не допустимый статус");
+			return result;
+		}
 		List<OrderExtraInfo> einfos = new ArrayList<OrderExtraInfo>();
 		List<SubOrder> subOrders = new ArrayList<SubOrder>();
 		List<PrintGroup> printGroups = new ArrayList<PrintGroup>();
 		List<PrintGroupFile> pgFiles = new ArrayList<PrintGroupFile>();
 		
 		//fill lists
-		if(order.getExtraInfo()!=null) einfos.add(order.getExtraInfo());
+		if(order.getExtraInfo()!=null){
+			order.getExtraInfo().setId(order.getId());
+			order.getExtraInfo().setSub_id("");
+			einfos.add(order.getExtraInfo());
+		}
 		if(order.getSuborders()!=null && !order.getSuborders().isEmpty()){
 			for (SubOrder so : order.getSuborders()){
-				if(so.getExtraInfo()!=null) einfos.add(so.getExtraInfo());
+				so.setOrder_id(order.getId());
+				if(so.getExtraInfo()!=null){
+					so.getExtraInfo().setId(order.getId());
+					so.getExtraInfo().setSub_id(so.getSub_id());
+					einfos.add(so.getExtraInfo());
+				}
 				subOrders.add(so);
 			}
 		}
 		if(order.getPrintGroups()!=null && !order.getPrintGroups().isEmpty()){
 			for (PrintGroup pg : order.getPrintGroups()){
+				pg.setOrder_id(order.getId());
 				printGroups.add(pg);
 				if(pg.getFiles()!=null){
-					for(PrintGroupFile pgFile : pg.getFiles()) pgFiles.add(pgFile);
+					for(PrintGroupFile pgFile : pg.getFiles()){
+						pgFile.setPrint_group(pg.getId());
+						pgFiles.add(pgFile);
+					}
 				}
 			}
 		}
@@ -424,7 +443,10 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			if(pg.getSub_id()!=null && pg.getSub_id().length()>0) subIds.add(pg.getSub_id());
 			if(pg.getReprint_id()!=null && pg.getReprint_id().length()>0) parentIds.add(pg.getReprint_id());
 			if(pg.getFiles()!=null){
-				for(PrintGroupFile pgFile : pg.getFiles()) pgFiles.add(pgFile);
+				for(PrintGroupFile pgFile : pg.getFiles()){
+					pgFile.setPrint_group(pg.getId());
+					pgFiles.add(pgFile);
+				}
 			}
 		}
 		
