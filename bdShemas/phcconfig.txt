@@ -1,8 +1,8 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.233.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 03.09.2014 18:15:15
--- Версия сервера: 5.1.62-community
+-- Дата скрипта: 05.09.2014 12:46:43
+-- Версия сервера: 5.1.73-community
 -- Версия клиента: 4.1
 --
 
@@ -59,7 +59,7 @@ CREATE TABLE content_filter (
   PRIMARY KEY (id)
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 7
+AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 8192
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -72,7 +72,7 @@ CREATE TABLE lab_resize (
   UNIQUE INDEX width (width)
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 13
+AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 1365
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -83,7 +83,7 @@ CREATE TABLE layer (
   PRIMARY KEY (id)
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 13
+AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 2730
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -113,7 +113,7 @@ CREATE TABLE layerset_group (
   PRIMARY KEY (id)
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2
+AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 8192
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -180,7 +180,7 @@ CREATE TABLE tech_point (
   PRIMARY KEY (id)
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 13
+AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 1260
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -198,7 +198,7 @@ COLLATE utf8_general_ci;
 CREATE TABLE attr_type (
   id int(5) NOT NULL AUTO_INCREMENT,
   attr_fml int(5) NOT NULL,
-  name varchar(20) NOT NULL,
+  name varchar(50) NOT NULL,
   field varchar(20) NOT NULL,
   list tinyint(1) NOT NULL DEFAULT 0,
   persist tinyint(1) NOT NULL DEFAULT 1,
@@ -207,7 +207,7 @@ CREATE TABLE attr_type (
   REFERENCES attr_family (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 27
+AUTO_INCREMENT = 31
 AVG_ROW_LENGTH = 655
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -219,6 +219,8 @@ CREATE TABLE book_synonym (
   book_type int(5) NOT NULL DEFAULT 0,
   is_horizontal tinyint(1) DEFAULT 0,
   synonym_type int(5) DEFAULT 0,
+  fb_alias varchar(50) DEFAULT NULL,
+  idOld int(7) DEFAULT NULL,
   PRIMARY KEY (id),
   UNIQUE INDEX UK_book_synonym (src_type, synonym, synonym_type),
   CONSTRAINT FK_book_synonym_book_synonym_type_id FOREIGN KEY (synonym_type)
@@ -227,7 +229,7 @@ CREATE TABLE book_synonym (
   REFERENCES book_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 288
+AUTO_INCREMENT = 284
 AVG_ROW_LENGTH = 155
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -261,7 +263,7 @@ CREATE TABLE layerset (
   REFERENCES layerset_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 18
+AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 963
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -341,7 +343,7 @@ CREATE TABLE lab (
   REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 20
+AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 1820
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -374,7 +376,7 @@ CREATE TABLE layerset_synonym (
   REFERENCES layerset (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 8
+AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 3276
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -390,7 +392,7 @@ CREATE TABLE sources (
   REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 25
+AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 780
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -407,7 +409,7 @@ CREATE TABLE src_type_prop_val (
   REFERENCES src_type_prop (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 17
+AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 1024
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -424,7 +426,7 @@ CREATE TABLE suborders_template (
   REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2
+AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 16384
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -498,7 +500,7 @@ CREATE TABLE book_pg_template (
   REFERENCES book_synonym (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 476
+AUTO_INCREMENT = 474
 AVG_ROW_LENGTH = 267
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -517,7 +519,7 @@ CREATE TABLE lab_device (
   REFERENCES tech_point (id) ON DELETE SET NULL ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 15
+AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 2048
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -549,7 +551,7 @@ CREATE TABLE lab_print_code (
   REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2247
+AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 80
 CHARACTER SET utf8
 COLLATE utf8_general_ci;

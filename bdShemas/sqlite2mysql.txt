@@ -1,0 +1,64 @@
+imp/export
+use csv sqlitestudio
+4 lab_timetable use select (date formated)
+select lab_device,day_id, STRFTIME('%Y-%m-%d %H:%M:%S', time_from) , STRFTIME('%Y-%m-%d %H:%M:%S', time_to),is_online from lab_timetable
+
+----------------------------------------
+transfer techpoint tipe to order state
+
+UPDATE phcconfig.order_state os
+SET os.tech=1, os.book_part=(SELECT st.book_part FROM src_type st WHERE st.loc_type=3 AND st.state=os.id) 
+ WHERE EXISTS(SELECT 1 FROM src_type st WHERE st.loc_type=3 AND st.state=os.id) 
+
+UPDATE tech_point tp
+SET tp.state =
+(SELECT st.state
+  FROM src_type st
+  WHERE st.loc_type = 3
+  AND st.id = tp.tech_type)
+rename tech_type -> tech_typeOld
+rename state -> tech_type
+
+INSERT INTO phcconfig.order_state(id, name, runtime, extra, tech, book_part) VALUES
+(0, '-', 0, 0, 0, 0);
+INSERT INTO phcconfig.tech_point(id, tech_type, name, state) VALUES
+(0, 0, '-', 0);
+
++ добавить референс на order_state и грохнуть поле tech_type
+
+DELETE FROM phcconfig.src_type WHERE loc_type=3
+DELETE FROM phcconfig.location_type WHERE id = 3
+----------------------------------------------------
+
+
+-------------- перепахиваем order_extra_info на sub_id
+/*
+UPDATE phcdata.order_extra_info ei
+SET ei.tempId =
+    (SELECT s.order_id
+      FROM suborders s
+      WHERE ei.id = s.id),
+    ei.sub_id =
+    (SELECT s.sub_id
+      FROM suborders s
+      WHERE ei.id = s.id)
+WHERE EXISTS
+(SELECT 1
+  FROM suborders s
+  WHERE ei.id = s.id)
+*/
+UPDATE phcdata.order_extra_info ei
+SET ei.id = ei.tempId
+WHERE ei.tempId IS NOT NULL
+AND ei.sub_id IS NOT NULL 
+-----------------------------
+
+------------------ добавляем sub_id в print_group
+--  SELECT *, (SELECT s.sub_id FROM suborders s WHERE s.order_id=p.order_id AND p.path=s.ftp_folder) FROM phcdata.print_group p
+ UPDATE phcdata.print_group p SET p.sub_id=(SELECT s.sub_id FROM suborders s WHERE s.order_id=p.order_id AND p.path=s.ftp_folder)
+WHERE EXISTS (SELECT 1 FROM suborders s WHERE s.order_id=p.order_id AND p.path=s.ftp_folder)
+
+------------------ добавляем order_id в tech_log
+UPDATE tech_log tl
+SET order_id = (SELECT pg.order_id FROM print_group pg WHERE pg.id=tl.print_group)
+!!!! set order_id NOT NULL
