@@ -5,9 +5,11 @@
 		auth="Container" 
 		type="javax.sql.DataSource"
 	    maxActive="300" maxIdle="50" maxWait="10000"
-	    username="root" password="CtHDbCGK.C" 
+	    username="root" password="3411" 
 		driverClassName="com.mysql.jdbc.Driver"
-	    url="jdbc:mysql://192.168.30.168:3306/xrep?generateSimpleParameterMetadata=true&amp;rewriteBatchedStatements=true"/> 
+		validationQuery="SELECT 1"
+		testOnBorrow="true"
+	    url="jdbc:mysql://127.0.0.1:3306/phcconfig?generateSimpleParameterMetadata=true&amp;rewriteBatchedStatements=true&amp;autoReconnect=true"/> 
 <!-- 	    &amp;useServerPrepStmts=true -->
 <!-- &amp;rewriteBatchedStatements=true -->
 </Context>

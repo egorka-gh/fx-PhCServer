@@ -1,3 +1,34 @@
+SET GLOBAL sql_mode='NO_AUTO_VALUE_ON_ZERO'
+
+set UK_book_synonym not unique
+
+INSERT INTO phcconfig.book_synonym
+(src_type, synonym, book_type, is_horizontal, synonym_type, idOld)
+  SELECT src_type, fb_alias, book_type, is_horizontal, 1, id
+  FROM phcconfig.book_synonym
+  WHERE fb_alias IS NOT NULL
+  AND LENGTH(fb_alias) > 0
+ 
+ import book_pg_template
+ update id
+UPDATE phcconfig.book_pg_template
+SET book =
+(SELECT id
+  FROM book_synonym bs
+  WHERE bs.idOld = book_pg_template.book)
+WHERE EXISTS
+(SELECT id
+  FROM book_synonym bs
+  WHERE bs.idOld = book_pg_template.book)
+  
+del fbook   
+DELETE  FROM phcconfig.book_synonym WHERE synonym IS NULL OR LENGTH(synonym)=0
+
+set UK_book_synonym unique
+
+kill fb_alias, idOld
+
+
 imp/export
 use csv sqlitestudio
 4 lab_timetable use select (date formated)
@@ -11,18 +42,16 @@ SET os.tech=1, os.book_part=(SELECT st.book_part FROM src_type st WHERE st.loc_t
  WHERE EXISTS(SELECT 1 FROM src_type st WHERE st.loc_type=3 AND st.state=os.id) 
 
 UPDATE tech_point tp
-SET tp.state =
+SET tp.tech_type =
 (SELECT st.state
   FROM src_type st
   WHERE st.loc_type = 3
-  AND st.id = tp.tech_type)
-rename tech_type -> tech_typeOld
-rename state -> tech_type
+  AND st.id = tp.tech_typeOld)
 
 INSERT INTO phcconfig.order_state(id, name, runtime, extra, tech, book_part) VALUES
 (0, '-', 0, 0, 0, 0);
-INSERT INTO phcconfig.tech_point(id, tech_type, name, state) VALUES
-(0, 0, '-', 0);
+INSERT INTO phcconfig.tech_point(id, tech_type, name) VALUES
+(0, 0, '-');
 
 + добавить референс на order_state и грохнуть поле tech_type
 
@@ -30,6 +59,10 @@ DELETE FROM phcconfig.src_type WHERE loc_type=3
 DELETE FROM phcconfig.location_type WHERE id = 3
 ----------------------------------------------------
 
+src kill not linked lab_timetable
+delete  from [lab_timetable]  where not exists(select 1 from [lab_device] t where t.id =lab_timetable.[lab_device])
+src
+update [suborders] set [state]=0 where state is null 
 
 -------------- перепахиваем order_extra_info на sub_id
 /*
@@ -61,4 +94,6 @@ WHERE EXISTS (SELECT 1 FROM suborders s WHERE s.order_id=p.order_id AND p.path=s
 ------------------ добавляем order_id в tech_log
 UPDATE tech_log tl
 SET order_id = (SELECT pg.order_id FROM print_group pg WHERE pg.id=tl.print_group)
-!!!! set order_id NOT NULL
+DELETE FROM  tech_log 
+WHERE order_id IS NULL OR LENGTH(order_id)=0
+!!!! set order_id ref
