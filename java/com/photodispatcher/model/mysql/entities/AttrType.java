@@ -6,7 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.attr_type")
+@Table(name = "attr_type")
 public class AttrType extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

@@ -16,7 +16,7 @@ public class ContentFilterServiceImpl extends AbstractDAO implements ContentFilt
 	@Override
 	public SelectResult<ContentFilter> findeAll(boolean includeDefault){
 		SelectResult<ContentFilter> result;
-		String sql="SELECT l.* FROM phcconfig.content_filter l";
+		String sql="SELECT l.* FROM content_filter l";
 		if(!includeDefault) sql+=" WHERE l.id != 0";
 		result=runSelect(ContentFilter.class, sql);
 		return result;
@@ -37,7 +37,7 @@ public class ContentFilterServiceImpl extends AbstractDAO implements ContentFilt
 	@Override
 	public SelectResult<ContentFilterAlias> loadAliases(int filter, boolean editMode) {
 		SelectResult<ContentFilterAlias> result;
-		String sql="SELECT l.*, concat_ws(' ','id', l.alias) as alias_name, 1 as allow FROM phcconfig.content_filter_alias l WHERE l.filter = ?";
+		String sql="SELECT l.*, concat_ws(' ','id', l.alias) as alias_name, 1 as allow FROM content_filter_alias l WHERE l.filter = ?";
 		/*
 		sql='SELECT l.*, st.name src_type_name, bt.name book_type_name, ifnull(fa.alias,0) is_allow'+
 				' FROM config.book_synonym l'+
@@ -53,7 +53,7 @@ public class ContentFilterServiceImpl extends AbstractDAO implements ContentFilt
 
 	@Override
 	public SqlResult saveAliases(int filter, List<ContentFilterAlias> aliases) {
-		String sql="DELETE FROM phcconfig.content_filter_alias l WHERE l.filter = ?";
+		String sql="DELETE FROM content_filter_alias l WHERE l.filter = ?";
 		SqlResult result= runDML(sql, filter);
 		if(result.isComplete()) result= runInsertBatch(aliases);
 		return result;

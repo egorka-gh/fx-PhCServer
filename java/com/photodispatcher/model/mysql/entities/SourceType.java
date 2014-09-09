@@ -5,7 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.src_type")
+@Table(name = "src_type")
 public class SourceType extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

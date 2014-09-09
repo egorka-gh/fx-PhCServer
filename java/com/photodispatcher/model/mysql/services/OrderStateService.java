@@ -14,11 +14,13 @@ import com.photodispatcher.model.mysql.entities.StateLog;
 public interface OrderStateService {
 
 	public SelectResult<OrderState> loadAll();
+
 	public SqlResult logState(StateLog item);
 	public SqlResult logStateByPGroup(String pgId, int state, String comment);
+	public SelectResult<StateLog> loadStateLogs(Date from, boolean onlyErrors);
 
-	//public SqlResult extraStateStart(String orderId, String subId, int state);
-	//public SqlResult extraStateSet(String orderId, String subId, int state);
+	public SqlResult extraStateStart(String orderId, String subId, int state, Date date);
+	public SqlResult extraStateSet(String orderId, String subId, int state, Date date);
 	public SqlResult extraStateReset(String orderId, String subId, int state);
 	public SqlResult extraStateProlong(String orderId, String subId, int state, String comment);
 	//public SqlResult extraStateSetByPGroup(String pgId, int state);
@@ -26,8 +28,9 @@ public interface OrderStateService {
 	public SqlResult printPost(String pgId, int lab);
 	public SqlResult printEndManual(String[] pgIds);
 	public SqlResult printCancel(String[] pgIds);
-	public SelectResult<StateLog> loadStateLogs(Date from, boolean onlyErrors);
 	public SqlResult printGroupMarkInPrint(String pgId);
+	
 	public SelectResult<OrderExtraState> loadMonitorEState(int startState, int techState, int endState);
+	public SqlResult extraStateStartMonitor(String orderId, String subId, int stateStart, int stateStop);
 
 }

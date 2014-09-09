@@ -8,7 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.sources")
+@Table(name = "sources")
 public class Source extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

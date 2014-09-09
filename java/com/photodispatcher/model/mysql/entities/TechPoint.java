@@ -5,7 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.tech_point")
+@Table(name = "tech_point")
 public class TechPoint extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

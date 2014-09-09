@@ -5,7 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.src_type_prop_val")
+@Table(name = "src_type_prop_val")
 public class SourceProperty extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 	

@@ -4,7 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.services")
+@Table(name = "services")
 public class SourceSvc extends AbstractEntity {
 	public static final int WEB_SERVICE=1;
 	public static final int FTP_SERVICE=4;

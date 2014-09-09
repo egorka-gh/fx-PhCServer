@@ -7,7 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcdata.tech_log")
+@Table(name = "tech_log")
 public class TechLog extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 	

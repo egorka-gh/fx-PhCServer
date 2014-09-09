@@ -16,7 +16,7 @@ public class RollServiceImpl extends AbstractDAO implements RollService {
 	@Override
 	public SelectResult<Roll> loadAll(){
 		SelectResult<Roll> result;
-		String sql="SELECT l.* FROM phcconfig.roll l ORDER BY l.width";
+		String sql="SELECT l.* FROM roll l ORDER BY l.width";
 		result=runSelect(Roll.class, sql);
 		return result;
 	}
@@ -28,17 +28,17 @@ public class RollServiceImpl extends AbstractDAO implements RollService {
 		if(!forEdit){
 			sql="SELECT r.width, r.pixels, ? lab_device, av.id paper, av.value paper_name,"+
 					" lr.len_std, lr.len, lr.is_online, 1 is_used"+  
-				" FROM phcconfig.roll r"+
-				" INNER JOIN phcconfig.lab_rolls lr ON r.width=lr.width"+
-				" INNER JOIN phcconfig.attr_value av ON lr.paper=av.id AND av.attr_tp=2"+
+				" FROM roll r"+
+				" INNER JOIN lab_rolls lr ON r.width=lr.width"+
+				" INNER JOIN attr_value av ON lr.paper=av.id AND av.attr_tp=2"+
 				" WHERE lr.lab_device=?"+
 				" ORDER BY r.width";
 		}else{
 			sql="SELECT r.width, r.pixels, ? lab_device, av.id paper, av.value paper_name,"+
 					" lr.len_std, lr.len, lr.is_online, ifnull(lr.width,0) is_used"+  
-				" FROM phcconfig.roll r"+
-				" INNER JOIN phcconfig.attr_value av ON av.attr_tp=2"+
-				" LEFT OUTER JOIN phcconfig.lab_rolls lr ON lr.paper=av.id AND r.width=lr.width AND lr.lab_device=?"+
+				" FROM roll r"+
+				" INNER JOIN attr_value av ON av.attr_tp=2"+
+				" LEFT OUTER JOIN lab_rolls lr ON lr.paper=av.id AND r.width=lr.width AND lr.lab_device=?"+
 				" ORDER BY r.width";
 		}
 		result=runSelect(LabRoll.class, sql, device, device);
@@ -47,14 +47,14 @@ public class RollServiceImpl extends AbstractDAO implements RollService {
 
 	@Override
 	public SelectResult<LabRoll> fillByChannels(int device) {
-		String sql="INSERT INTO phcconfig.lab_rolls (lab_device, width, paper)"+
+		String sql="INSERT INTO lab_rolls (lab_device, width, paper)"+
 					" SELECT d.id, lr.roll, lr.paper"+
-					" FROM phcconfig.lab_device d"+
-					" INNER JOIN phcconfig.lab l ON d.lab=l.id"+
-					" INNER JOIN (SELECT DISTINCT lpc.src_type, lpc.roll, lpc.paper FROM phcconfig.lab_print_code lpc"+ 
+					" FROM lab_device d"+
+					" INNER JOIN lab l ON d.lab=l.id"+
+					" INNER JOIN (SELECT DISTINCT lpc.src_type, lpc.roll, lpc.paper FROM lab_print_code lpc"+ 
 					                  " WHERE lpc.roll IS NOT NULL AND lpc.roll!=0) lr ON lr.src_type=l.src_type"+                   
 					" WHERE d.id=?"+
-					   " AND NOT EXISTS(SELECT 1 FROM phcconfig.lab_rolls dr WHERE dr.lab_device=d.id AND dr.width=lr.roll AND dr.paper=lr.paper)";
+					   " AND NOT EXISTS(SELECT 1 FROM lab_rolls dr WHERE dr.lab_device=d.id AND dr.width=lr.roll AND dr.paper=lr.paper)";
 		SqlResult result= runDML(sql, device);
 		if(!result.isComplete()){
 			SelectResult<LabRoll> err= new SelectResult<LabRoll>();

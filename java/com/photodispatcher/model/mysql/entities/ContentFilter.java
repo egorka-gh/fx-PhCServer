@@ -6,7 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.content_filter")
+@Table(name = "content_filter")
 public class ContentFilter extends AbstractEntity {
 
 	private static final long serialVersionUID = 1L;

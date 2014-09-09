@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-@Table(name = "phcconfig.layerset")
+@Table(name = "layerset")
 public class Layerset extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 	

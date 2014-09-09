@@ -20,9 +20,9 @@ public class SourceServiceImpl extends AbstractDAO implements SourceService {
 		SelectResult<Source> result;
 		String sql="SELECT s.id, s.name, s.type, s.code, s.online, st.name type_name, st.loc_type,"+
 							" ifnull(ss.sync,0) sync, ss.sync_date, ifnull(ss.sync_state,0) sync_state"+
-					" FROM phcconfig.sources s" +
-					" INNER JOIN phcconfig.src_type st ON st.id = s.type"+
-					" LEFT OUTER JOIN phcdata.sources_sync ss on s.id=ss.id" +
+					" FROM sources s" +
+					" INNER JOIN src_type st ON st.id = s.type"+
+					" LEFT OUTER JOIN sources_sync ss on s.id=ss.id" +
 					" WHERE st.loc_type = ? ORDER BY s.name";
 		result=runSelect(Source.class, sql, locationType);
 		
@@ -41,7 +41,7 @@ public class SourceServiceImpl extends AbstractDAO implements SourceService {
 	
 	private SqlResult fillSevices(Source source){
 		String sql="SELECT s.*, st.name type_name, st.loc_type"+
-					" FROM phcconfig.services s INNER JOIN phcconfig.srvc_type st ON st.id = s.srvc_id"+
+					" FROM services s INNER JOIN srvc_type st ON st.id = s.srvc_id"+
 					" WHERE s.src_id = ?";
 		SelectResult<SourceSvc> childs=runSelect(SourceSvc.class, sql, source.getId());
 		if(childs.isComplete()){

@@ -16,7 +16,7 @@ public class LabResizeServiceImpl extends AbstractDAO implements LabResizeServic
 	@Override
 	public SelectResult<LabResize> loadAll(){
 		SelectResult<LabResize> result;
-		String sql="SELECT l.* FROM phcconfig.lab_resize l ORDER BY l.width";
+		String sql="SELECT l.* FROM lab_resize l ORDER BY l.width";
 		result=runSelect(LabResize.class, sql);
 		return result;
 	}

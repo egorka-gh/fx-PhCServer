@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-@Table(name = "phcdata.orders")
+@Table(name = "orders")
 public class Order extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

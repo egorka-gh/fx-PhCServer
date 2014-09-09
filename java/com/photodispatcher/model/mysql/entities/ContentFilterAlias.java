@@ -3,7 +3,7 @@ package com.photodispatcher.model.mysql.entities;
 import javax.persistence.Column;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.content_filter_alias")
+@Table(name = "content_filter_alias")
 public class ContentFilterAlias extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

@@ -5,7 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.layerset_group")
+@Table(name = "layerset_group")
 public class LayersetGroup extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 	

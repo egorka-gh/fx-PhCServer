@@ -24,22 +24,22 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 		String sql;
 		if(src_type>0){
 			sql="SELECT l.*, p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name"+
-					" FROM phcconfig.lab_print_code l"+
-					" INNER JOIN phcconfig.attr_value p ON l.paper = p.id"+
-					" INNER JOIN phcconfig.attr_value fr ON l.frame = fr.id"+
-					" INNER JOIN phcconfig.attr_value cr ON l.correction = cr.id"+
-					" INNER JOIN phcconfig.attr_value cu ON l.cutting = cu.id"+
+					" FROM lab_print_code l"+
+					" INNER JOIN attr_value p ON l.paper = p.id"+
+					" INNER JOIN attr_value fr ON l.frame = fr.id"+
+					" INNER JOIN attr_value cr ON l.correction = cr.id"+
+					" INNER JOIN attr_value cu ON l.cutting = cu.id"+
 					" WHERE l.src_type = ?"+
 					" ORDER BY l.prt_code";
 			result=runSelect(LabPrintCode.class, sql, src_type);
 		}else{
 			sql="SELECT l.*, p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name"+
-				" FROM phcconfig.lab_print_code l"+
-				" INNER JOIN phcconfig.src_type st ON st.id = l.src_type AND st.loc_type = 2"+
-				" INNER JOIN phcconfig.attr_value p ON l.paper = p.id"+
-				" INNER JOIN phcconfig.attr_value fr ON l.frame = fr.id"+
-				" INNER JOIN phcconfig.attr_value cr ON l.correction = cr.id"+
-				" INNER JOIN phcconfig.attr_value cu ON l.cutting = cu.id"+
+				" FROM lab_print_code l"+
+				" INNER JOIN src_type st ON st.id = l.src_type AND st.loc_type = 2"+
+				" INNER JOIN attr_value p ON l.paper = p.id"+
+				" INNER JOIN attr_value fr ON l.frame = fr.id"+
+				" INNER JOIN attr_value cr ON l.correction = cr.id"+
+				" INNER JOIN attr_value cu ON l.cutting = cu.id"+
 				" ORDER BY l.src_type";
 			result=runSelect(LabPrintCode.class, sql);
 		}
@@ -71,8 +71,8 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	@Override
 	public SelectResult<Lab> loadList(){
 		String sql="SELECT s.*, st.name src_type_name"+
-					" FROM phcconfig.lab s" +
-					" INNER JOIN phcconfig.src_type st ON st.id = s.src_type"+
+					" FROM lab s" +
+					" INNER JOIN src_type st ON st.id = s.src_type"+
 					" ORDER BY s.name";
 		
 		return runSelect(Lab.class, sql);
@@ -82,8 +82,8 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	public SelectResult<Lab> loadAll(boolean forEdit){
 		SelectResult<Lab> result;
 		String sql="SELECT s.*, st.name src_type_name"+
-					" FROM phcconfig.lab s" +
-					" INNER JOIN phcconfig.src_type st ON st.id = s.src_type";
+					" FROM lab s" +
+					" INNER JOIN src_type st ON st.id = s.src_type";
 		if(!forEdit) sql+=" WHERE s.is_active=1";
 		sql+=" ORDER BY s.name";
 		
@@ -103,8 +103,8 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	
 	private SqlResult loadDevices(Lab lab, boolean forEdit){
 		String sql="SELECT s.*, tp.name tech_point_name"+
-					" FROM phcconfig.lab_device s" +
-					" LEFT OUTER JOIN phcconfig.tech_point tp ON tp.id = s.tech_point"+
+					" FROM lab_device s" +
+					" LEFT OUTER JOIN tech_point tp ON tp.id = s.tech_point"+
 					" WHERE s.lab=?";
 		SelectResult<LabDevice> childs=runSelect(LabDevice.class, sql, lab.getId());
 		if(childs.isComplete()){
@@ -134,8 +134,8 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 						" CAST(IFNULL(ltt.time_from,'2000-01-01 08:00:00') AS DATETIME) time_from,"+
 						" CAST(IFNULL(ltt.time_to,  '2000-01-01 18:00:00') AS DATETIME) time_to,"+
 						" IFNULL(ltt.is_online,0) is_online"+ 
-					" FROM phcconfig.week_days wd"+
-					" LEFT OUTER JOIN phcconfig.lab_timetable ltt ON  wd.id=ltt.day_id and ltt.lab_device=?"+
+					" FROM week_days wd"+
+					" LEFT OUTER JOIN lab_timetable ltt ON  wd.id=ltt.day_id and ltt.lab_device=?"+
 					" ORDER BY wd.id";
 		SelectResult<LabTimetable> ttres= runSelect(LabTimetable.class, sql, device.getId(), device.getId());
 		device.setTimetable(ttres.getData());
@@ -147,8 +147,8 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 		SelectResult<Lab> sResult;
 		DmlResult<Lab> result=new DmlResult<Lab>();
 		String sql="SELECT s.*, st.name src_type_name"+
-					" FROM phcconfig.lab s" +
-					" INNER JOIN phcconfig.src_type st ON st.id = s.src_type"+
+					" FROM lab s" +
+					" INNER JOIN src_type st ON st.id = s.src_type"+
 					" WHERE s.id=?";
 		sResult=runSelect(Lab.class, sql, id);
 		if (sResult.isComplete()){
@@ -231,7 +231,7 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	@Override
 	public SelectResult<LabDevice> delDevice(int deviceId, int labId){
 		SelectResult<LabDevice> result= new SelectResult<LabDevice>();
-		String sql="DELETE FROM phcconfig.lab_device WHERE id=?";
+		String sql="DELETE FROM lab_device WHERE id=?";
 		SqlResult delRes= runDML(sql, deviceId);
 		if(!delRes.isComplete()){
 			result.cloneError(delRes);
@@ -248,9 +248,9 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 
 	@Override
 	public SelectResult<PrintGroup> getLastPGroupByTPoint(int techPontId){
-		String sql="SELECT pg.* FROM phcdata.tech_log tl INNER JOIN phcdata.print_group pg ON pg.id = tl.print_group" +
+		String sql="SELECT pg.* FROM tech_log tl INNER JOIN print_group pg ON pg.id = tl.print_group" +
 					" WHERE tl.src_id = ? AND tl.log_date ="+
-						" (SELECT MAX(tl.log_date) FROM phcdata.tech_log tl1 WHERE tl1.src_id = ?)";
+						" (SELECT MAX(tl.log_date) FROM tech_log tl1 WHERE tl1.src_id = ?)";
 		return runSelect(PrintGroup.class, sql, techPontId, techPontId);
 	}
 

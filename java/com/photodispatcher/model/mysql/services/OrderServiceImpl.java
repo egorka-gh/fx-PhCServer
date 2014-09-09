@@ -29,7 +29,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	@Override
 	public SqlResult beginSync(){
 		//clear tmp_orders table
-		String sql="DELETE FROM phcdata.tmp_orders";
+		String sql="DELETE FROM tmp_orders";
 		return runDML(sql);
 	}
 
@@ -43,7 +43,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		SqlResult sync;
 		SelectResult<Source> result= new SelectResult<Source>();
 		
-		String sql="{CALL phcdata.sync()}";
+		String sql="{CALL sync()}";
 		sync=runCall(sql);
 		if(!sync.isComplete()){
 			result.cloneError(sync);
@@ -58,9 +58,9 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	@Override
 	public SelectResult<Order> loadByState(int stateFrom, int stateTo){
 		String sql="SELECT o.*, s.name source_name, os.name state_name"+
-					" FROM phcdata.orders o"+
-					" INNER JOIN phcconfig.order_state os ON o.state = os.id"+
-					" INNER JOIN phcconfig.sources s ON o.source = s.id";
+					" FROM orders o"+
+					" INNER JOIN order_state os ON o.state = os.id"+
+					" INNER JOIN sources s ON o.source = s.id";
 		String  where="";
 		if(stateFrom!=-1){
 			where+=" o.state>=?";
@@ -87,9 +87,9 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	public SelectResult<Order> loadOrder(String id){
 		SelectResult<Order> result;
 		String sql="SELECT o.*, s.name source_name, s.code source_code, os.name state_name"+
-					" FROM phcdata.orders o"+
-					" INNER JOIN phcconfig.order_state os ON o.state = os.id"+
-					" INNER JOIN phcconfig.sources s ON o.source = s.id"+
+					" FROM orders o"+
+					" INNER JOIN order_state os ON o.state = os.id"+
+					" INNER JOIN sources s ON o.source = s.id"+
 					" WHERE o.id LIKE ?";
 		result=runSelect(Order.class,sql, id);
 		if(result.isComplete()){
@@ -111,11 +111,11 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		SelectResult<SubOrder> result;
 		String sql="SELECT pg.order_id, pg.sub_id, sr.name source_name, sr.code source_code,"+
 						" os.name state_name, IFNULL(s.state, o.state) state, IFNULL(s.state_date, o.state_date) state_date"+
-					" FROM phcdata.print_group pg"+
-					" INNER JOIN phcdata.orders o ON pg.order_id = o.id"+
-					" INNER JOIN phcconfig.sources sr ON o.source = sr.id"+
-					" LEFT OUTER JOIN phcdata.suborders s ON pg.sub_id = s.sub_id"+
-					" LEFT OUTER JOIN phcconfig.order_state os ON os.id= IFNULL(s.state, o.state)"+
+					" FROM print_group pg"+
+					" INNER JOIN orders o ON pg.order_id = o.id"+
+					" INNER JOIN sources sr ON o.source = sr.id"+
+					" LEFT OUTER JOIN suborders s ON pg.sub_id = s.sub_id"+
+					" LEFT OUTER JOIN order_state os ON os.id= IFNULL(s.state, o.state)"+
 					" WHERE pg.id = ?";
 		result=runSelect(SubOrder.class,sql, pgId);
 		if(!result.isComplete()) return result;
@@ -135,17 +135,17 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		SelectResult<SubOrder> result;
 		String sql="SELECT o.id order_id, '' sub_id, sr.name source_name, sr.code source_code,"+
 					  " os.name state_name, o.state, o.state_date"+
-					" FROM phcdata.orders o"+ 
-					" INNER JOIN phcconfig.sources sr ON o.source = sr.id"+
-					" INNER JOIN phcconfig.order_state os ON os.id= o.state"+
-					" WHERE o.id LIKE ? AND NOT EXISTS(SELECT 1 FROM phcdata.suborders s WHERE s.order_id = o.id)"+
+					" FROM orders o"+ 
+					" INNER JOIN sources sr ON o.source = sr.id"+
+					" INNER JOIN order_state os ON os.id= o.state"+
+					" WHERE o.id LIKE ? AND NOT EXISTS(SELECT 1 FROM suborders s WHERE s.order_id = o.id)"+
 					" UNION ALL"+
 					" SELECT s.order_id, s.sub_id, sr.name source_name, sr.code source_code,"+
 					   " os.name state_name, s.state, s.state_date"+
-					" FROM phcdata.suborders s"+
-					" INNER JOIN phcdata.orders o ON s.order_id = o.id"+
-					" INNER JOIN phcconfig.sources sr ON o.source = sr.id"+
-					" INNER JOIN phcconfig.order_state os ON os.id= s.state"+
+					" FROM suborders s"+
+					" INNER JOIN orders o ON s.order_id = o.id"+
+					" INNER JOIN sources sr ON o.source = sr.id"+
+					" INNER JOIN order_state os ON os.id= s.state"+
 					" WHERE s.order_id LIKE ?";
 		result=runSelect(SubOrder.class,sql, orderId, orderId);
 		
@@ -174,9 +174,9 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			String sql;
 			//subOrders
 			sql="SELECT so.*, st.name src_type_name, bt.name proj_type_name"+
-					" FROM phcdata.suborders so"+
-					" INNER JOIN phcconfig.src_type st ON so.src_type=st.id"+
-					" INNER JOIN phcconfig.book_type bt ON so.proj_type=bt.id"+
+					" FROM suborders so"+
+					" INNER JOIN src_type st ON so.src_type=st.id"+
+					" INNER JOIN book_type bt ON so.proj_type=bt.id"+
 					" WHERE so.order_id=?";
 			SelectResult<SubOrder> soRes=runSelect(SubOrder.class,sql, id);
 			if(!soRes.isComplete()){
@@ -199,17 +199,17 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			sql="SELECT pg.*, o.source source_id, s.name source_name, o.ftp_folder order_folder, os.name state_name,"+
 							" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name,"+
 							" lab.name lab_name, bt.name book_type_name, bp.name book_part_name"+
-						" FROM phcdata.print_group pg"+
-							" INNER JOIN phcdata.orders o ON pg.order_id = o.id"+
-							" INNER JOIN phcconfig.sources s ON o.source = s.id"+
-							" INNER JOIN phcconfig.order_state os ON pg.state = os.id"+
-							" INNER JOIN phcconfig.attr_value p ON pg.paper = p.id"+
-							" INNER JOIN phcconfig.attr_value fr ON pg.frame = fr.id"+
-							" INNER JOIN phcconfig.attr_value cr ON pg.correction = cr.id"+
-							" INNER JOIN phcconfig.attr_value cu ON pg.cutting = cu.id"+
-							" INNER JOIN phcconfig.book_type bt ON pg.book_type = bt.id"+
-							" INNER JOIN phcconfig.book_part bp ON pg.book_part = bp.id"+
-							" LEFT OUTER JOIN phcconfig.lab ON pg.destination = lab.id"+
+						" FROM print_group pg"+
+							" INNER JOIN orders o ON pg.order_id = o.id"+
+							" INNER JOIN sources s ON o.source = s.id"+
+							" INNER JOIN order_state os ON pg.state = os.id"+
+							" INNER JOIN attr_value p ON pg.paper = p.id"+
+							" INNER JOIN attr_value fr ON pg.frame = fr.id"+
+							" INNER JOIN attr_value cr ON pg.correction = cr.id"+
+							" INNER JOIN attr_value cu ON pg.cutting = cu.id"+
+							" INNER JOIN book_type bt ON pg.book_type = bt.id"+
+							" INNER JOIN book_part bp ON pg.book_part = bp.id"+
+							" LEFT OUTER JOIN lab ON pg.destination = lab.id"+
 						" WHERE pg.order_id=?";
 			SelectResult<PrintGroup> pgRes=runSelect(PrintGroup.class,sql, id);
 			if(!pgRes.isComplete()){
@@ -232,7 +232,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			//files
 			if(order.getPrintGroups()!=null && !order.getPrintGroups().isEmpty()){
 				sql="SELECT pgf.*, pg.path"+
-					" FROM phcdata.print_group pg INNER JOIN phcdata.print_group_file pgf ON pg.id = pgf.print_group"+
+					" FROM print_group pg INNER JOIN print_group_file pgf ON pg.id = pgf.print_group"+
 					" WHERE pg.id = ?";
 				for (PrintGroup pg : order.getPrintGroups()){
 					SelectResult<PrintGroupFile> fRes=runSelect(PrintGroupFile.class,sql, pg.getId());
@@ -245,9 +245,9 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			}
 			//techlog
 			sql="SELECT tl.* , tp.name tech_point_name, tp.tech_type tech_state, os.name tech_state_name"+
-				 " FROM phcdata.tech_log tl"+
-				 " INNER JOIN phcconfig.tech_point tp ON tl.src_id=tp.id"+
-				 " INNER JOIN phcconfig.order_state os ON os.id = tp.tech_type"+
+				 " FROM tech_log tl"+
+				 " INNER JOIN tech_point tp ON tl.src_id=tp.id"+
+				 " INNER JOIN order_state os ON os.id = tp.tech_type"+
 				 " WHERE tl.order_id=?"+
 				 " ORDER BY tl.log_date";
 			SelectResult<TechLog> tlRes=runSelect(TechLog.class, sql, id);
@@ -259,8 +259,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			
 			//extraState
 			sql="SELECT es.*, os.name state_name"+
-				" FROM phcdata.order_extra_state es"+
-				 " INNER JOIN phcconfig.order_state os ON os.id = es.state"+
+				" FROM order_extra_state es"+
+				 " INNER JOIN order_state os ON os.id = es.state"+
 				 " WHERE es.id = ?"+
 				" ORDER BY IFNULL(es.state_date, es.start_date)";
 			SelectResult<OrderExtraState> esRes=runSelect(OrderExtraState.class, sql, id);
@@ -272,8 +272,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			
 			//extraStateProlong
 			sql="SELECT es.*, os.name state_name"+
-					" FROM phcdata.order_exstate_prolong es"+
-					" INNER JOIN phcconfig.order_state os ON os.id=es.state"+
+					" FROM order_exstate_prolong es"+
+					" INNER JOIN order_state os ON os.id=es.state"+
 					" WHERE es.id=?"+
 					" ORDER BY es.state_date";
 			SelectResult<OrderExtraStateProlong> espRes=runSelect(OrderExtraStateProlong.class, sql, id);
@@ -285,7 +285,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 
 			//state log
 			sql="SELECT sl.*, os.name state_name"+
-					" FROM phcdata.state_log sl INNER JOIN phcconfig.order_state os ON sl.state = os.id"+
+					" FROM state_log sl INNER JOIN order_state os ON sl.state = os.id"+
 					" WHERE sl.order_id = ?";
 			SelectResult<StateLog> slgRes=runSelect(StateLog.class, sql, id);
 			if(!slgRes.isComplete()){
@@ -301,9 +301,9 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	public SelectResult<Order> loadOrderBySrcCode(String code, String id){
 		SelectResult<Order> result;
 		String sql="SELECT o.*, s.name source_name, os.name state_name"+
-					" FROM phcconfig.sources s"+
-					" INNER JOIN phcdata.orders o ON o.id= s.id || '_' || ?"+
-					" INNER JOIN phcconfig.order_state os ON o.state = os.id"+
+					" FROM sources s"+
+					" INNER JOIN orders o ON o.id= s.id || '_' || ?"+
+					" INNER JOIN order_state os ON o.state = os.id"+
 					" WHERE s.code=?";
 		result=runSelect(Order.class,sql, id, code);
 		if(result.isComplete()){
@@ -338,9 +338,9 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		if(in.length()>0) inList.add(in.toString());
 		
 		String sql="SELECT o.*, s.name source_name, os.name state_name"+
-					" FROM phcdata.orders o"+
-					" INNER JOIN phcconfig.order_state os ON o.state = os.id"+
-					" INNER JOIN phcconfig.sources s ON o.source = s.id"+
+					" FROM orders o"+
+					" INNER JOIN order_state os ON o.state = os.id"+
+					" INNER JOIN sources s ON o.source = s.id"+
 					" WHERE o.id ";
 		for (String where :inList){
 			subResult=runSelect(Order.class,sql+"IN ("+where+")");
@@ -356,15 +356,15 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 
 	@Override
 	public SelectResult<OrderExtraInfo> loadExtraIfo(String id, String subId){
-		String sql="SELECT ei.* FROM phcdata.order_extra_info ei WHERE ei.id=? AND ei.sub_id=?";
+		String sql="SELECT ei.* FROM order_extra_info ei WHERE ei.id=? AND ei.sub_id=?";
 		return runSelect(OrderExtraInfo.class,sql, id, subId);
 	}
 
 	@Override
 	public SelectResult<OrderExtraInfo> loadExtraIfoByPG(String pgId){
 		String sql="SELECT ei.*, pg.book_type"+
-					" FROM phcdata.print_group pg"+
-					" INNER JOIN phcdata.order_extra_info ei ON pg.order_id=ei.id AND pg.sub_id=ei.sub_id"+
+					" FROM print_group pg"+
+					" INNER JOIN order_extra_info ei ON pg.order_id=ei.id AND pg.sub_id=ei.sub_id"+
 					" WHERE pg.id=?";
 		return runSelect(OrderExtraInfo.class,sql, pgId);
 	}
@@ -454,26 +454,26 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		if(result.isComplete()) result=runInsertBatch(pgFiles);
 		if(result.isComplete()){
 			//set order state
-			String sql="UPDATE phcdata.orders SET state = ?, state_date = ?, reported_state=0 WHERE id = ? AND state > ?";
+			String sql="UPDATE orders SET state = ?, state_date = ?, reported_state=0 WHERE id = ? AND state > ?";
 			result=runDML(sql,210,dt,order_id,210);
 			//reset extra
-			sql="UPDATE phcdata.order_extra_state SET state_date=NULL WHERE id=? AND sub_id='' AND state IN (210,250)";
+			sql="UPDATE order_extra_state SET state_date=NULL WHERE id=? AND sub_id='' AND state IN (210,250)";
 			result=runDML(sql,order_id);
 		}
 		if(result.isComplete()){
 			//set suborders state
 			for(String subId : subIds){
-				String sql="UPDATE phcdata.suborders SET state = ?, state_date = ? WHERE order_id = ? AND sub_id = ?";
+				String sql="UPDATE suborders SET state = ?, state_date = ? WHERE order_id = ? AND sub_id = ?";
 				result=runDML(sql,210,dt,order_id,subId);
 				//reset extra
-				sql="UPDATE phcdata.order_extra_state SET state_date=NULL WHERE id=? AND sub_id=? AND state IN (210,250)";
+				sql="UPDATE order_extra_state SET state_date=NULL WHERE id=? AND sub_id=? AND state IN (210,250)";
 				result=runDML(sql, order_id, subId);
 			}
 		}
 		if(result.isComplete()){
 			//set parent pg state
 			for(String subId : parentIds){
-				String sql="UPDATE phcdata.print_group SET state = ?, state_date = ? WHERE id = ?";
+				String sql="UPDATE print_group SET state = ?, state_date = ? WHERE id = ?";
 				result=runDML(sql,251,dt,subId);
 			}
 		}
@@ -482,16 +482,16 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 
 	@Override
 	public SqlResult cleanUpOrder(String id){
-		//PROCEDURE phcdata.orderCleanUp(IN pId VARCHAR(50))
-		String sql= "{CALL phcdata.orderCleanUp(?)}";
+		//PROCEDURE orderCleanUp(IN pId VARCHAR(50))
+		String sql= "{CALL orderCleanUp(?)}";
 		return runCall(sql, id); 
 	}
 
 	@Override
 	public SqlResult cancelOrders(String[] ids){
 		SqlResult result= new SqlResult();
-		//PROCEDURE phcdata.orderCancel(IN pId VARCHAR(50))
-		String sql= "{CALL phcdata.orderCancel(?)}";
+		//PROCEDURE orderCancel(IN pId VARCHAR(50))
+		String sql= "{CALL orderCancel(?)}";
 		for (String id : ids){
 			result=runCall(sql, id);
 			if(!result.isComplete()) return result;

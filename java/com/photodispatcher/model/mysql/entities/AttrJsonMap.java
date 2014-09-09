@@ -4,7 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.attr_json_map")
+@Table(name = "attr_json_map")
 public class AttrJsonMap extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 	

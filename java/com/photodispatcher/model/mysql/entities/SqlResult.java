@@ -7,6 +7,7 @@ public class SqlResult implements Serializable {
 	
 	private boolean complete=true;
 	private int errCode=0;
+	private int resultCode=0;
 	private String errMesage;
 	private String sql;
 	
@@ -44,5 +45,11 @@ public class SqlResult implements Serializable {
 		this.setErrCode(from.getErrCode());
 		this.setErrMesage(from.getErrMesage());
 		this.setSql(from.getSql());
+	}
+	public int getResultCode() {
+		return resultCode;
+	}
+	public void setResultCode(int resultCode) {
+		this.resultCode = resultCode;
 	}
 }

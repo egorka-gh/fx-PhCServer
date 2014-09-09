@@ -4,7 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.layer_group")
+@Table(name = "layer_group")
 public class LayerGroup extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 	

@@ -4,7 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.order_state")
+@Table(name = "order_state")
 public class OrderState extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

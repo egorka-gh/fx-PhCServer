@@ -4,7 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.lab_rolls")
+@Table(name = "lab_rolls")
 public class LabRoll extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

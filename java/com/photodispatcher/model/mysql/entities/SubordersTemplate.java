@@ -5,7 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.suborders_template")
+@Table(name = "suborders_template")
 public class SubordersTemplate extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 	

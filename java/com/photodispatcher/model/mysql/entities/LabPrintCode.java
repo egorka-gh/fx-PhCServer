@@ -5,7 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.lab_print_code")
+@Table(name = "lab_print_code")
 public class LabPrintCode extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

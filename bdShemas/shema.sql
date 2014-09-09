@@ -1,15 +1,142 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.233.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 09.09.2014 11:58:55
+-- Дата скрипта: 09.09.2014 18:18:46
 -- Версия сервера: 5.1.73-community
 -- Версия клиента: 4.1
 --
 
 
-USE phcdata;
+CREATE TABLE IF NOT EXISTS attr_family (
+  id int(5) NOT NULL,
+  name varchar(50) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 4096
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
 
-CREATE TABLE order_exstate_prolong (
+CREATE TABLE IF NOT EXISTS book_part (
+  id int(5) NOT NULL,
+  name varchar(20) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 3276
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS book_synonym_type (
+  id int(5) NOT NULL,
+  name varchar(20) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 8192
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS book_type (
+  id int(5) NOT NULL,
+  name varchar(20) DEFAULT 'Наименование',
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 1820
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS content_filter (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  name varchar(50) DEFAULT NULL,
+  is_photo_allow tinyint(1) NOT NULL DEFAULT 0,
+  is_retail_allow tinyint(1) NOT NULL DEFAULT 0,
+  is_pro_allow tinyint(1) NOT NULL DEFAULT 0,
+  is_alias_filter tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 1
+AVG_ROW_LENGTH = 8192
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS lab_resize (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  width int(5) NOT NULL,
+  pixels int(5) NOT NULL DEFAULT 0,
+  PRIMARY KEY (id),
+  UNIQUE INDEX width (width)
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 13
+AVG_ROW_LENGTH = 1365
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS layer (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  name varchar(50) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 5
+AVG_ROW_LENGTH = 2730
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS layer_group (
+  id int(5) NOT NULL,
+  name varchar(50) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 4096
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS layer_tray (
+  id int(5) NOT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 2048
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS layerset_group (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  name varchar(50) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 2
+AVG_ROW_LENGTH = 8192
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS layerset_type (
+  id int(5) NOT NULL,
+  name varchar(20) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 5461
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS location_type (
+  id int(5) NOT NULL,
+  name varchar(30) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 4096
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS order_exstate_prolong (
   id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
   state int(10) DEFAULT 0,
@@ -22,7 +149,7 @@ AVG_ROW_LENGTH = 3276
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE order_extra_info (
+CREATE TABLE IF NOT EXISTS order_extra_info (
   id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
   endpaper varchar(100) DEFAULT NULL,
@@ -40,7 +167,7 @@ AVG_ROW_LENGTH = 377
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE order_extra_state (
+CREATE TABLE IF NOT EXISTS order_extra_state (
   id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
   state int(10) NOT NULL DEFAULT 0,
@@ -54,7 +181,21 @@ AVG_ROW_LENGTH = 216
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS order_state (
+  id int(5) NOT NULL,
+  name varchar(50) DEFAULT NULL,
+  runtime tinyint(1) DEFAULT 0,
+  extra tinyint(1) DEFAULT 0,
+  tech tinyint(1) DEFAULT 0,
+  book_part int(5) DEFAULT 0,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 297
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS orders (
   id varchar(50) NOT NULL DEFAULT '',
   source int(7) NOT NULL DEFAULT 0,
   src_id varchar(50) NOT NULL DEFAULT '',
@@ -75,7 +216,17 @@ AVG_ROW_LENGTH = 170
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE sources_sync (
+CREATE TABLE IF NOT EXISTS roll (
+  width int(5) NOT NULL,
+  pixels int(5) NOT NULL DEFAULT 0,
+  PRIMARY KEY (width)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 1820
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS sources_sync (
   id int(7) NOT NULL,
   sync int(11) NOT NULL DEFAULT 0,
   sync_date datetime DEFAULT NULL,
@@ -87,7 +238,30 @@ AVG_ROW_LENGTH = 2048
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE tech_unit (
+CREATE TABLE IF NOT EXISTS src_type_prop (
+  id int(5) NOT NULL,
+  name varchar(30) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 1638
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS tech_point (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  tech_type int(5) DEFAULT NULL,
+  name varchar(50) DEFAULT NULL,
+  tech_typeOld int(5) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 13
+AVG_ROW_LENGTH = 1260
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS tech_unit (
   order_id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
   pg_id varchar(50) NOT NULL DEFAULT '',
@@ -103,7 +277,7 @@ ENGINE = INNODB
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE tmp_orders (
+CREATE TABLE IF NOT EXISTS tmp_orders (
   id varchar(50) NOT NULL DEFAULT '',
   source int(7) NOT NULL DEFAULT 0,
   src_id varchar(50) NOT NULL DEFAULT '',
@@ -126,7 +300,90 @@ AVG_ROW_LENGTH = 100
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE print_group (
+CREATE TABLE IF NOT EXISTS week_days (
+  id int(5) NOT NULL,
+  name varchar(20) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 2340
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS attr_type (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  attr_fml int(5) NOT NULL,
+  name varchar(50) NOT NULL,
+  field varchar(20) NOT NULL,
+  list tinyint(1) NOT NULL DEFAULT 0,
+  persist tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_attr_type_attr_family_id FOREIGN KEY (attr_fml)
+  REFERENCES attr_family (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 31
+AVG_ROW_LENGTH = 655
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS book_synonym (
+  id int(7) NOT NULL AUTO_INCREMENT,
+  src_type int(7) NOT NULL,
+  synonym varchar(50) NOT NULL DEFAULT '',
+  book_type int(5) NOT NULL DEFAULT 0,
+  is_horizontal tinyint(1) DEFAULT 0,
+  synonym_type int(5) DEFAULT 0,
+  fb_alias varchar(50) DEFAULT NULL,
+  idOld int(7) DEFAULT NULL,
+  PRIMARY KEY (id),
+  UNIQUE INDEX UK_book_synonym (src_type, synonym, synonym_type),
+  CONSTRAINT FK_book_synonym_book_synonym_type_id FOREIGN KEY (synonym_type)
+  REFERENCES book_synonym_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_book_synonym_book_type_id FOREIGN KEY (book_type)
+  REFERENCES book_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 284
+AVG_ROW_LENGTH = 155
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS content_filter_alias (
+  filter int(5) NOT NULL,
+  alias int(11) NOT NULL,
+  PRIMARY KEY (filter, alias),
+  CONSTRAINT FK_content_filter_alias_content_filter_id FOREIGN KEY (filter)
+  REFERENCES content_filter (id) ON DELETE CASCADE ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS layerset (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  layerset_group int(5) NOT NULL DEFAULT 0,
+  subset_type int(5) NOT NULL DEFAULT 0,
+  name varchar(50) DEFAULT NULL,
+  book_type int(5) DEFAULT 0,
+  pdf tinyint(1) DEFAULT 0,
+  interlayer_thickness int(5) DEFAULT 0,
+  passover tinyint(1) DEFAULT 0,
+  book_check_off tinyint(1) DEFAULT 0,
+  epaper_check_off tinyint(1) DEFAULT 0,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_layerset_layerset_group_id FOREIGN KEY (layerset_group)
+  REFERENCES layerset_group (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_layerset_layerset_type_id FOREIGN KEY (subset_type)
+  REFERENCES layerset_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 18
+AVG_ROW_LENGTH = 963
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS print_group (
   id varchar(50) NOT NULL DEFAULT '',
   order_id varchar(50) NOT NULL,
   sub_id varchar(50) NOT NULL DEFAULT '',
@@ -160,7 +417,38 @@ AVG_ROW_LENGTH = 228
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE state_log (
+CREATE TABLE IF NOT EXISTS src_type (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  loc_type int(5) NOT NULL DEFAULT 0,
+  name varchar(50) DEFAULT NULL,
+  state int(5) DEFAULT 0,
+  book_part int(5) NOT NULL DEFAULT 0,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_src_type_book_part_id FOREIGN KEY (book_part)
+  REFERENCES book_part (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_src_type_location_type_id FOREIGN KEY (loc_type)
+  REFERENCES location_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 12
+AVG_ROW_LENGTH = 712
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS srvc_type (
+  id int(5) NOT NULL,
+  loc_type int(5) NOT NULL,
+  name varchar(30) DEFAULT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_srvc_type_location_type_id FOREIGN KEY (loc_type)
+  REFERENCES location_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 4096
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS state_log (
   id int(10) NOT NULL AUTO_INCREMENT,
   order_id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
@@ -178,7 +466,7 @@ AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE suborders (
+CREATE TABLE IF NOT EXISTS suborders (
   id varchar(50) NOT NULL DEFAULT '',
   order_id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
@@ -197,7 +485,7 @@ AVG_ROW_LENGTH = 109
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE tech_log (
+CREATE TABLE IF NOT EXISTS tech_log (
   id int(10) NOT NULL AUTO_INCREMENT,
   order_id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
@@ -217,7 +505,89 @@ AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE print_group_file (
+CREATE TABLE IF NOT EXISTS attr_json_map (
+  src_type int(5) NOT NULL,
+  attr_type int(5) NOT NULL,
+  json_key varchar(50) NOT NULL,
+  PRIMARY KEY (src_type, attr_type),
+  CONSTRAINT FK_attr_json_map_attr_type_id FOREIGN KEY (attr_type)
+  REFERENCES attr_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_attr_json_map_src_type_id FOREIGN KEY (src_type)
+  REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 819
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS attr_value (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  attr_tp int(5) NOT NULL,
+  value varchar(50) NOT NULL,
+  locked tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_attr_value_attr_type_id FOREIGN KEY (attr_tp)
+  REFERENCES attr_type (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 36
+AVG_ROW_LENGTH = 712
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS lab (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  src_type int(5) NOT NULL,
+  name varchar(50) DEFAULT NULL,
+  hot varchar(100) DEFAULT NULL,
+  hot_nfs varchar(100) DEFAULT NULL,
+  queue_limit int(5) DEFAULT 0,
+  is_active tinyint(1) DEFAULT 1,
+  is_managed tinyint(1) DEFAULT 0,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_lab_src_type_id FOREIGN KEY (src_type)
+  REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 19
+AVG_ROW_LENGTH = 1820
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS layer_sequence (
+  layerset int(5) NOT NULL,
+  mode int(5) DEFAULT 0,
+  layer_group int(5) NOT NULL,
+  seqorder int(5) NOT NULL,
+  seqlayer int(5) NOT NULL,
+  PRIMARY KEY (layerset, layer_group, seqorder),
+  CONSTRAINT FK_layer_sequence_layer_group_id FOREIGN KEY (layer_group)
+  REFERENCES layer_group (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_layer_sequence_layer_id FOREIGN KEY (seqlayer)
+  REFERENCES layer (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_layer_sequence_layerset_id FOREIGN KEY (layerset)
+  REFERENCES layerset (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 372
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS layerset_synonym (
+  id int(7) NOT NULL AUTO_INCREMENT,
+  item_id int(5) NOT NULL,
+  synonym varchar(50) NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_layerset_synonym_layerset_id FOREIGN KEY (item_id)
+  REFERENCES layerset (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 7
+AVG_ROW_LENGTH = 3276
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS print_group_file (
   id int(10) NOT NULL AUTO_INCREMENT,
   print_group varchar(50) NOT NULL DEFAULT '',
   file_name varchar(100) DEFAULT '',
@@ -235,10 +605,239 @@ AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
+CREATE TABLE IF NOT EXISTS sources (
+  id int(7) NOT NULL AUTO_INCREMENT,
+  name varchar(50) DEFAULT 'Наименование',
+  type int(5) NOT NULL,
+  online tinyint(1) NOT NULL DEFAULT 0,
+  code char(1) DEFAULT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_sources_src_type_id FOREIGN KEY (type)
+  REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 21
+AVG_ROW_LENGTH = 780
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS src_type_prop_val (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  src_type int(5) NOT NULL,
+  src_type_prop int(5) NOT NULL,
+  value varchar(100) NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_src_type_prop_val_src_type_id FOREIGN KEY (src_type)
+  REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_src_type_prop_val_src_type_prop_id FOREIGN KEY (src_type_prop)
+  REFERENCES src_type_prop (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 17
+AVG_ROW_LENGTH = 1024
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS suborders_template (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  src_type int(5) NOT NULL,
+  sub_src_type int(5) NOT NULL,
+  folder varchar(50) NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_suborders_template_src_type_id FOREIGN KEY (src_type)
+  REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_suborders_template_sub_src_type_id FOREIGN KEY (sub_src_type)
+  REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 2
+AVG_ROW_LENGTH = 16384
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS attr_synonym (
+  id int(7) NOT NULL AUTO_INCREMENT,
+  src_type int(5) NOT NULL,
+  attr_val int(5) NOT NULL,
+  synonym varchar(50) NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_attr_synonym_attr_value_id FOREIGN KEY (attr_val)
+  REFERENCES attr_value (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT FK_attr_synonym_src_type_id FOREIGN KEY (src_type)
+  REFERENCES src_type (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 90
+AVG_ROW_LENGTH = 287
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS book_pg_template (
+  id int(7) NOT NULL AUTO_INCREMENT,
+  book int(7) NOT NULL,
+  book_part int(5) NOT NULL,
+  width int(5) NOT NULL,
+  height int(5) NOT NULL,
+  height_add int(5) DEFAULT 0,
+  paper int(5) NOT NULL DEFAULT 0,
+  frame int(5) NOT NULL DEFAULT 0,
+  correction int(5) NOT NULL DEFAULT 0,
+  cutting int(5) NOT NULL DEFAULT 0,
+  is_duplex tinyint(1) NOT NULL DEFAULT 0,
+  is_pdf tinyint(1) NOT NULL DEFAULT 0,
+  is_sheet_ready tinyint(1) DEFAULT 0,
+  sheet_width int(5) DEFAULT NULL,
+  sheet_len int(5) DEFAULT NULL,
+  page_width int(5) DEFAULT NULL,
+  page_len int(5) DEFAULT NULL,
+  page_hoffset int(5) DEFAULT 0,
+  font_size int(5) DEFAULT 0,
+  font_offset varchar(10) DEFAULT '+500+0',
+  fontv_size int(5) DEFAULT 0,
+  fontv_offset varchar(10) DEFAULT '+0+500',
+  notching int(5) DEFAULT 0,
+  stroke int(5) DEFAULT 0,
+  bar_size int(5) DEFAULT 0,
+  bar_offset varchar(10) DEFAULT '+0+0',
+  tech_bar int(5) DEFAULT 0,
+  tech_add int(5) DEFAULT 4,
+  tech_bar_step float(5, 2) DEFAULT 4.00,
+  tech_bar_color varchar(6) DEFAULT '200000',
+  is_tech_center tinyint(1) DEFAULT 1,
+  tech_bar_offset varchar(10) DEFAULT '+0-200',
+  is_tech_top tinyint(1) DEFAULT 0,
+  tech_bar_toffset varchar(10) DEFAULT '+0+0',
+  is_tech_bot tinyint(1) DEFAULT 0,
+  tech_bar_boffset varchar(10) DEFAULT '+0+0',
+  backprint int(5) DEFAULT 0,
+  tech_stair_add int(5) DEFAULT 0,
+  tech_stair_step int(5) DEFAULT 0,
+  is_tech_stair_top tinyint(1) DEFAULT 0,
+  is_tech_stair_bot tinyint(1) DEFAULT 0,
+  PRIMARY KEY (id),
+  UNIQUE INDEX UK_book_pg_template (book, book_part),
+  CONSTRAINT FK_book_pg_template_attr_value_id FOREIGN KEY (paper)
+  REFERENCES attr_value (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_book_pg_template_book_part_id FOREIGN KEY (book_part)
+  REFERENCES book_part (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_book_pg_template_book_synonym_id FOREIGN KEY (book)
+  REFERENCES book_synonym (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 474
+AVG_ROW_LENGTH = 267
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS lab_device (
+  id int(7) NOT NULL AUTO_INCREMENT,
+  lab int(5) NOT NULL,
+  name varchar(50) DEFAULT NULL,
+  speed1 float(5, 2) DEFAULT 0.00,
+  speed2 float(5, 2) DEFAULT 0.00,
+  tech_point int(5) DEFAULT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_lab_device_lab_id FOREIGN KEY (lab)
+  REFERENCES lab (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT FK_lab_device_tech_point_id FOREIGN KEY (tech_point)
+  REFERENCES tech_point (id) ON DELETE SET NULL ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 11
+AVG_ROW_LENGTH = 2048
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS lab_print_code (
+  id int(7) NOT NULL AUTO_INCREMENT,
+  src_type int(5) NOT NULL,
+  src_id int(5) DEFAULT 0,
+  prt_code varchar(20) NOT NULL DEFAULT '',
+  width int(5) NOT NULL,
+  height int(5) NOT NULL,
+  paper int(5) NOT NULL,
+  frame int(5) NOT NULL,
+  correction int(5) NOT NULL,
+  cutting int(5) NOT NULL,
+  is_duplex tinyint(1) DEFAULT 0,
+  is_pdf tinyint(1) DEFAULT 0,
+  roll int(5) DEFAULT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_lab_print_code_attr_value_corr FOREIGN KEY (correction)
+  REFERENCES attr_value (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_lab_print_code_attr_value_cut FOREIGN KEY (cutting)
+  REFERENCES attr_value (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_lab_print_code_attr_value_frame FOREIGN KEY (frame)
+  REFERENCES attr_value (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_lab_print_code_attr_value_paper FOREIGN KEY (paper)
+  REFERENCES attr_value (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_lab_print_code_src_type_id FOREIGN KEY (src_type)
+  REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 2246
+AVG_ROW_LENGTH = 80
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS services (
+  src_id int(7) NOT NULL,
+  srvc_id int(5) NOT NULL,
+  url varchar(250) DEFAULT NULL,
+  user varchar(50) DEFAULT NULL,
+  pass varchar(50) DEFAULT NULL,
+  connections int(5) DEFAULT 3,
+  PRIMARY KEY (src_id, srvc_id),
+  CONSTRAINT FK_services_sources_id FOREIGN KEY (src_id)
+  REFERENCES sources (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT FK_services_srvc_type_id FOREIGN KEY (srvc_id)
+  REFERENCES srvc_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 356
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS lab_rolls (
+  lab_device int(7) NOT NULL,
+  width int(5) NOT NULL,
+  paper int(5) NOT NULL,
+  len_std int(7) DEFAULT 0,
+  len int(7) DEFAULT 0,
+  is_online tinyint(1) DEFAULT 0,
+  PRIMARY KEY (lab_device, width, paper),
+  CONSTRAINT FK_lab_rolls_attr_value_id FOREIGN KEY (paper)
+  REFERENCES attr_value (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_lab_rolls_lab_device_id FOREIGN KEY (lab_device)
+  REFERENCES lab_device (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT FK_lab_rolls_roll_width FOREIGN KEY (width)
+  REFERENCES roll (width) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 585
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS lab_timetable (
+  lab_device int(7) NOT NULL,
+  day_id int(5) NOT NULL,
+  time_from datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
+  time_to datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
+  is_online tinyint(1) DEFAULT 0,
+  PRIMARY KEY (lab_device, day_id),
+  CONSTRAINT FK_lab_timetable_lab_device_id FOREIGN KEY (lab_device)
+  REFERENCES lab_device (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT FK_lab_timetable_week_days_id FOREIGN KEY (day_id)
+  REFERENCES week_days (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 292
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
 DELIMITER $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE extraStateProlong (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int, IN pComment varchar(250))
+CREATE PROCEDURE extraStateProlong (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int, IN pComment varchar(250))
 MODIFIES SQL DATA
 BEGIN
   INSERT IGNORE INTO order_exstate_prolong
@@ -247,8 +846,7 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE extraStateReset (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int)
+CREATE PROCEDURE extraStateReset (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int)
 BEGIN
   DECLARE vMinExtraState int;
   DECLARE vNow datetime DEFAULT NOW();
@@ -310,8 +908,7 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE extraStateSet (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int, IN pDate datetime)
+CREATE PROCEDURE extraStateSet (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int, IN pDate datetime)
 MODIFIES SQL DATA
 BEGIN
   DECLARE vMinExtraState int;
@@ -329,7 +926,7 @@ BEGIN
   ON DUPLICATE KEY UPDATE state_date = pDate;
 
   SELECT os.book_part INTO vBookPart
-  FROM phcconfig.order_state os
+  FROM order_state os
   WHERE os.id = pState;
 
   IF pSubOrder = '' THEN
@@ -385,7 +982,7 @@ BEGIN
 
   -- update pg state
   IF vBookPart > 0 THEN
-    UPDATE phcdata.print_group pg
+    UPDATE print_group pg
     SET pg.state = pState,
         pg.state_date = pDate
     WHERE pg.order_id = pOrder
@@ -396,8 +993,7 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE extraStateSetByPGroup (IN pPrintGroup varchar(50), IN pState int)
+CREATE PROCEDURE extraStateSetByPGroup (IN pPrintGroup varchar(50), IN pState int)
 MODIFIES SQL DATA
 COMMENT 'dont use 4 print states'
 BEGIN
@@ -422,8 +1018,7 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE extraStateStart (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int, IN pDate datetime)
+CREATE PROCEDURE extraStateStart (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int, IN pDate datetime)
 MODIFIES SQL DATA
 BEGIN
   IF pDate IS NULL THEN
@@ -441,8 +1036,7 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE logStateByPg (IN pPgId varchar(50), IN pSate int, IN pMsg varchar(250))
+CREATE PROCEDURE logStateByPg (IN pPgId varchar(50), IN pSate int, IN pMsg varchar(250))
 MODIFIES SQL DATA
 BEGIN
   INSERT INTO state_log
@@ -453,23 +1047,22 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE orderCancel (IN pId varchar(50))
+CREATE PROCEDURE orderCancel (IN pId varchar(50))
 MODIFIES SQL DATA
 BEGIN
   DECLARE vDate datetime DEFAULT NOW();
 
-  UPDATE phcdata.orders o
+  UPDATE orders o
   SET o.state = 510,
       o.state_date = vDate
   WHERE o.id = pId;
 
-  UPDATE phcdata.print_group pg
+  UPDATE print_group pg
   SET pg.state = 510,
       pg.state_date = vDate
   WHERE pg.order_id = pId;
 
-  UPDATE phcdata.suborders s
+  UPDATE suborders s
   SET s.state = 510,
       s.state_date = vDate
   WHERE s.order_id = pId;
@@ -477,22 +1070,21 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE orderCleanUp (IN pId varchar(50))
+CREATE PROCEDURE orderCleanUp (IN pId varchar(50))
 MODIFIES SQL DATA
 BEGIN
   DECLARE vDate datetime DEFAULT NOW();
 
   DELETE
-    FROM phcdata.print_group
+    FROM print_group
   WHERE order_id = pId;
   DELETE
-    FROM phcdata.order_extra_info
+    FROM order_extra_info
   WHERE id = pId;
   DELETE
-    FROM phcdata.suborders
+    FROM suborders
   WHERE order_id = pId;
-  UPDATE phcdata.orders
+  UPDATE orders
   SET state = 100,
       state_date = vDate
   WHERE id = pId;
@@ -502,13 +1094,12 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE printMarkInPrint (IN pPgroupId varchar(50))
+CREATE PROCEDURE printMarkInPrint (IN pPgroupId varchar(50))
 MODIFIES SQL DATA
 BEGIN
   DECLARE vPgId varchar(50);
 
-  SET vPgId = phcdata.printPg2Reprint(pPgroupId);
+  SET vPgId = printPg2Reprint(pPgroupId);
   UPDATE print_group pg
   SET pg.state = 255,
       pg.state_date = NOW()
@@ -517,8 +1108,7 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE printStateCancel (IN pPgroupId varchar(50))
+CREATE PROCEDURE printStateCancel (IN pPgroupId varchar(50))
 MODIFIES SQL DATA
 BEGIN
   DECLARE vOrderId varchar(50);
@@ -567,8 +1157,7 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE printStateEnd (IN pPgroupId varchar(50))
+CREATE PROCEDURE printStateEnd (IN pPgroupId varchar(50))
 MODIFIES SQL DATA
 BEGIN
   DECLARE vOrderId varchar(50);
@@ -613,8 +1202,7 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE printStateStart (IN pPgroupId varchar(50), IN lab int)
+CREATE PROCEDURE printStateStart (IN pPgroupId varchar(50), IN lab int)
 MODIFIES SQL DATA
 BEGIN
   DECLARE vOrderId varchar(50);
@@ -667,8 +1255,7 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE sync ()
+CREATE PROCEDURE sync ()
 MODIFIES SQL DATA
 COMMENT 'синхронизация всех активных сайтов'
 BEGIN
@@ -676,7 +1263,7 @@ BEGIN
   DECLARE vIsEnd int DEFAULT (0);
   DECLARE vCur CURSOR FOR
   SELECT s.id
-  FROM phcconfig.sources s
+  FROM sources s
   WHERE s.online = 1;
 
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET vIsEnd = 1;
@@ -688,15 +1275,14 @@ wet:
     IF vIsEnd THEN
       LEAVE wet;
     END IF;
-    CALL phcdata.syncSource(vId);
+    CALL syncSource(vId);
   END LOOP wet;
   CLOSE vCur;
 
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE syncSource (IN pSourceId int)
+CREATE PROCEDURE syncSource (IN pSourceId int)
 MODIFIES SQL DATA
 main:
 BEGIN
@@ -711,13 +1297,13 @@ BEGIN
 
   IF NOT EXISTS
     (SELECT 1
-      FROM phcdata.tmp_orders t
+      FROM tmp_orders t
       WHERE t.source = pSourceId) THEN
     LEAVE main;
   END IF;
 
   -- reset sync state
-  UPDATE phcdata.sources_sync ss
+  UPDATE sources_sync ss
   SET ss.sync_date = NOW(),
       ss.sync_state = 0
   WHERE ss.id = pSourceId;
@@ -727,100 +1313,100 @@ BEGIN
 
     -- get next sync
     SELECT ss.sync INTO vSync
-    FROM phcdata.sources_sync ss
+    FROM sources_sync ss
     WHERE ss.id = pSourceId;
     SET vSync = IFNULL(vSync, 0) + 1;
 
     -- set sync
-    UPDATE phcdata.tmp_orders to1
+    UPDATE tmp_orders to1
     SET to1.sync = vSync
     WHERE to1.source = pSourceId;
 
     -- add new
     -- search new
-    UPDATE phcdata.tmp_orders to1
+    UPDATE tmp_orders to1
     SET to1.is_new = IFNULL(
     (SELECT 0
-      FROM phcdata.orders o
+      FROM orders o
       WHERE o.id = to1.id), 1)
     WHERE to1.source = pSourceId;
     -- insert new
-    INSERT INTO phcdata.orders
+    INSERT INTO orders
     (id, source, src_id, src_date, state, state_date, ftp_folder, fotos_num, sync, is_preload, data_ts)
       SELECT id, source, src_id, src_date, state, state_date, ftp_folder, fotos_num, sync, is_preload, data_ts
-      FROM phcdata.tmp_orders to1
+      FROM tmp_orders to1
       WHERE to1.source = pSourceId
       AND to1.is_new = 1;
     -- remove new
     DELETE
-      FROM phcdata.tmp_orders
+      FROM tmp_orders
     WHERE source = pSourceId
       AND is_new = 1;
 
     -- update sync
-    UPDATE phcdata.orders
+    UPDATE orders
     SET sync = vSync
     WHERE orders.id IN
     (SELECT id
-      FROM phcdata.tmp_orders to1
+      FROM tmp_orders to1
       WHERE to1.source = pSourceId);
 
     -- check/process preload
     -- update printgroup 
-    UPDATE phcdata.print_group
+    UPDATE print_group
     SET state = 200,
         state_date = NOW()
     WHERE state = 199
     AND order_id IN
     (SELECT t.id
-      FROM phcdata.tmp_orders t
+      FROM tmp_orders t
       WHERE t.source = pSourceId
       AND t.is_preload = 0);
     -- suborders
-    UPDATE phcdata.suborders s
+    UPDATE suborders s
     SET s.state = 200,
         s.state_date = NOW()
     WHERE s.state = 199
     AND s.order_id IN
     (SELECT t.id
-      FROM phcdata.tmp_orders t
+      FROM tmp_orders t
       WHERE t.source = pSourceId
       AND t.is_preload = 0);
     -- orders
-    UPDATE phcdata.orders o
+    UPDATE orders o
     SET state = 200,
         state_date = NOW(),
         is_preload = 0
     WHERE o.state = 199
     AND o.id IN
     (SELECT t.id
-      FROM phcdata.tmp_orders t
+      FROM tmp_orders t
       WHERE t.source = pSourceId
       AND t.is_preload = 0);
 
     -- cancel not in sync
     -- cancel print groups
-    UPDATE phcdata.print_group
+    UPDATE print_group
     SET state = 510,
         state_date = NOW()
     WHERE order_id IN
     (SELECT id
-      FROM phcdata.orders o
+      FROM orders o
       WHERE o.source = pSourceId
       AND o.state BETWEEN 100 AND 200
       AND o.sync != vSync);
     -- cancel suborders
-    UPDATE phcdata.suborders s
+    UPDATE suborders s
     SET s.state = 510,
         s.state_date = NOW()
     WHERE s.order_id IN
     (SELECT id
-      FROM phcdata.orders o
+      FROM orders o
       WHERE o.source = pSourceId
       AND o.state BETWEEN 100 AND 200
       AND o.sync != vSync);
     -- cancel orders
-    UPDATE phcdata.orders o
+    UPDATE orders o
     SET state = 510,
         state_date = NOW()
     WHERE o.source = pSourceId
@@ -828,13 +1414,13 @@ BEGIN
     AND o.sync != vSync;
 
     -- finde reload candidate by project data time
-    UPDATE phcdata.tmp_orders t
+    UPDATE tmp_orders t
     SET t.reload = 1
     WHERE t.source = pSourceId
     AND t.data_ts IS NOT NULL
     AND EXISTS
     (SELECT 1
-      FROM phcdata.orders o
+      FROM orders o
       WHERE o.id = t.id
       AND o.data_ts IS NOT NULL
       AND o.data_ts != o.data_ts
@@ -842,56 +1428,56 @@ BEGIN
     -- clean orders 4 reload
     -- clean print_group
     DELETE
-      FROM phcdata.print_group
+      FROM print_group
     WHERE order_id IN
       (SELECT id
-        FROM phcdata.tmp_orders t
+        FROM tmp_orders t
         WHERE t.source = pSourceId
         AND t.reload = 1);
     -- clean extra info
     DELETE
-      FROM phcdata.order_extra_info
+      FROM order_extra_info
     WHERE id IN
       (SELECT id
-        FROM phcdata.tmp_orders t
+        FROM tmp_orders t
         WHERE t.source = pSourceId
         AND t.reload = 1);
     -- clean suborder
     DELETE
-      FROM phcdata.suborders
+      FROM suborders
     WHERE order_id IN
       (SELECT id
-        FROM phcdata.tmp_orders t
+        FROM tmp_orders t
         WHERE t.source = pSourceId
         AND t.reload = 1);
     -- reset order state
-    UPDATE phcdata.orders o
+    UPDATE orders o
     SET o.state = 100,
         o.state_date = NOW()
     WHERE o.id IN
     (SELECT id
-      FROM phcdata.tmp_orders t
+      FROM tmp_orders t
       WHERE t.source = pSourceId
       AND t.reload = 1);
     -- set project data time
-    UPDATE phcdata.orders o
+    UPDATE orders o
     SET o.data_ts =
     (SELECT tt.data_ts
-      FROM phcdata.tmp_orders tt
+      FROM tmp_orders tt
       WHERE tt.id = o.id)
     WHERE o.source = pSourceId
     AND EXISTS
     (SELECT 1
-      FROM phcdata.tmp_orders t
+      FROM tmp_orders t
       WHERE t.id = o.id
       AND t.data_ts IS NOT NULL
       AND t.data_ts != IFNULL(o.data_ts, ''));
 
     -- finalize
     DELETE
-      FROM phcdata.tmp_orders
+      FROM tmp_orders
     WHERE source = pSourceId;
-    INSERT INTO phcdata.sources_sync
+    INSERT INTO sources_sync
     (id, sync, sync_date, sync_state)
       VALUES (pSourceId, vSync, NOW(), 1)
     ON DUPLICATE KEY UPDATE sync = vSync, sync_date = NOW(), sync_state = 1;
@@ -899,8 +1485,7 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE techLogPg (IN pPgroup varchar(50), IN pSheet int, IN pTechPoint int, IN pDate datetime)
+CREATE PROCEDURE techLogPg (IN pPgroup varchar(50), IN pSheet int, IN pTechPoint int, IN pDate datetime)
 MODIFIES SQL DATA
 BEGIN
   DECLARE vOrderId varchar(50);
@@ -916,13 +1501,13 @@ BEGIN
   WHERE pg.id = pPgroup;
 
   SELECT tp.tech_type INTO vState
-  FROM phcconfig.tech_point tp
+  FROM tech_point tp
   WHERE tp.id = pTechPoint;
 
   IF vOrderId IS NOT NULL THEN
     IF vState <= 300 THEN
       -- may be reprint
-      SET pPgroup = phcdata.printPg2Reprint(pPgroup);
+      SET pPgroup = printPg2Reprint(pPgroup);
     END IF;
     -- log
     INSERT INTO tech_log
@@ -935,8 +1520,7 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-PROCEDURE techUnitCalc (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pPgroup varchar(50), IN pState int, IN pBooks int, IN pSheets int)
+CREATE PROCEDURE techUnitCalc (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pPgroup varchar(50), IN pState int, IN pBooks int, IN pSheets int)
 MODIFIES SQL DATA
 BEGIN
   DECLARE vDone int;
@@ -955,7 +1539,7 @@ BEGIN
 
   SELECT IFNULL(COUNT(DISTINCT tl.sheet), 0), IFNULL(MIN(tl.log_date), NOW()), IFNULL(MAX(tl.log_date), NOW()) INTO vDone, vStart, vEnd
   FROM tech_log tl
-    INNER JOIN phcconfig.tech_point tp ON tl.src_id = tp.id
+    INNER JOIN tech_point tp ON tl.src_id = tp.id
   WHERE tl.order_id = pOrder
   AND tl.sub_id = pSubOrder
   AND tl.print_group = pPgroup
@@ -1006,8 +1590,7 @@ BEGIN
 END
 $$
 
-CREATE DEFINER = 'root'@'localhost'
-FUNCTION printPg2Reprint (pPgroupId varchar(50))
+CREATE FUNCTION printPg2Reprint (pPgroupId varchar(50))
 RETURNS varchar(50) charset utf8
 READS SQL DATA
 BEGIN
@@ -1028,9 +1611,7 @@ BEGIN
 END
 $$
 
-CREATE
-DEFINER = 'root'@'localhost'
-TRIGGER tg_orders_ai
+CREATE TRIGGER tg_orders_ai
 AFTER INSERT
 ON orders
 FOR EACH ROW
@@ -1041,9 +1622,7 @@ BEGIN
 END
 $$
 
-CREATE
-DEFINER = 'root'@'localhost'
-TRIGGER tg_orders_au
+CREATE TRIGGER tg_orders_au
 AFTER UPDATE
 ON orders
 FOR EACH ROW
@@ -1056,9 +1635,7 @@ BEGIN
 END
 $$
 
-CREATE
-DEFINER = 'root'@'localhost'
-TRIGGER tg_print_group_ai
+CREATE TRIGGER tg_print_group_ai
 AFTER INSERT
 ON print_group
 FOR EACH ROW
@@ -1069,9 +1646,7 @@ BEGIN
 END
 $$
 
-CREATE
-DEFINER = 'root'@'localhost'
-TRIGGER tg_print_group_au
+CREATE TRIGGER tg_print_group_au
 AFTER UPDATE
 ON print_group
 FOR EACH ROW
@@ -1084,9 +1659,7 @@ BEGIN
 END
 $$
 
-CREATE
-DEFINER = 'root'@'localhost'
-TRIGGER tg_suborders_ai
+CREATE TRIGGER tg_suborders_ai
 AFTER INSERT
 ON suborders
 FOR EACH ROW
@@ -1097,9 +1670,7 @@ BEGIN
 END
 $$
 
-CREATE
-DEFINER = 'root'@'localhost'
-TRIGGER tg_suborders_au
+CREATE TRIGGER tg_suborders_au
 AFTER UPDATE
 ON suborders
 FOR EACH ROW

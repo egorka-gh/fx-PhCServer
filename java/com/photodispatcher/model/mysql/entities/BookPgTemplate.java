@@ -5,7 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.book_pg_template")
+@Table(name = "book_pg_template")
 public class BookPgTemplate extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 	

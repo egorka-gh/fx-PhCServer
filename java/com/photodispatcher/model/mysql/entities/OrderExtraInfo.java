@@ -4,7 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcdata.order_extra_info")
+@Table(name = "order_extra_info")
 public class OrderExtraInfo extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

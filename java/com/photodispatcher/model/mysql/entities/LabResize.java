@@ -5,7 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.lab_resize")
+@Table(name = "lab_resize")
 public class LabResize extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

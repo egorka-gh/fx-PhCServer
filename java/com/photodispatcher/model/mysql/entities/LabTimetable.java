@@ -6,7 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.lab_timetable")
+@Table(name = "lab_timetable")
 public class LabTimetable extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

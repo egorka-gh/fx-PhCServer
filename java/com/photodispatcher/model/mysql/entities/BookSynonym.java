@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-@Table(name = "phcconfig.book_synonym")
+@Table(name = "book_synonym")
 public class BookSynonym extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

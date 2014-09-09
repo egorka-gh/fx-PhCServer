@@ -5,7 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcdata.print_group_file")
+@Table(name = "print_group_file")
 public class PrintGroupFile extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

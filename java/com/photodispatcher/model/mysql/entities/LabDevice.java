@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-@Table(name = "phcconfig.lab_device")
+@Table(name = "lab_device")
 public class LabDevice extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

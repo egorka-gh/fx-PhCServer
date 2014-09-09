@@ -4,7 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.layer_sequence")
+@Table(name = "layer_sequence")
 public class LayerSequence extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 	

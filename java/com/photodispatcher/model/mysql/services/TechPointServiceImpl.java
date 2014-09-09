@@ -16,8 +16,8 @@ public class TechPointServiceImpl extends AbstractDAO implements TechPointServic
 	public SelectResult<TechPoint> loadAll(int type){
 		SelectResult<TechPoint> result;
 		String sql="SELECT s.*, os.name tech_type_name, os.book_part tech_book_part"+
-				" FROM phcconfig.tech_point s"+
-				" INNER JOIN phcconfig.order_state os ON s.tech_type = os.id"+
+				" FROM tech_point s"+
+				" INNER JOIN order_state os ON s.tech_type = os.id"+
 				" WHERE s.id!=0";
 		if (type!=0) sql+=" AND s.tech_type = ?";
 			sql+=" ORDER BY s.name";

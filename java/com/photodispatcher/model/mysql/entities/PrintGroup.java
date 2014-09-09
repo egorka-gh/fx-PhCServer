@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-@Table(name = "phcdata.print_group")
+@Table(name = "print_group")
 public class PrintGroup extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 

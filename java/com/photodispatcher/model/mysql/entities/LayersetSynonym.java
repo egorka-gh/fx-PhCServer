@@ -5,7 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "phcconfig.layerset_synonym")
+@Table(name = "layerset_synonym")
 public class LayersetSynonym extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 	

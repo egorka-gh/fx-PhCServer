@@ -30,7 +30,7 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 	@Override
 	public SelectResult<LayersetGroup> loadLayersetGroups(){
 		SelectResult<LayersetGroup> result;
-		String sql="SELECT s.* FROM phcconfig.layerset_group s";
+		String sql="SELECT s.* FROM layerset_group s";
 		result=runSelect(LayersetGroup.class, sql);
 		return result;
 	}
@@ -44,8 +44,8 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 	public SelectResult<Layerset> loadLayersets(int type, int techGroup){
 		SelectResult<Layerset> result;
 		String sql="SELECT s.*, bt.name book_type_name"+
-					" FROM phcconfig.layerset s"+
-					" INNER JOIN phcconfig.book_type bt ON bt.id=s.book_type"+
+					" FROM layerset s"+
+					" INNER JOIN book_type bt ON bt.id=s.book_type"+
 					" WHERE s.subset_type=? AND ? IN (-1, s.layerset_group)"+
 				" ORDER BY s.passover DESC, s.name";
 		result= runSelect(Layerset.class, sql, type, techGroup);
@@ -98,7 +98,7 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 
 	@Override
 	public SelectResult<LayersetSynonym> loadLayersetSynonyms(int itemId){
-		String sql="SELECT s.* FROM phcconfig.layerset_synonym s";
+		String sql="SELECT s.* FROM layerset_synonym s";
 		if(itemId!=-1){
 			sql+=" WHERE s.item_id=?";
 		}
@@ -127,7 +127,7 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 
 		SqlResult result=runPersistBatch(persistList);
 		if(result.isComplete() && delId.length()>0){
-			String sql="DELETE FROM phcconfig.layerset_synonym WHERE id IN("+delId+")";
+			String sql="DELETE FROM layerset_synonym WHERE id IN("+delId+")";
 			result=runDML(sql);
 		}
 		return result;
@@ -137,7 +137,7 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 	@Override
 	public SelectResult<Layer> loadLayers(){
 		SelectResult<Layer> result;
-		String sql="SELECT s.id, s.name FROM phcconfig.layer s";
+		String sql="SELECT s.id, s.name FROM layer s";
 		result=runSelect(Layer.class, sql);
 		return result;
 	}
@@ -157,8 +157,8 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 	private SelectResult<LayerSequence> loadSequence(int layerset){
 		SelectResult<LayerSequence> result;
 		String sql="SELECT la.*, l.name  seqlayer_name"+
-					" FROM phcconfig.layer_sequence la"+ 
-					" INNER JOIN phcconfig.layer l ON l.id=la.seqlayer"+
+					" FROM layer_sequence la"+ 
+					" INNER JOIN layer l ON l.id=la.seqlayer"+
 					" WHERE la.layerset=?"+
 					" ORDER BY la.layer_group, la.seqorder";
 		result=runSelect(LayerSequence.class, sql, layerset);
@@ -168,8 +168,8 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 	private SelectResult<LayerSequence> loadSequence(int layerset, int layergroup){
 		SelectResult<LayerSequence> result;
 		String sql="SELECT la.*, l.name  seqlayer_name"+
-					" FROM phcconfig.layer_sequence la"+ 
-					" INNER JOIN phcconfig.layer l ON l.id=la.seqlayer"+
+					" FROM layer_sequence la"+ 
+					" INNER JOIN layer l ON l.id=la.seqlayer"+
 					" WHERE la.layerset=? AND la.layer_group=?"+
 					" ORDER BY la.layer_group, la.seqorder";
 		result=runSelect(LayerSequence.class, sql, layerset, layergroup);
@@ -199,7 +199,7 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 		}
 		//del unused
 		if(result.isComplete()){
-			String sql="DELETE FROM phcconfig.layer_sequence WHERE layerset=? AND layer_group=? AND seqorder>?";
+			String sql="DELETE FROM layer_sequence WHERE layerset=? AND layer_group=? AND seqorder>?";
 			result=runDML(sql, layerset, layerGroup, seq);
 		}
 		if(result.isComplete()){
@@ -212,7 +212,7 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 
 	@Override
 	public SelectResult<Integer> bookNumByPGroup(String pgId){
-		String sql="SELECT * FROM phcdata.print_group WHERE id=?";
+		String sql="SELECT * FROM print_group WHERE id=?";
 		SelectResult<PrintGroup> pgRes= runSelect(PrintGroup.class, sql, pgId);
 
 		SelectResult<Integer> result= new SelectResult<Integer>();
@@ -229,7 +229,7 @@ public class TechPickerServiceImpl extends AbstractDAO implements TechPickerServ
 	@Override
 	public SelectResult<Endpaper> loadEndpapers(){
 		SelectResult<Endpaper> result;
-		String sql="SELECT s.id, s.name FROM phcconfig.endpaper s";
+		String sql="SELECT s.id, s.name FROM endpaper s";
 		result=runSelect(Endpaper.class, sql);
 		return result;
 	}
