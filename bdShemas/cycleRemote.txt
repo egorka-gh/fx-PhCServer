@@ -1,0 +1,14 @@
+עטלגלגונ 289053256
+ןאסס: 7777777
+mysql local ip http://192.168.2.23/
+
+בה
+host kadr.net
+user cycle
+pass cycle3411
+fotocycle_cycle
+
+isp
+https://kadr.net/manager
+fotocycle
+fotocycle1

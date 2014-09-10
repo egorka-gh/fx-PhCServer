@@ -165,4 +165,27 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 		return result;
 	}
 
+	@Override
+	public SqlResult extraStateStartOTK(String orderId, String subId, int stateStart){
+		int resultCode=0;
+		SqlResult result= new SqlResult();
+		String sql="SELECT IFNULL(MAX(IF(state_date IS NOT NULL, 2, 1)), 0) AS value"+
+					" FROM order_extra_state"+
+					" WHERE id = ? AND sub_id = ? AND state = ?)";
+		SelectResult<FieldValue> subres=runSelect(FieldValue.class, sql, orderId, subId, stateStart);
+		if(!subres.isComplete()){
+			result.cloneError(subres);
+			return result;
+		}
+		if(subres.getData()!= null && !subres.getData().isEmpty()) resultCode=subres.getData().get(0).getValue();
+		if(resultCode>0){
+			result.setResultCode(resultCode);
+			return result;
+		}
+		Date date= new Date();
+		//start 
+		result= extraStateStart(orderId, subId, stateStart, date);
+		return result;
+	}
+
 }

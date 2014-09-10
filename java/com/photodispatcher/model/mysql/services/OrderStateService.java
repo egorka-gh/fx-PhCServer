@@ -32,5 +32,6 @@ public interface OrderStateService {
 	
 	public SelectResult<OrderExtraState> loadMonitorEState(int startState, int techState, int endState);
 	public SqlResult extraStateStartMonitor(String orderId, String subId, int stateStart, int stateStop);
+	public SqlResult extraStateStartOTK(String orderId, String subId, int stateStart);
 
 }

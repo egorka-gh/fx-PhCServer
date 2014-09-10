@@ -48,7 +48,7 @@
 	<!--
 	 ! Build WAR.
 	 !-->
-	<target name="build.war" depends="ivy.resolve">
+	<target name="build.war"> <!-- depends="ivy.resolve"> !-->
 
 		<copy todir="WebContent/WEB-INF/lib">
 			<fileset dir="lib" includes="*.jar">
