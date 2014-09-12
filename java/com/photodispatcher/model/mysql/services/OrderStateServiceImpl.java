@@ -171,7 +171,7 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 		SqlResult result= new SqlResult();
 		String sql="SELECT IFNULL(MAX(IF(state_date IS NOT NULL, 2, 1)), 0) AS value"+
 					" FROM order_extra_state"+
-					" WHERE id = ? AND sub_id = ? AND state = ?)";
+					" WHERE id = ? AND sub_id = ? AND state = ?";
 		SelectResult<FieldValue> subres=runSelect(FieldValue.class, sql, orderId, subId, stateStart);
 		if(!subres.isComplete()){
 			result.cloneError(subres);

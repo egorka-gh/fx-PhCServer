@@ -5,11 +5,15 @@
 		auth="Container" 
 		type="javax.sql.DataSource"
 	    maxActive="300" maxIdle="50" maxWait="10000"
-	    username="root" password="3411" 
 		driverClassName="com.mysql.jdbc.Driver"
 		validationQuery="SELECT 1"
 		testOnBorrow="true"
+	    username="root" password="3411" 
 	    url="jdbc:mysql://127.0.0.1:3306/phcconfig?generateSimpleParameterMetadata=true&amp;rewriteBatchedStatements=true&amp;autoReconnect=true"/> 
+
+<!-- 	    username="cycle" password="cycle3411"  -->
+<!-- 		url="jdbc:mysql://kadr.net:3306/fotocycle_cycle?generateSimpleParameterMetadata=true&amp;rewriteBatchedStatements=true&amp;autoReconnect=true"/> -->
+
 <!-- 	    &amp;useServerPrepStmts=true -->
 <!-- &amp;rewriteBatchedStatements=true -->
 </Context>

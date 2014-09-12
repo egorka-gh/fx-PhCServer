@@ -1,13 +1,13 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.233.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 09.09.2014 18:18:46
+-- Дата скрипта: 12.09.2014 18:13:22
 -- Версия сервера: 5.1.73-community
 -- Версия клиента: 4.1
 --
 
 
-CREATE TABLE IF NOT EXISTS attr_family (
+CREATE TABLE attr_family (
   id int(5) NOT NULL,
   name varchar(50) DEFAULT NULL,
   PRIMARY KEY (id)
@@ -17,7 +17,7 @@ AVG_ROW_LENGTH = 4096
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS book_part (
+CREATE TABLE book_part (
   id int(5) NOT NULL,
   name varchar(20) DEFAULT NULL,
   PRIMARY KEY (id)
@@ -27,7 +27,7 @@ AVG_ROW_LENGTH = 3276
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS book_synonym_type (
+CREATE TABLE book_synonym_type (
   id int(5) NOT NULL,
   name varchar(20) DEFAULT NULL,
   PRIMARY KEY (id)
@@ -37,7 +37,7 @@ AVG_ROW_LENGTH = 8192
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS book_type (
+CREATE TABLE book_type (
   id int(5) NOT NULL,
   name varchar(20) DEFAULT 'Наименование',
   PRIMARY KEY (id)
@@ -47,7 +47,7 @@ AVG_ROW_LENGTH = 1820
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS content_filter (
+CREATE TABLE content_filter (
   id int(5) NOT NULL AUTO_INCREMENT,
   name varchar(50) DEFAULT NULL,
   is_photo_allow tinyint(1) NOT NULL DEFAULT 0,
@@ -62,7 +62,7 @@ AVG_ROW_LENGTH = 8192
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS lab_resize (
+CREATE TABLE lab_resize (
   id int(5) NOT NULL AUTO_INCREMENT,
   width int(5) NOT NULL,
   pixels int(5) NOT NULL DEFAULT 0,
@@ -75,7 +75,7 @@ AVG_ROW_LENGTH = 1365
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS layer (
+CREATE TABLE layer (
   id int(5) NOT NULL AUTO_INCREMENT,
   name varchar(50) DEFAULT NULL,
   PRIMARY KEY (id)
@@ -86,7 +86,7 @@ AVG_ROW_LENGTH = 2730
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS layer_group (
+CREATE TABLE layer_group (
   id int(5) NOT NULL,
   name varchar(50) DEFAULT NULL,
   PRIMARY KEY (id)
@@ -96,7 +96,7 @@ AVG_ROW_LENGTH = 4096
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS layer_tray (
+CREATE TABLE layer_tray (
   id int(5) NOT NULL,
   PRIMARY KEY (id)
 )
@@ -105,7 +105,7 @@ AVG_ROW_LENGTH = 2048
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS layerset_group (
+CREATE TABLE layerset_group (
   id int(5) NOT NULL AUTO_INCREMENT,
   name varchar(50) DEFAULT NULL,
   PRIMARY KEY (id)
@@ -116,7 +116,7 @@ AVG_ROW_LENGTH = 8192
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS layerset_type (
+CREATE TABLE layerset_type (
   id int(5) NOT NULL,
   name varchar(20) DEFAULT NULL,
   PRIMARY KEY (id)
@@ -126,7 +126,7 @@ AVG_ROW_LENGTH = 5461
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS location_type (
+CREATE TABLE location_type (
   id int(5) NOT NULL,
   name varchar(30) DEFAULT NULL,
   PRIMARY KEY (id)
@@ -136,7 +136,7 @@ AVG_ROW_LENGTH = 4096
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS order_exstate_prolong (
+CREATE TABLE order_exstate_prolong (
   id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
   state int(10) DEFAULT 0,
@@ -149,7 +149,7 @@ AVG_ROW_LENGTH = 3276
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS order_extra_info (
+CREATE TABLE order_extra_info (
   id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
   endpaper varchar(100) DEFAULT NULL,
@@ -167,7 +167,7 @@ AVG_ROW_LENGTH = 377
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS order_extra_state (
+CREATE TABLE order_extra_state (
   id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
   state int(10) NOT NULL DEFAULT 0,
@@ -181,7 +181,7 @@ AVG_ROW_LENGTH = 216
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS order_state (
+CREATE TABLE order_state (
   id int(5) NOT NULL,
   name varchar(50) DEFAULT NULL,
   runtime tinyint(1) DEFAULT 0,
@@ -195,7 +195,7 @@ AVG_ROW_LENGTH = 297
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS orders (
+CREATE TABLE orders (
   id varchar(50) NOT NULL DEFAULT '',
   source int(7) NOT NULL DEFAULT 0,
   src_id varchar(50) NOT NULL DEFAULT '',
@@ -216,7 +216,7 @@ AVG_ROW_LENGTH = 170
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS roll (
+CREATE TABLE roll (
   width int(5) NOT NULL,
   pixels int(5) NOT NULL DEFAULT 0,
   PRIMARY KEY (width)
@@ -226,7 +226,7 @@ AVG_ROW_LENGTH = 1820
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS sources_sync (
+CREATE TABLE sources_sync (
   id int(7) NOT NULL,
   sync int(11) NOT NULL DEFAULT 0,
   sync_date datetime DEFAULT NULL,
@@ -238,7 +238,7 @@ AVG_ROW_LENGTH = 2048
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS src_type_prop (
+CREATE TABLE src_type_prop (
   id int(5) NOT NULL,
   name varchar(30) DEFAULT NULL,
   PRIMARY KEY (id)
@@ -248,7 +248,7 @@ AVG_ROW_LENGTH = 1638
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS tech_point (
+CREATE TABLE tech_point (
   id int(5) NOT NULL AUTO_INCREMENT,
   tech_type int(5) DEFAULT NULL,
   name varchar(50) DEFAULT NULL,
@@ -261,7 +261,7 @@ AVG_ROW_LENGTH = 1260
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS tech_unit (
+CREATE TABLE tech_unit (
   order_id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
   pg_id varchar(50) NOT NULL DEFAULT '',
@@ -277,7 +277,7 @@ ENGINE = INNODB
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS tmp_orders (
+CREATE TABLE tmp_orders (
   id varchar(50) NOT NULL DEFAULT '',
   source int(7) NOT NULL DEFAULT 0,
   src_id varchar(50) NOT NULL DEFAULT '',
@@ -300,7 +300,7 @@ AVG_ROW_LENGTH = 100
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS week_days (
+CREATE TABLE week_days (
   id int(5) NOT NULL,
   name varchar(20) DEFAULT NULL,
   PRIMARY KEY (id)
@@ -310,7 +310,7 @@ AVG_ROW_LENGTH = 2340
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS attr_type (
+CREATE TABLE attr_type (
   id int(5) NOT NULL AUTO_INCREMENT,
   attr_fml int(5) NOT NULL,
   name varchar(50) NOT NULL,
@@ -327,7 +327,7 @@ AVG_ROW_LENGTH = 655
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS book_synonym (
+CREATE TABLE book_synonym (
   id int(7) NOT NULL AUTO_INCREMENT,
   src_type int(7) NOT NULL,
   synonym varchar(50) NOT NULL DEFAULT '',
@@ -349,7 +349,7 @@ AVG_ROW_LENGTH = 155
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS content_filter_alias (
+CREATE TABLE content_filter_alias (
   filter int(5) NOT NULL,
   alias int(11) NOT NULL,
   PRIMARY KEY (filter, alias),
@@ -360,7 +360,7 @@ ENGINE = INNODB
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS layerset (
+CREATE TABLE layerset (
   id int(5) NOT NULL AUTO_INCREMENT,
   layerset_group int(5) NOT NULL DEFAULT 0,
   subset_type int(5) NOT NULL DEFAULT 0,
@@ -383,7 +383,7 @@ AVG_ROW_LENGTH = 963
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS print_group (
+CREATE TABLE print_group (
   id varchar(50) NOT NULL DEFAULT '',
   order_id varchar(50) NOT NULL,
   sub_id varchar(50) NOT NULL DEFAULT '',
@@ -417,7 +417,7 @@ AVG_ROW_LENGTH = 228
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS src_type (
+CREATE TABLE src_type (
   id int(5) NOT NULL AUTO_INCREMENT,
   loc_type int(5) NOT NULL DEFAULT 0,
   name varchar(50) DEFAULT NULL,
@@ -435,7 +435,7 @@ AVG_ROW_LENGTH = 712
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS srvc_type (
+CREATE TABLE srvc_type (
   id int(5) NOT NULL,
   loc_type int(5) NOT NULL,
   name varchar(30) DEFAULT NULL,
@@ -448,7 +448,7 @@ AVG_ROW_LENGTH = 4096
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS state_log (
+CREATE TABLE state_log (
   id int(10) NOT NULL AUTO_INCREMENT,
   order_id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
@@ -461,12 +461,12 @@ CREATE TABLE IF NOT EXISTS state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 39864
+AUTO_INCREMENT = 79952
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS suborders (
+CREATE TABLE suborders (
   id varchar(50) NOT NULL DEFAULT '',
   order_id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
@@ -485,7 +485,7 @@ AVG_ROW_LENGTH = 109
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS tech_log (
+CREATE TABLE tech_log (
   id int(10) NOT NULL AUTO_INCREMENT,
   order_id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
@@ -500,12 +500,12 @@ CREATE TABLE IF NOT EXISTS tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 482916
+AUTO_INCREMENT = 431158
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS attr_json_map (
+CREATE TABLE attr_json_map (
   src_type int(5) NOT NULL,
   attr_type int(5) NOT NULL,
   json_key varchar(50) NOT NULL,
@@ -520,7 +520,7 @@ AVG_ROW_LENGTH = 819
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS attr_value (
+CREATE TABLE attr_value (
   id int(5) NOT NULL AUTO_INCREMENT,
   attr_tp int(5) NOT NULL,
   value varchar(50) NOT NULL,
@@ -535,7 +535,7 @@ AVG_ROW_LENGTH = 712
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS lab (
+CREATE TABLE lab (
   id int(5) NOT NULL AUTO_INCREMENT,
   src_type int(5) NOT NULL,
   name varchar(50) DEFAULT NULL,
@@ -554,7 +554,7 @@ AVG_ROW_LENGTH = 1820
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS layer_sequence (
+CREATE TABLE layer_sequence (
   layerset int(5) NOT NULL,
   mode int(5) DEFAULT 0,
   layer_group int(5) NOT NULL,
@@ -573,7 +573,7 @@ AVG_ROW_LENGTH = 372
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS layerset_synonym (
+CREATE TABLE layerset_synonym (
   id int(7) NOT NULL AUTO_INCREMENT,
   item_id int(5) NOT NULL,
   synonym varchar(50) NOT NULL,
@@ -587,7 +587,7 @@ AVG_ROW_LENGTH = 3276
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS print_group_file (
+CREATE TABLE print_group_file (
   id int(10) NOT NULL AUTO_INCREMENT,
   print_group varchar(50) NOT NULL DEFAULT '',
   file_name varchar(100) DEFAULT '',
@@ -600,12 +600,12 @@ CREATE TABLE IF NOT EXISTS print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2081376
+AUTO_INCREMENT = 2081426
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS sources (
+CREATE TABLE sources (
   id int(7) NOT NULL AUTO_INCREMENT,
   name varchar(50) DEFAULT 'Наименование',
   type int(5) NOT NULL,
@@ -621,7 +621,7 @@ AVG_ROW_LENGTH = 780
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS src_type_prop_val (
+CREATE TABLE src_type_prop_val (
   id int(5) NOT NULL AUTO_INCREMENT,
   src_type int(5) NOT NULL,
   src_type_prop int(5) NOT NULL,
@@ -638,7 +638,7 @@ AVG_ROW_LENGTH = 1024
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS suborders_template (
+CREATE TABLE suborders_template (
   id int(5) NOT NULL AUTO_INCREMENT,
   src_type int(5) NOT NULL,
   sub_src_type int(5) NOT NULL,
@@ -655,7 +655,7 @@ AVG_ROW_LENGTH = 16384
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS attr_synonym (
+CREATE TABLE attr_synonym (
   id int(7) NOT NULL AUTO_INCREMENT,
   src_type int(5) NOT NULL,
   attr_val int(5) NOT NULL,
@@ -672,7 +672,7 @@ AVG_ROW_LENGTH = 287
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS book_pg_template (
+CREATE TABLE book_pg_template (
   id int(7) NOT NULL AUTO_INCREMENT,
   book int(7) NOT NULL,
   book_part int(5) NOT NULL,
@@ -729,7 +729,7 @@ AVG_ROW_LENGTH = 267
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS lab_device (
+CREATE TABLE lab_device (
   id int(7) NOT NULL AUTO_INCREMENT,
   lab int(5) NOT NULL,
   name varchar(50) DEFAULT NULL,
@@ -748,7 +748,7 @@ AVG_ROW_LENGTH = 2048
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS lab_print_code (
+CREATE TABLE lab_print_code (
   id int(7) NOT NULL AUTO_INCREMENT,
   src_type int(5) NOT NULL,
   src_id int(5) DEFAULT 0,
@@ -780,7 +780,7 @@ AVG_ROW_LENGTH = 80
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS services (
+CREATE TABLE services (
   src_id int(7) NOT NULL,
   srvc_id int(5) NOT NULL,
   url varchar(250) DEFAULT NULL,
@@ -798,7 +798,7 @@ AVG_ROW_LENGTH = 356
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS lab_rolls (
+CREATE TABLE lab_rolls (
   lab_device int(7) NOT NULL,
   width int(5) NOT NULL,
   paper int(5) NOT NULL,
@@ -818,7 +818,7 @@ AVG_ROW_LENGTH = 585
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS lab_timetable (
+CREATE TABLE lab_timetable (
   lab_device int(7) NOT NULL,
   day_id int(5) NOT NULL,
   time_from datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
@@ -1564,7 +1564,7 @@ BEGIN
       UPDATE print_group pg
       SET pg.state = pState,
           pg.state_date = vEnd
-      WHERE pg.id = pPrintGroup;
+      WHERE pg.id = pPgroup;
     END IF;
     IF pState = 300 THEN
       -- print state, check pringroups
@@ -1684,3 +1684,21 @@ END
 $$
 
 DELIMITER ;
+
+CREATE OR REPLACE
+VIEW suborderotkv
+AS
+SELECT `es`.`id` AS `order_id`, `es`.`sub_id` AS `sub_id`, `es`.`state` AS `state`, `es`.`start_date` AS `state_date`, COUNT(DISTINCT `tl`.`sheet`) AS `books_done`, ifnull(`s`.`prt_qty`, ifnull((SELECT MAX(`pg`.`book_num`) FROM `print_group` `pg` WHERE ((`pg`.`order_id` = `es`.`id`) AND (`pg`.`sub_id` = `es`.`sub_id`))), 0)) AS `prt_qty`
+FROM ((((`order_extra_state` `es`
+  LEFT JOIN `orders` `o` ON ((`o`.`id` = `es`.`id`)))
+  LEFT JOIN `suborders` `s` ON (((`es`.`id` = `s`.`order_id`)
+    AND (`es`.`sub_id` = `s`.`sub_id`))))
+  LEFT JOIN `tech_point` `tp` ON ((`tp`.`tech_type` = `es`.`state`)))
+  LEFT JOIN `tech_log` `tl` ON (((`tl`.`src_id` = `tp`.`id`)
+    AND (`tl`.`order_id` = `es`.`id`)
+    AND (`tl`.`sub_id` = `es`.`sub_id`)
+    AND (`tl`.`sheet` <> 0))))
+WHERE ((`es`.`state` = 450)
+AND isnull(`es`.`state_date`))
+GROUP BY `es`.`id`, `es`.`sub_id`
+ORDER BY `es`.`start_date`;

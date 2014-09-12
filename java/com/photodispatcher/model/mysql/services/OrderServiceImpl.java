@@ -110,7 +110,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	public SelectResult<SubOrder> loadSubOrderByPg(String pgId){
 		SelectResult<SubOrder> result;
 		String sql="SELECT pg.order_id, pg.sub_id, sr.name source_name, sr.code source_code,"+
-						" os.name state_name, IFNULL(s.state, o.state) state, IFNULL(s.state_date, o.state_date) state_date"+
+						" os.name state_name, IFNULL(s.state, o.state) state, IFNULL(s.state_date, o.state_date) state_date,"+
+						" IFNULL(s.prt_qty, pg.book_num) prt_qty"+
 					" FROM print_group pg"+
 					" INNER JOIN orders o ON pg.order_id = o.id"+
 					" INNER JOIN sources sr ON o.source = sr.id"+
@@ -134,14 +135,15 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	public SelectResult<SubOrder> loadSubOrderByOrder(String orderId){
 		SelectResult<SubOrder> result;
 		String sql="SELECT o.id order_id, '' sub_id, sr.name source_name, sr.code source_code,"+
-					  " os.name state_name, o.state, o.state_date"+
+					  " os.name state_name, o.state, o.state_date,"+
+					  " (SELECT MAX(pg.book_num) FROM print_group pg WHERE o.id=pg.order_id AND pg.sub_id='') prt_qty"+
 					" FROM orders o"+ 
 					" INNER JOIN sources sr ON o.source = sr.id"+
 					" INNER JOIN order_state os ON os.id= o.state"+
 					" WHERE o.id LIKE ? AND NOT EXISTS(SELECT 1 FROM suborders s WHERE s.order_id = o.id)"+
 					" UNION ALL"+
 					" SELECT s.order_id, s.sub_id, sr.name source_name, sr.code source_code,"+
-					   " os.name state_name, s.state, s.state_date"+
+					   " os.name state_name, s.state, s.state_date, s.prt_qty"+
 					" FROM suborders s"+
 					" INNER JOIN orders o ON s.order_id = o.id"+
 					" INNER JOIN sources sr ON o.source = sr.id"+
@@ -160,6 +162,12 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public SelectResult<SubOrder> loadSubOrdersOtk(){
+		String sql="SELECT * FROM suborderOtkV";
+		return runSelect(SubOrder.class,sql);
 	}
 
 	
@@ -217,6 +225,83 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 				return result;
 			}
 			order.setPrintGroups(pgRes.getData());
+		}
+		return result;
+	}
+
+	@Override
+	public SelectResult<Order> loadOrder4Otk(String id, String sub_id){
+		SelectResult<Order> result=loadOrder(id);
+		Order order;
+		if(!result.isComplete()) return result;
+		if(sub_id==null) sub_id="";
+		if(!result.getData().isEmpty()){
+			order=result.getData().get(0);
+			boolean hasSo=sub_id.length()>0;
+			//load direct childs
+			String sql;
+			if(hasSo){
+			//subOrders
+				sql="SELECT so.*, st.name src_type_name, bt.name proj_type_name"+
+						" FROM suborders so"+
+						" INNER JOIN src_type st ON so.src_type=st.id"+
+						" INNER JOIN book_type bt ON so.proj_type=bt.id"+
+						" WHERE so.order_id=? AND so.sub_id=?";
+				SelectResult<SubOrder> soRes=runSelect(SubOrder.class,sql, id, sub_id);
+				if(!soRes.isComplete()){
+					result.cloneError(soRes);
+					return result;
+				}
+				SubOrder so;
+				if(!soRes.getData().isEmpty()){
+					so=soRes.getData().get(0);
+					order.setSuborders(new ArrayList<SubOrder>());
+					order.getSuborders().add(so);
+					//subOrders extra info
+					SelectResult<OrderExtraInfo> soei=loadExtraIfo(id, so.getSub_id());
+					if(!soei.isComplete()){
+						result.cloneError(soei);
+						return result;
+					}
+					if(soei.getData()!=null && !soei.getData().isEmpty()){
+						so.setExtraInfo(soei.getData().get(0));
+						order.setExtraInfo(so.getExtraInfo());
+					}
+				}
+			}
+			//pgs
+			sql="SELECT pg.*,"+
+						" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name,"+
+						" bt.name book_type_name, bp.name book_part_name"+
+					" FROM print_group pg"+
+						" INNER JOIN attr_value p ON pg.paper = p.id"+
+						" INNER JOIN attr_value fr ON pg.frame = fr.id"+
+						" INNER JOIN attr_value cr ON pg.correction = cr.id"+
+						" INNER JOIN attr_value cu ON pg.cutting = cu.id"+
+						" INNER JOIN book_type bt ON pg.book_type = bt.id"+
+						" INNER JOIN book_part bp ON pg.book_part = bp.id"+
+					" WHERE pg.order_id=? AND pg.sub_id=?";
+			SelectResult<PrintGroup> pgRes=runSelect(PrintGroup.class,sql, id, sub_id);
+			if(!pgRes.isComplete()){
+				result.cloneError(pgRes);
+				return result;
+			}
+			order.setPrintGroups(pgRes.getData());
+
+			/*
+			//techlog books
+			sql="SELECT (tl.sheet DIV 100)*100 sheet, MIN(tl.log_date) log_date"+
+				" FROM tech_point tp"+
+				" INNER JOIN tech_log tl ON tl.src_id=tp.id"+
+				" WHERE tp.tech_type=450 AND tl.sheet>99 AND tl.order_id=? AND tl.sub_id=?"+
+				" GROUP BY (tl.sheet DIV 100)*100";
+			SelectResult<TechLog> tlRes=runSelect(TechLog.class, sql, id, sub_id);
+			if(!tlRes.isComplete()){
+				result.cloneError(tlRes);
+				return result;
+			}
+			order.setTechLog(tlRes.getData());
+			*/
 		}
 		return result;
 	}

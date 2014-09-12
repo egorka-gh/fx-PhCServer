@@ -46,6 +46,10 @@ public class SubOrder extends AbstractEntity {
     private String source_code;
     @Column(name="state_name", updatable=false, insertable=false)
     private String state_name;
+    
+    //4 otk
+    @Column(name="books_done", updatable=false, insertable=false)
+    private int books_done;
 
     @Transient
     private OrderExtraInfo extraInfo;
@@ -133,6 +137,12 @@ public class SubOrder extends AbstractEntity {
 	}
 	public void setState_name(String state_name) {
 		this.state_name = state_name;
+	}
+	public int getBooks_done() {
+		return books_done;
+	}
+	public void setBooks_done(int books_done) {
+		this.books_done = books_done;
 	}
 
 }

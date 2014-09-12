@@ -35,5 +35,6 @@ public interface OrderService {
 	public SelectResult<Order> loadOrderVsChilds(String id);
 	public SelectResult<SubOrder> loadSubOrderByPg(String pgId);
 	public SelectResult<SubOrder> loadSubOrderByOrder(String orderId);
-
+	public SelectResult<SubOrder> loadSubOrdersOtk();
+	public SelectResult<Order> loadOrder4Otk(String id, String sub_id);
 }

@@ -1,7 +1,10 @@
 package com.photodispatcher.model.mysql.services;
 
+
 import org.springframework.stereotype.Service;
 
+import com.photodispatcher.model.mysql.entities.DmlResult;
+import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 import com.photodispatcher.model.mysql.entities.TechLog;
 
@@ -9,9 +12,27 @@ import com.photodispatcher.model.mysql.entities.TechLog;
 public class TechServiceImpl extends AbstractDAO implements TechService {
 
 	@Override
+	public DmlResult<TechLog> log(TechLog item){
+		return runInsert(item);
+	}
+	
+	@Override
 	public SqlResult logByPg(TechLog item){
 		//PROCEDURE techLogPg(IN pPgroup VARCHAR(50), IN pSheet INT, IN pTechPoint INT, IN pDate DATETIME)
 		String sql= "{CALL techLogPg(?,?,?,?)}";
 		return runCall(sql, item.getPrint_group(), item.getSheet(), item.getSrc_id(), item.getLog_date());
 	}
+	
+	@Override
+	public SelectResult<TechLog> loadBooks4Otk(String id, String sub_id){
+		if(sub_id==null) sub_id="";
+		//techlog books
+		String sql="SELECT (tl.sheet DIV 100)*100 sheet, MIN(tl.log_date) log_date"+
+					" FROM tech_point tp"+
+					" INNER JOIN tech_log tl ON tl.src_id=tp.id"+
+					" WHERE tp.tech_type=450 AND tl.sheet>99 AND tl.order_id=? AND tl.sub_id=?"+
+					" GROUP BY (tl.sheet DIV 100)*100";
+		return runSelect(TechLog.class, sql, id, sub_id);
+	}
+
 }
