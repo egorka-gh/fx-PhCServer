@@ -1,7 +1,7 @@
 --
--- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.233.0
+-- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 12.09.2014 18:13:22
+-- Дата скрипта: 17.09.2014 10:57:49
 -- Версия сервера: 5.1.73-community
 -- Версия клиента: 4.1
 --
@@ -300,6 +300,27 @@ AVG_ROW_LENGTH = 100
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
+CREATE TABLE tmpt_spy (
+  row_num int(11) NOT NULL AUTO_INCREMENT,
+  id varchar(50) DEFAULT '',
+  sub_id varchar(50) DEFAULT '',
+  state int(10) NOT NULL DEFAULT 0,
+  start_date datetime DEFAULT NULL,
+  state_date datetime DEFAULT NULL,
+  lastDate datetime DEFAULT NULL,
+  resetDate datetime DEFAULT NULL,
+  reset tinyint(4) DEFAULT 0,
+  book_type int(5) DEFAULT 0,
+  delay int(10) DEFAULT 0,
+  alias varchar(50) DEFAULT NULL,
+  PRIMARY KEY (row_num)
+)
+ENGINE = MYISAM
+AUTO_INCREMENT = 1
+AVG_ROW_LENGTH = 216
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
 CREATE TABLE week_days (
   id int(5) NOT NULL,
   name varchar(20) DEFAULT NULL,
@@ -461,7 +482,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 79952
+AUTO_INCREMENT = 79974
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -500,7 +521,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 431158
+AUTO_INCREMENT = 431162
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -600,7 +621,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2081426
+AUTO_INCREMENT = 2081448
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -1033,6 +1054,89 @@ BEGIN
     (id, sub_id, state, start_date)
       VALUES (pOrder, '', pState, pDate);
   END IF;
+END
+$$
+
+CREATE PROCEDURE loadSpy (IN pDate datetime, IN pFromState int, IN pToState int, IN pBookPart int)
+BEGIN
+  -- create temp
+  CREATE TEMPORARY TABLE IF NOT EXISTS tmp_spy LIKE tmpt_spy;
+  -- get last states by condition
+  INSERT INTO tmp_spy
+  (id, sub_id, state, start_date, state_date, lastDate)
+    SELECT t.id, t.sub_id, t.state, t.start_date, t.state_date, t.lastDt
+    FROM
+    (SELECT oes.id, oes.sub_id, oes.state, oes.start_date, oes.state_date, IFNULL(oes.state_date, oes.start_date) lastDt
+      FROM order_extra_state oes
+        INNER JOIN order_state os ON oes.state = os.id
+      WHERE oes.state BETWEEN pFromState AND pToState
+      AND (pBookPart = 0
+      OR os.book_part IN (0, pBookPart))
+      AND NOT EXISTS
+      (SELECT 1
+        FROM order_extra_state oes1
+        WHERE oes.id = oes1.id
+        AND oes.sub_id = oes1.sub_id
+        AND oes1.state = 450)
+      ORDER BY IFNULL(oes.state_date, oes.start_date) DESC) t
+    GROUP BY t.id, t.sub_id;
+  -- remove by date
+  DELETE
+    FROM tmp_spy
+  WHERE lastDate >= pDate;
+  -- remove photo
+  DELETE
+    FROM tmp_spy
+  WHERE NOT EXISTS
+    (SELECT 1
+      FROM print_group pg
+      WHERE pg.order_id = tmp_spy.id
+      AND pg.sub_id = tmp_spy.sub_id
+      AND pg.book_type > 0);
+  -- set reset date
+  UPDATE tmp_spy
+  SET resetDate =
+  (SELECT MAX(oep.state_date)
+    FROM order_exstate_prolong oep
+    WHERE oep.id = tmp_spy.id
+    AND oep.sub_id = tmp_spy.sub_id
+    AND oep.state = tmp_spy.state)
+  WHERE EXISTS
+  (SELECT 1
+    FROM order_exstate_prolong oep
+    WHERE oep.id = tmp_spy.id
+    AND oep.sub_id = tmp_spy.sub_id
+    AND oep.state = tmp_spy.state);
+  UPDATE tmp_spy
+  SET reset = 1
+  WHERE resetDate >= pDate;
+  -- set book type
+  UPDATE tmp_spy t
+  SET book_type =
+  (SELECT MAX(pg.book_type)
+    FROM print_group pg
+    WHERE pg.order_id = t.id
+    AND pg.sub_id = t.sub_id);
+  -- set book alias
+  UPDATE tmp_spy t
+  SET alias =
+  (SELECT MAX(pg.path)
+    FROM print_group pg
+    WHERE pg.order_id = t.id
+    AND pg.sub_id = t.sub_id)
+  WHERE t.sub_id = '';
+  -- calc delay in hours
+  UPDATE tmp_spy
+  SET delay = TIMESTAMPDIFF(HOUR, lastDate, NOW());
+
+  -- result select
+  SELECT t.id, t.sub_id, t.state, t.start_date, t.state_date, t.lastDate, t.resetDate, t.reset, t.book_type, t.delay, t.alias, os.name op_name, os.book_part, bp.name bp_name, bt.name bt_name
+  FROM tmp_spy t
+    INNER JOIN order_state os ON t.state = os.id
+    INNER JOIN book_part bp ON os.book_part = bp.id
+    INNER JOIN book_type bt ON bt.id = t.book_type;
+  -- kill temp
+  DROP TEMPORARY TABLE tmp_spy;
 END
 $$
 

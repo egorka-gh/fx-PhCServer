@@ -1,5 +1,6 @@
 package com.photodispatcher.model.mysql.services;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -259,6 +260,28 @@ public abstract class AbstractDAO {
 		}finally{
 			SqlClosureElf.quietClose(connection);
 		}
+		return result;
+	}
+
+	protected <T> SelectResult<T> runCallSelect(final Class<T> type, final String sql, final Object...args){
+		final SelectResult<T> result= new SelectResult<T>();
+		
+		result.setData(new SqlClosure<List<T>>(ConnectionFactory.getDataSource()) {
+			public List<T> execute(Connection connection) {
+				try {
+					CallableStatement pstmt = connection.prepareCall(sql);
+					return OrmElf.statementToList(pstmt, type, args);
+				} catch (SQLException e) {
+					result.setComplete(false);
+					result.setErrCode(e.getErrorCode());
+					result.setErrMesage(e.getMessage());
+					result.setSql(sql);
+					e.printStackTrace();
+					return null;
+				}
+			}
+		}.execute());		
+		
 		return result;
 	}
 

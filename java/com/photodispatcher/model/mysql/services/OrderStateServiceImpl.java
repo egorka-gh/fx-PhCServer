@@ -8,6 +8,7 @@ import com.photodispatcher.model.mysql.entities.FieldValue;
 import com.photodispatcher.model.mysql.entities.OrderExtraState;
 import com.photodispatcher.model.mysql.entities.OrderState;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SpyData;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 import com.photodispatcher.model.mysql.entities.StateLog;
 
@@ -186,6 +187,13 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 		//start 
 		result= extraStateStart(orderId, subId, stateStart, date);
 		return result;
+	}
+
+	@Override
+	public SelectResult<SpyData> loadSpyData(Date pDate, int pFromState, int pToState, int pBookPart){
+		//PROCEDURE loadSpy(IN pDate datetime, IN pFromState INT, IN pToState INT, IN pBookPart INT)
+		String sql= "{CALL loadSpy(?,?,?,?)}";
+		return runCallSelect(SpyData.class, sql, pDate, pFromState, pToState, pBookPart);
 	}
 
 }

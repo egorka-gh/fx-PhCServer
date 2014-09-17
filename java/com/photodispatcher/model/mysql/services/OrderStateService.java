@@ -7,6 +7,7 @@ import org.granite.messaging.service.annotations.RemoteDestination;
 import com.photodispatcher.model.mysql.entities.OrderExtraState;
 import com.photodispatcher.model.mysql.entities.OrderState;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SpyData;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 import com.photodispatcher.model.mysql.entities.StateLog;
 
@@ -33,5 +34,7 @@ public interface OrderStateService {
 	public SelectResult<OrderExtraState> loadMonitorEState(int startState, int techState, int endState);
 	public SqlResult extraStateStartMonitor(String orderId, String subId, int stateStart, int stateStop);
 	public SqlResult extraStateStartOTK(String orderId, String subId, int stateStart);
+
+	public SelectResult<SpyData> loadSpyData(Date pDate, int pFromState, int pToState, int pBookPart);
 
 }

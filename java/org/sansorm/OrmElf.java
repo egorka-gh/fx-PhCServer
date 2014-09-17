@@ -174,6 +174,11 @@ public final class OrmElf
         return OrmReader.statementToList(stmt, clazz, args);
     }
 
+    public static <T> List<T> callToList(PreparedStatement stmt, Class<T> clazz, Object... args) throws SQLException
+    {
+        return OrmReader.statementToList(stmt, clazz, args);
+    }
+
     /**
      * Get an object from the specified ResultSet.  ResultSet.next() is <i>NOT</i> called,
      * this should be done by the caller.  <b>The ResultSet is not closed as a result of this
