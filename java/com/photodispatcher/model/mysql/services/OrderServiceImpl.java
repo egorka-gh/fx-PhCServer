@@ -1,13 +1,19 @@
 package com.photodispatcher.model.mysql.services;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.sansorm.OrmElf;
+import org.sansorm.SqlClosureElf;
+import org.sansorm.internal.OrmWriter;
 import org.springframework.stereotype.Service;
 
+import com.photodispatcher.model.mysql.ConnectionFactory;
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.Order;
 import com.photodispatcher.model.mysql.entities.OrderExtraInfo;
@@ -502,13 +508,52 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 				}
 			}
 		}
-		
 
+		/*
 		result=runUpdate(order);
 		if(result.isComplete()) result=runInsertBatch(subOrders);
 		if(result.isComplete()) result=runInsertBatch(einfos);
 		if(result.isComplete()) result=runInsertBatch(printGroups);
 		if(result.isComplete()) result=runInsertBatch(pgFiles);
+		*/
+		
+		//run in transaction
+		Connection connection = null;
+		try {
+			connection=ConnectionFactory.getConnection();
+			connection.setAutoCommit(false);
+			//update order
+			OrmElf.updateObject(connection, order);
+			//add subOrders
+			OrmElf.insertListBatched(connection, subOrders);
+			//add extra info
+			OrmElf.insertListBatched(connection, einfos);
+			//add printGroups
+			OrmElf.insertListBatched(connection, printGroups);
+			//add files
+			OrmElf.insertListBatched(connection, pgFiles);
+			//attempt to commit
+			connection.commit();
+		} catch (SQLException e) {
+			result.setComplete(false);
+			result.setErrCode(e.getErrorCode());
+			result.setErrMesage(e.getMessage());
+			e.printStackTrace();
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}finally{
+			if(connection!=null){
+				try {
+					connection.setAutoCommit(true);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			SqlClosureElf.quietClose(connection);
+		}
 		
 		return result;
 	}
@@ -534,7 +579,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 				}
 			}
 		}
-		
+
+		/*
 		if(result.isComplete()) result=runInsertBatch(items);
 		if(result.isComplete()) result=runInsertBatch(pgFiles);
 		if(result.isComplete()){
@@ -561,6 +607,60 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 				String sql="UPDATE print_group SET state = ?, state_date = ? WHERE id = ?";
 				result=runDML(sql,251,dt,subId);
 			}
+		}
+		*/
+		
+		//run in transaction
+		Connection connection = null;
+		try {
+			connection=ConnectionFactory.getConnection();
+			connection.setAutoCommit(false);
+			
+			//add printGroups
+			OrmElf.insertListBatched(connection, items);
+			//add files
+			OrmElf.insertListBatched(connection, pgFiles);
+			//set order state
+			String sql="UPDATE orders SET state = ?, state_date = ?, reported_state=0 WHERE id = ? AND state > ?";
+			OrmWriter.executeUpdate(connection, sql, 210, dt, order_id, 210);
+			//reset extra
+			sql="UPDATE order_extra_state SET state_date=NULL WHERE id=? AND sub_id='' AND state IN (210,250)";
+			OrmWriter.executeUpdate(connection, sql,order_id);
+			//set suborders state
+			for(String subId : subIds){
+				sql="UPDATE suborders SET state = ?, state_date = ? WHERE order_id = ? AND sub_id = ?";
+				OrmWriter.executeUpdate(connection, sql, 210, dt, order_id, subId);
+				//reset extra
+				sql="UPDATE order_extra_state SET state_date=NULL WHERE id=? AND sub_id=? AND state IN (210,250)";
+				OrmWriter.executeUpdate(connection, sql, order_id, subId);
+			}
+			//set parent pg state
+			for(String subId : parentIds){
+				sql="UPDATE print_group SET state = ?, state_date = ? WHERE id = ?";
+				OrmWriter.executeUpdate(connection, sql, 251, dt, subId);
+			}
+			
+			//attempt to commit
+			connection.commit();
+		} catch (SQLException e) {
+			result.setComplete(false);
+			result.setErrCode(e.getErrorCode());
+			result.setErrMesage(e.getMessage());
+			e.printStackTrace();
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}finally{
+			if(connection!=null){
+				try {
+					connection.setAutoCommit(true);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			SqlClosureElf.quietClose(connection);
 		}
 		return result;
 	}
