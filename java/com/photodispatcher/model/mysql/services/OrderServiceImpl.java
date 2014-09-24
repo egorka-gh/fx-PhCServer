@@ -138,7 +138,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		return result;
 	}
 	@Override
-	public SelectResult<SubOrder> loadSubOrderByOrder(String orderId){
+	public SelectResult<SubOrder> loadSubOrderByOrder(String orderId, String code){
+		/*
 		SelectResult<SubOrder> result;
 		String sql="SELECT o.id order_id, '' sub_id, sr.name source_name, sr.code source_code,"+
 					  " os.name state_name, o.state, o.state_date,"+
@@ -156,7 +157,11 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 					" INNER JOIN order_state os ON os.id= s.state"+
 					" WHERE s.order_id LIKE ?";
 		result=runSelect(SubOrder.class,sql, orderId, orderId);
-		
+		*/
+		//PROCEDURE phcconfig.findeSubOrderByOrder(IN pOrderId varchar(50), IN pSrcCode char(1))
+		String sql= "{CALL findeSubOrderByOrder(?,?)}";
+		SelectResult<SubOrder> result=runCallSelect(SubOrder.class, sql, orderId, code);
+
 		if(!result.isComplete()) return result;
 		if(!result.getData().isEmpty()){
 			SubOrder order=result.getData().get(0);

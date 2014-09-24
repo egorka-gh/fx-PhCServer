@@ -34,7 +34,7 @@ public interface OrderService {
 	public SqlResult addReprintPGroups(List<PrintGroup> items);
 	public SelectResult<Order> loadOrderVsChilds(String id);
 	public SelectResult<SubOrder> loadSubOrderByPg(String pgId);
-	public SelectResult<SubOrder> loadSubOrderByOrder(String orderId);
+	public SelectResult<SubOrder> loadSubOrderByOrder(String orderId, String code);
 	public SelectResult<SubOrder> loadSubOrdersOtk();
 	public SelectResult<Order> loadOrder4Otk(String id, String sub_id);
 }

@@ -1,8 +1,8 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 17.09.2014 10:57:49
--- Версия сервера: 5.1.73-community
+-- Дата скрипта: 24.09.2014 9:11:05
+-- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
 
@@ -24,6 +24,75 @@ CREATE TABLE book_part (
 )
 ENGINE = INNODB
 AVG_ROW_LENGTH = 3276
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE book_pg_template_cfg (
+  id int(7) NOT NULL AUTO_INCREMENT,
+  book int(7) NOT NULL,
+  book_part int(5) NOT NULL,
+  width int(5) NOT NULL,
+  height int(5) NOT NULL,
+  height_add int(5) DEFAULT 0,
+  paper int(5) NOT NULL DEFAULT 0,
+  frame int(5) NOT NULL DEFAULT 0,
+  correction int(5) NOT NULL DEFAULT 0,
+  cutting int(5) NOT NULL DEFAULT 0,
+  is_duplex tinyint(1) NOT NULL DEFAULT 0,
+  is_pdf tinyint(1) NOT NULL DEFAULT 0,
+  is_sheet_ready tinyint(1) DEFAULT 0,
+  sheet_width int(5) DEFAULT NULL,
+  sheet_len int(5) DEFAULT NULL,
+  page_width int(5) DEFAULT NULL,
+  page_len int(5) DEFAULT NULL,
+  page_hoffset int(5) DEFAULT 0,
+  font_size int(5) DEFAULT 0,
+  font_offset varchar(10) DEFAULT '+500+0',
+  fontv_size int(5) DEFAULT 0,
+  fontv_offset varchar(10) DEFAULT '+0+500',
+  notching int(5) DEFAULT 0,
+  stroke int(5) DEFAULT 0,
+  bar_size int(5) DEFAULT 0,
+  bar_offset varchar(10) DEFAULT '+0+0',
+  tech_bar int(5) DEFAULT 0,
+  tech_add int(5) DEFAULT 4,
+  tech_bar_step float(5, 2) DEFAULT 4.00,
+  tech_bar_color varchar(6) DEFAULT '200000',
+  is_tech_center tinyint(1) DEFAULT 1,
+  tech_bar_offset varchar(10) DEFAULT '+0-200',
+  is_tech_top tinyint(1) DEFAULT 0,
+  tech_bar_toffset varchar(10) DEFAULT '+0+0',
+  is_tech_bot tinyint(1) DEFAULT 0,
+  tech_bar_boffset varchar(10) DEFAULT '+0+0',
+  backprint int(5) DEFAULT 0,
+  tech_stair_add int(5) DEFAULT 0,
+  tech_stair_step int(5) DEFAULT 0,
+  is_tech_stair_top tinyint(1) DEFAULT 0,
+  is_tech_stair_bot tinyint(1) DEFAULT 0,
+  refId int(11) DEFAULT NULL,
+  PRIMARY KEY (id),
+  UNIQUE INDEX UK_book_pg_template (book, book_part)
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 536
+AVG_ROW_LENGTH = 267
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE book_synonym_cfg (
+  id int(7) NOT NULL AUTO_INCREMENT,
+  src_type int(7) NOT NULL,
+  synonym varchar(50) NOT NULL DEFAULT '',
+  book_type int(5) NOT NULL DEFAULT 0,
+  is_horizontal tinyint(1) DEFAULT 0,
+  synonym_type int(5) DEFAULT 0,
+  fb_alias varchar(50) DEFAULT NULL,
+  idOld int(7) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 327
+AVG_ROW_LENGTH = 155
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -59,6 +128,28 @@ CREATE TABLE content_filter (
 ENGINE = INNODB
 AUTO_INCREMENT = 1
 AVG_ROW_LENGTH = 8192
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE lab_print_code_cfg (
+  id int(7) NOT NULL AUTO_INCREMENT,
+  src_type int(5) NOT NULL,
+  src_id int(5) DEFAULT 0,
+  prt_code varchar(20) NOT NULL DEFAULT '',
+  width int(5) NOT NULL,
+  height int(5) NOT NULL,
+  paper int(5) NOT NULL,
+  frame int(5) NOT NULL,
+  correction int(5) NOT NULL,
+  cutting int(5) NOT NULL,
+  is_duplex tinyint(1) DEFAULT 0,
+  is_pdf tinyint(1) DEFAULT 0,
+  roll int(5) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 1
+AVG_ROW_LENGTH = 80
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -136,51 +227,6 @@ AVG_ROW_LENGTH = 4096
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE order_exstate_prolong (
-  id varchar(50) NOT NULL DEFAULT '',
-  sub_id varchar(50) NOT NULL DEFAULT '',
-  state int(10) DEFAULT 0,
-  state_date datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  comment char(255) DEFAULT NULL,
-  PRIMARY KEY (id, sub_id, state_date)
-)
-ENGINE = INNODB
-AVG_ROW_LENGTH = 3276
-CHARACTER SET utf8
-COLLATE utf8_general_ci;
-
-CREATE TABLE order_extra_info (
-  id varchar(50) NOT NULL DEFAULT '',
-  sub_id varchar(50) NOT NULL DEFAULT '',
-  endpaper varchar(100) DEFAULT NULL,
-  interlayer varchar(100) DEFAULT NULL,
-  calc_type varchar(100) DEFAULT NULL,
-  cover varchar(100) DEFAULT NULL,
-  format varchar(100) DEFAULT NULL,
-  corner_type varchar(100) DEFAULT NULL,
-  kaptal varchar(100) DEFAULT NULL,
-  tempId varchar(50) DEFAULT NULL,
-  PRIMARY KEY (id, sub_id)
-)
-ENGINE = INNODB
-AVG_ROW_LENGTH = 377
-CHARACTER SET utf8
-COLLATE utf8_general_ci;
-
-CREATE TABLE order_extra_state (
-  id varchar(50) NOT NULL DEFAULT '',
-  sub_id varchar(50) NOT NULL DEFAULT '',
-  state int(10) NOT NULL DEFAULT 0,
-  start_date datetime DEFAULT NULL,
-  state_date datetime DEFAULT NULL,
-  reported tinyint(1) DEFAULT 0,
-  PRIMARY KEY (id, sub_id, state)
-)
-ENGINE = INNODB
-AVG_ROW_LENGTH = 216
-CHARACTER SET utf8
-COLLATE utf8_general_ci;
-
 CREATE TABLE order_state (
   id int(5) NOT NULL,
   name varchar(50) DEFAULT NULL,
@@ -245,19 +291,6 @@ CREATE TABLE src_type_prop (
 )
 ENGINE = INNODB
 AVG_ROW_LENGTH = 1638
-CHARACTER SET utf8
-COLLATE utf8_general_ci;
-
-CREATE TABLE tech_point (
-  id int(5) NOT NULL AUTO_INCREMENT,
-  tech_type int(5) DEFAULT NULL,
-  name varchar(50) DEFAULT NULL,
-  tech_typeOld int(5) DEFAULT NULL,
-  PRIMARY KEY (id)
-)
-ENGINE = INNODB
-AUTO_INCREMENT = 13
-AVG_ROW_LENGTH = 1260
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -365,7 +398,7 @@ CREATE TABLE book_synonym (
   REFERENCES book_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 284
+AUTO_INCREMENT = 342
 AVG_ROW_LENGTH = 155
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -399,8 +432,59 @@ CREATE TABLE layerset (
   REFERENCES layerset_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 18
+AUTO_INCREMENT = 19
 AVG_ROW_LENGTH = 963
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE order_exstate_prolong (
+  id varchar(50) NOT NULL DEFAULT '',
+  sub_id varchar(50) NOT NULL DEFAULT '',
+  state int(10) DEFAULT 0,
+  state_date datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  comment char(255) DEFAULT NULL,
+  PRIMARY KEY (id, sub_id, state_date),
+  CONSTRAINT FK_order_exstate_prolong_orders_id FOREIGN KEY (id)
+  REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 3276
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE order_extra_info (
+  id varchar(50) NOT NULL DEFAULT '',
+  sub_id varchar(50) NOT NULL DEFAULT '',
+  endpaper varchar(100) DEFAULT NULL,
+  interlayer varchar(100) DEFAULT NULL,
+  calc_type varchar(100) DEFAULT NULL,
+  cover varchar(250) DEFAULT NULL,
+  format varchar(250) DEFAULT NULL,
+  corner_type varchar(100) DEFAULT NULL,
+  kaptal varchar(100) DEFAULT NULL,
+  tempId varchar(50) DEFAULT NULL,
+  PRIMARY KEY (id, sub_id),
+  CONSTRAINT FK_order_extra_info_orders_id FOREIGN KEY (id)
+  REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 377
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE order_extra_state (
+  id varchar(50) NOT NULL DEFAULT '',
+  sub_id varchar(50) NOT NULL DEFAULT '',
+  state int(10) NOT NULL DEFAULT 0,
+  start_date datetime DEFAULT NULL,
+  state_date datetime DEFAULT NULL,
+  reported tinyint(1) DEFAULT 0,
+  PRIMARY KEY (id, sub_id, state),
+  CONSTRAINT FK_order_extra_state_orders_id FOREIGN KEY (id)
+  REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 216
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -451,7 +535,7 @@ CREATE TABLE src_type (
   REFERENCES location_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 12
+AUTO_INCREMENT = 23
 AVG_ROW_LENGTH = 712
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -482,7 +566,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 79974
+AUTO_INCREMENT = 104361
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -521,8 +605,23 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 431162
+AUTO_INCREMENT = 878887
 AVG_ROW_LENGTH = 69
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE tech_point (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  tech_type int(5) DEFAULT NULL,
+  name varchar(50) DEFAULT NULL,
+  tech_typeOld int(5) DEFAULT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_tech_point_order_state_id FOREIGN KEY (tech_type)
+  REFERENCES order_state (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 20
+AVG_ROW_LENGTH = 1260
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -603,7 +702,7 @@ CREATE TABLE layerset_synonym (
   REFERENCES layerset (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 7
+AUTO_INCREMENT = 10
 AVG_ROW_LENGTH = 3276
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -621,7 +720,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2081448
+AUTO_INCREMENT = 2786863
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -745,7 +844,7 @@ CREATE TABLE book_pg_template (
   REFERENCES book_synonym (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 474
+AUTO_INCREMENT = 539
 AVG_ROW_LENGTH = 267
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -796,7 +895,7 @@ CREATE TABLE lab_print_code (
   REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2246
+AUTO_INCREMENT = 2256
 AVG_ROW_LENGTH = 80
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -964,51 +1063,94 @@ BEGIN
     WHERE s.order_id = pOrder
     AND s.sub_id = pSubOrder;
 
-    IF vBookPart = 0 THEN
-      -- common state, check update order state
-      -- start order
-      INSERT IGNORE INTO order_extra_state
-      (id, sub_id, state, start_date)
-        VALUES (pOrder, '', pState, pDate);
-      -- forvard order extra state check suborders
-      SELECT IFNULL(MIN(oes.state), 0) INTO vMinExtraState
+    -- calc min extra by suborders filter by book part   
+    SELECT IFNULL(MIN(t.state), 0) INTO vMinExtraState
+    FROM
+    (SELECT IFNULL(MAX(os.id), 0) state
       FROM suborders so
         LEFT OUTER JOIN order_extra_state oes ON oes.id = so.order_id
           AND so.sub_id = oes.sub_id
           AND oes.state_date IS NOT NULL
-      WHERE so.order_id = pOrder;
-      IF vMinExtraState > 0 THEN
-        -- set order extra state
-        -- update IF started
-        UPDATE order_extra_state
-        SET state_date = pDate
-        WHERE id = pOrder
-        AND sub_id = ''
-        AND state = vMinExtraState
-        AND state_date IS NULL;
-        -- insert if not exists
-        INSERT IGNORE INTO order_extra_state
-        (id, sub_id, state, start_date, state_date)
-          VALUES (pOrder, '', vMinExtraState, pDate, pDate);
-        -- set order state
+        LEFT OUTER JOIN order_state os ON oes.state = os.id
+          AND os.book_part = vBookPart
+      WHERE so.order_id = pOrder
+      GROUP BY so.sub_id) t;
+
+    -- close order extra states
+    IF vMinExtraState > 0 THEN
+      -- stop started
+      UPDATE order_extra_state es
+      SET es.state_date = pDate
+      WHERE es.id = pOrder
+      AND es.sub_id = ''
+      AND es.state <= vMinExtraState
+      AND es.state_date IS NULL
+      AND (vBookPart = 0
+      OR EXISTS
+      (SELECT 1
+        FROM order_state os
+        WHERE os.id = es.state
+        AND os.book_part = vBookPart));
+
+      IF vBookPart = 0 THEN
+        -- forvard order state
         UPDATE orders o
         SET o.state = vMinExtraState,
             o.state_date = pDate
         WHERE o.id = pOrder
-        AND o.state > 209
-        AND o.state != vMinExtraState; -- 210 > Print post
+        AND o.state > 209 -- 210 Print post
+        AND o.state < vMinExtraState;
       END IF;
     END IF;
+
+  /* old
+  IF vBookPart = 0 THEN
+    -- common state, check update order state
+    -- start order
+    INSERT IGNORE INTO order_extra_state
+    (id, sub_id, state, start_date)
+      VALUES (pOrder, '', pState, pDate);
+    -- forvard order extra state check suborders
+    SELECT IFNULL(MIN(oes.state), 0) INTO vMinExtraState
+    FROM suborders so
+      LEFT OUTER JOIN order_extra_state oes ON oes.id = so.order_id
+        AND so.sub_id = oes.sub_id
+        AND oes.state_date IS NOT NULL
+    WHERE so.order_id = pOrder;
+    IF vMinExtraState > 0 THEN
+      -- set order extra state
+      -- update IF started
+      UPDATE order_extra_state
+      SET state_date = pDate
+      WHERE id = pOrder
+      AND sub_id = ''
+      AND state = vMinExtraState
+      AND state_date IS NULL;
+      -- insert if not exists
+      INSERT IGNORE INTO order_extra_state
+      (id, sub_id, state, start_date, state_date)
+        VALUES (pOrder, '', vMinExtraState, pDate, pDate);
+      -- set order state
+      UPDATE orders o
+      SET o.state = vMinExtraState,
+          o.state_date = pDate
+      WHERE o.id = pOrder
+      AND o.state > 209
+      AND o.state != vMinExtraState; -- 210 > Print post
+    END IF;
+  END IF;
+  */
   END IF;
 
-  -- update pg state
-  IF vBookPart > 0 THEN
+  -- forvard pg state (if common)
+  IF vBookPart = 0 THEN
     UPDATE print_group pg
     SET pg.state = pState,
         pg.state_date = pDate
     WHERE pg.order_id = pOrder
     AND pg.sub_id = pSubOrder
-    AND pg.book_part = vBookPart;
+    -- AND pg.book_part = vBookPart
+    AND pg.state < pState;
   END IF;
 
 END
@@ -1662,7 +1804,9 @@ BEGIN
 
   IF vDone = pBooks * pSheets
     OR (pState = 320
-    AND vDone = pBooks * 2) THEN -- 320 - TECH_FOLDING (log first & end sheet per book)
+    AND vDone = pBooks * 2) -- 320 - TECH_FOLDING (log first & end sheet per book)
+    OR (pState = 380
+    AND vDone = pBooks) THEN -- 380 - TECH_JOIN   (log books)
     -- complited
     IF pPgroup != '' THEN
       UPDATE print_group pg
@@ -1790,9 +1934,9 @@ $$
 DELIMITER ;
 
 CREATE OR REPLACE
-VIEW suborderotkv
+VIEW suborderOtkV
 AS
-SELECT `es`.`id` AS `order_id`, `es`.`sub_id` AS `sub_id`, `es`.`state` AS `state`, `es`.`start_date` AS `state_date`, COUNT(DISTINCT `tl`.`sheet`) AS `books_done`, ifnull(`s`.`prt_qty`, ifnull((SELECT MAX(`pg`.`book_num`) FROM `print_group` `pg` WHERE ((`pg`.`order_id` = `es`.`id`) AND (`pg`.`sub_id` = `es`.`sub_id`))), 0)) AS `prt_qty`
+SELECT `es`.`id` AS `order_id`, `es`.`sub_id` AS `sub_id`, `es`.`state` AS `state`, `es`.`start_date` AS `state_date`, COUNT(DISTINCT `tl`.`sheet`) AS `books_done`, IFNULL(`s`.`prt_qty`, IFNULL((SELECT MAX(`pg`.`book_num`) FROM `print_group` `pg` WHERE ((`pg`.`order_id` = `es`.`id`) AND (`pg`.`sub_id` = `es`.`sub_id`))), 0)) AS `prt_qty`
 FROM ((((`order_extra_state` `es`
   LEFT JOIN `orders` `o` ON ((`o`.`id` = `es`.`id`)))
   LEFT JOIN `suborders` `s` ON (((`es`.`id` = `s`.`order_id`)
@@ -1803,6 +1947,6 @@ FROM ((((`order_extra_state` `es`
     AND (`tl`.`sub_id` = `es`.`sub_id`)
     AND (`tl`.`sheet` <> 0))))
 WHERE ((`es`.`state` = 450)
-AND isnull(`es`.`state_date`))
+AND ISNULL(`es`.`state_date`))
 GROUP BY `es`.`id`, `es`.`sub_id`
 ORDER BY `es`.`start_date`;
