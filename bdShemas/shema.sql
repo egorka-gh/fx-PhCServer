@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 24.09.2014 9:11:05
+-- Дата скрипта: 24.09.2014 18:35:52
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -566,7 +566,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 104361
+AUTO_INCREMENT = 107632
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -605,7 +605,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 878887
+AUTO_INCREMENT = 882013
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -720,7 +720,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2786863
+AUTO_INCREMENT = 2789327
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -1199,6 +1199,31 @@ BEGIN
 END
 $$
 
+CREATE PROCEDURE findeSubOrderByOrder (IN pOrderId varchar(50), IN pSrcCode char(1))
+BEGIN
+
+  SELECT o.id order_id, '' sub_id, sr.name source_name, sr.code source_code, os.name state_name, o.state, o.state_date, (SELECT MAX(pg.book_num) FROM print_group pg WHERE o.id = pg.order_id AND pg.sub_id = '') prt_qty
+  FROM orders o
+    INNER JOIN sources sr ON o.source = sr.id
+    INNER JOIN order_state os ON os.id = o.state
+  WHERE o.id LIKE pOrderId
+  AND sr.code = IFNULL(pSrcCode, sr.code)
+  AND NOT EXISTS
+  (SELECT 1
+    FROM suborders s
+    WHERE s.order_id = o.id)
+  UNION ALL
+  SELECT s.order_id, s.sub_id, sr.name source_name, sr.code source_code, os.name state_name, s.state, s.state_date, s.prt_qty
+  FROM suborders s
+    INNER JOIN orders o ON s.order_id = o.id
+    INNER JOIN sources sr ON o.source = sr.id
+    INNER JOIN order_state os ON os.id = s.state
+  WHERE s.order_id LIKE pOrderId
+  AND sr.code = IFNULL(pSrcCode, sr.code);
+
+END
+$$
+
 CREATE PROCEDURE loadSpy (IN pDate datetime, IN pFromState int, IN pToState int, IN pBookPart int)
 BEGIN
   -- create temp
@@ -1276,7 +1301,8 @@ BEGIN
   FROM tmp_spy t
     INNER JOIN order_state os ON t.state = os.id
     INNER JOIN book_part bp ON os.book_part = bp.id
-    INNER JOIN book_type bt ON bt.id = t.book_type;
+    INNER JOIN book_type bt ON bt.id = t.book_type
+  ORDER BY t.delay DESC;
   -- kill temp
   DROP TEMPORARY TABLE tmp_spy;
 END
