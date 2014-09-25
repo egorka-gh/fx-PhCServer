@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 24.09.2014 18:35:52
+-- Дата скрипта: 25.09.2014 18:20:53
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -442,7 +442,7 @@ CREATE TABLE order_exstate_prolong (
   sub_id varchar(50) NOT NULL DEFAULT '',
   state int(10) DEFAULT 0,
   state_date datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  comment char(255) DEFAULT NULL,
+  comment varchar(255) DEFAULT NULL,
   PRIMARY KEY (id, sub_id, state_date),
   CONSTRAINT FK_order_exstate_prolong_orders_id FOREIGN KEY (id)
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -566,7 +566,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 107632
+AUTO_INCREMENT = 110640
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -605,7 +605,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 882013
+AUTO_INCREMENT = 885161
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -720,7 +720,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2789327
+AUTO_INCREMENT = 2794132
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -1431,6 +1431,7 @@ $$
 
 CREATE PROCEDURE printStateEnd (IN pPgroupId varchar(50))
 MODIFIES SQL DATA
+COMMENT 'used only 4 manual (printmonitor + lab)'
 BEGIN
   DECLARE vOrderId varchar(50);
   DECLARE vSubId varchar(50);
@@ -1476,6 +1477,7 @@ $$
 
 CREATE PROCEDURE printStateStart (IN pPgroupId varchar(50), IN lab int)
 MODIFIES SQL DATA
+COMMENT 'unused'
 BEGIN
   DECLARE vOrderId varchar(50);
   DECLARE vSubId varchar(50);
@@ -1841,6 +1843,17 @@ BEGIN
       WHERE pg.id = pPgroup;
     END IF;
     IF pState = 300 THEN
+      -- update parent pg if reprint
+      IF pPgroup != '' THEN
+        UPDATE print_group pg
+        INNER JOIN print_group repg
+          ON repg.order_id = pg.order_id
+          AND repg.reprint_id = pg.id
+        SET pg.state = pState,
+            pg.state_date = vEnd
+        WHERE pg.order_id = pOrder
+        AND repg.id = pPgroup;
+      END IF;
       -- print state, check pringroups
       SELECT IFNULL(MIN(pg.state), 0) INTO vMinState
       FROM print_group pg

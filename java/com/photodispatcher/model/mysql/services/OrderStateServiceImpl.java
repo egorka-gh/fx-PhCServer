@@ -79,7 +79,10 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 	@Override
 	public SqlResult extraStateProlong(String orderId, String subId, int state, String comment){
 		//PROCEDURE extraStateProlong(IN pOrder VARCHAR(50), IN pSubOrder VARCHAR(50), IN pState int, IN pComment VARCHAR(250))
-		String sql= "{CALL extraStateReset(?,?,?,?)}";
+		if(comment!=null && comment.length()>250){
+			comment=comment.substring(0, 250);
+		}
+		String sql= "{CALL extraStateProlong(?,?,?,?)}";
 		return runCall(sql, orderId, subId, state, comment);
 	}
 
