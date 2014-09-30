@@ -629,14 +629,14 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			String sql="UPDATE orders SET state = ?, state_date = ?, reported_state=0 WHERE id = ? AND state > ?";
 			OrmWriter.executeUpdate(connection, sql, 210, dt, order_id, 210);
 			//reset extra
-			sql="UPDATE order_extra_state SET state_date=NULL WHERE id=? AND sub_id='' AND state IN (210,250)";
+			sql="UPDATE order_extra_state SET state_date=NULL WHERE id=? AND sub_id='' AND state IN (210,300)";
 			OrmWriter.executeUpdate(connection, sql,order_id);
 			//set suborders state
 			for(String subId : subIds){
 				sql="UPDATE suborders SET state = ?, state_date = ? WHERE order_id = ? AND sub_id = ?";
 				OrmWriter.executeUpdate(connection, sql, 210, dt, order_id, subId);
 				//reset extra
-				sql="UPDATE order_extra_state SET state_date=NULL WHERE id=? AND sub_id=? AND state IN (210,250)";
+				sql="UPDATE order_extra_state SET state_date=NULL WHERE id=? AND sub_id=? AND state IN (210,300)";
 				OrmWriter.executeUpdate(connection, sql, order_id, subId);
 			}
 			//set parent pg state

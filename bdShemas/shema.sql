@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 25.09.2014 18:20:53
+-- Дата скрипта: 30.09.2014 18:19:11
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -384,7 +384,7 @@ COLLATE utf8_general_ci;
 CREATE TABLE book_synonym (
   id int(7) NOT NULL AUTO_INCREMENT,
   src_type int(7) NOT NULL,
-  synonym varchar(50) NOT NULL DEFAULT '',
+  synonym varchar(100) NOT NULL DEFAULT '',
   book_type int(5) NOT NULL DEFAULT 0,
   is_horizontal tinyint(1) DEFAULT 0,
   synonym_type int(5) DEFAULT 0,
@@ -566,7 +566,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 110640
+AUTO_INCREMENT = 122806
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -605,7 +605,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 885161
+AUTO_INCREMENT = 895768
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -620,7 +620,7 @@ CREATE TABLE tech_point (
   REFERENCES order_state (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 20
+AUTO_INCREMENT = 21
 AVG_ROW_LENGTH = 1260
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -720,7 +720,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2794132
+AUTO_INCREMENT = 2818788
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -1039,11 +1039,22 @@ BEGIN
     SET pDate = NOW();
   END IF;
 
-  -- fix
+  -- fix extra state
   INSERT INTO order_extra_state
   (id, sub_id, state, start_date, state_date)
     VALUES (pOrder, pSubOrder, pState, pDate, pDate)
   ON DUPLICATE KEY UPDATE state_date = pDate;
+
+  /* closed while tuning
+  -- close order extra states under current
+  UPDATE order_extra_state es
+        SET es.state_date = pDate
+      WHERE es.id = pOrder
+        AND es.sub_id = pSubOrder
+        AND es.state < pState
+        AND es.state_date IS NULL
+        AND (vBookPart=0 OR EXISTS(SELECT 1 FROM order_state os WHERE os.id=es.state AND os.book_part = vBookPart));
+        */
 
   SELECT os.book_part INTO vBookPart
   FROM order_state os
