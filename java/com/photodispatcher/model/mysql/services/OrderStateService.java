@@ -31,8 +31,8 @@ public interface OrderStateService {
 	public SqlResult printCancel(String[] pgIds);
 	public SqlResult printGroupMarkInPrint(String pgId);
 	
-	public SelectResult<OrderExtraState> loadMonitorEState(int startState, int techState, int endState);
-	public SqlResult extraStateStartMonitor(String orderId, String subId, int stateStart, int stateStop);
+	public SelectResult<OrderExtraState> loadMonitorEState(int techState, int waitState);
+	public SqlResult extraStateStartMonitor(String orderId, String subId, int state);
 	public SqlResult extraStateStartOTK(String orderId, String subId, int stateStart);
 
 	public SelectResult<SpyData> loadSpyData(Date pDate, int pFromState, int pToState, int pBookPart);

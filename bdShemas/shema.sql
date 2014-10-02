@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 30.09.2014 18:19:11
+-- Дата скрипта: 02.10.2014 17:19:33
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -566,7 +566,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 122806
+AUTO_INCREMENT = 128688
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -605,7 +605,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 895768
+AUTO_INCREMENT = 902207
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -720,7 +720,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2818788
+AUTO_INCREMENT = 2827655
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -1232,6 +1232,27 @@ BEGIN
   WHERE s.order_id LIKE pOrderId
   AND sr.code = IFNULL(pSrcCode, sr.code);
 
+END
+$$
+
+CREATE PROCEDURE loadMonitorEState (IN pState int, IN pWaiteState int)
+BEGIN
+  SELECT es.id, es.sub_id, es.state, es.start_date, os.name state_name, (CASE WHEN es2.id IS NULL THEN 1000 WHEN es2.state_date IS NULL THEN 900 ELSE es2.state END) state2, es2.start_date start_date2, es2.state_date state_date2, os2.name state_name2
+  FROM order_extra_state es
+    INNER JOIN order_state os ON os.id = es.state
+    LEFT OUTER JOIN order_extra_state es2 ON es.id = es2.id
+      AND es.sub_id = es2.sub_id
+      AND es2.state = pWaiteState --  waite State
+    LEFT OUTER JOIN order_state os2 ON os2.id = es2.state
+  WHERE es.state = pState -- base state
+  AND es.state_date IS NULL
+  AND NOT EXISTS
+  (SELECT 1
+    FROM order_extra_state oes
+    WHERE es.id = oes.id
+    AND es.sub_id = oes.sub_id
+    AND oes.state = 450)
+  ORDER BY (CASE WHEN es2.id IS NULL THEN 1000 WHEN es2.state_date IS NULL THEN 900 ELSE es2.state END), es.state_date;
 END
 $$
 

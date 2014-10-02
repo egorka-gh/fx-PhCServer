@@ -125,7 +125,8 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 	}
 
 	@Override
-	public SelectResult<OrderExtraState> loadMonitorEState(int startState, int techState, int endState){
+	public SelectResult<OrderExtraState> loadMonitorEState(int techState, int waitState){
+		/*
 		String sql="SELECT es.id, es.sub_id, es.state, es.state_date, os.name state_name,"+ 
 						" (CASE WHEN es2.id IS NULL THEN 1000 WHEN es2.state_date IS NULL THEN 900 ELSE es2.state END) state2,"+ 
 						" es2.start_date start_date2, es2.state_date state_date2, os2.name state_name2"+
@@ -137,17 +138,25 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 					" WHERE es.state = ? AND es3.state_date IS NULL"+
 					" ORDER BY (CASE WHEN es2.id IS NULL THEN 1000 WHEN es2.state_date IS NULL THEN 900 ELSE es2.state END), es.state_date";
 		return runSelect(OrderExtraState.class, sql, endState, techState, startState);
+		*/
+		//PROCEDURE fotocycle_cycle.loadMonitorEState(IN pState int, IN pWaiteState int)
+		String sql= "{CALL loadMonitorEState(?,?)}";
+		return runCallSelect(OrderExtraState.class, sql, techState, waitState);
 	}
 
 	
 	@Override
-	public SqlResult extraStateStartMonitor(String orderId, String subId, int stateStart, int stateStop){
+	public SqlResult extraStateStartMonitor(String orderId, String subId, int state){
 		int resultCode=0;
 		SqlResult result= new SqlResult();
-		String sql="SELECT IFNULL(MAX(IF(state = ?, 1, IF(state_date IS NOT NULL, 2, 1))), 0) AS value"+
+		/* String sql="SELECT IFNULL(MAX(IF(state = ?, 1, IF(state_date IS NOT NULL, 2, 1))), 0) AS value"+
 					" FROM order_extra_state"+
 					" WHERE id = ? AND sub_id = ? AND state IN (?, ?)";
-		SelectResult<FieldValue> subres=runSelect(FieldValue.class, sql, stateStop, orderId, subId, stateStart, stateStop);
+					*/
+		String sql="SELECT IFNULL(MAX(IF(state_date IS NOT NULL, 2, 1)), 0) AS value" +
+					" FROM order_extra_state"+
+					" WHERE id = ? AND sub_id = ? AND state = ?";
+		SelectResult<FieldValue> subres=runSelect(FieldValue.class, sql, orderId, subId, state);
 		if(!subres.isComplete()){
 			result.cloneError(subres);
 			return result;
@@ -159,13 +168,15 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 		}
 		Date date= new Date();
 		//add extra states
+		/*
 		if(stateStop!=0){
 			//stop previous
 			result=extraStateSet(orderId, subId, stateStop, date);
 			if(!result.isComplete()) return result;
 		}
+		*/
 		//start new
-		result= extraStateStart(orderId, subId, stateStart, date);
+		result= extraStateStart(orderId, subId, state, date);
 		return result;
 	}
 
