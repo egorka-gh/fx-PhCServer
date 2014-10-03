@@ -1,0 +1,16 @@
+<element-set>
+  <element name="rpbody">
+    <sql>
+      <![CDATA[    
+SELECT tp.tech_type state, os.name stateName, tp.name tpName, 
+	   SUM(IF(tl.log_date > :pdate , 1, 0)) loged, MAX(tl.log_date) lastdt
+FROM tech_log tl
+  INNER JOIN tech_point tp ON tl.src_id = tp.id
+  INNER JOIN order_state os ON os.id = tp.tech_type
+WHERE tl.log_date > DATE_ADD( :pdate , INTERVAL -7 DAY)
+GROUP BY tp.tech_type, tp.name
+	]]>
+    </sql>
+  </element>
+
+</element-set>

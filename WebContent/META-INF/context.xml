@@ -1,4 +1,4 @@
-<Context cachingAllowed="false" antiResourceLocking="false">
+<Context aliases="/result=D:/Buffer/XReport/result" cachingAllowed="false" antiResourceLocking="false">
 	<Manager pathname="" />
 
 	<Resource name="dataSource"

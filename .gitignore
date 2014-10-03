@@ -7,3 +7,4 @@
 *.js
 *.hid
 /libRem
+/[source path] src
