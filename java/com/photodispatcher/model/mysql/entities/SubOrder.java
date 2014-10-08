@@ -33,6 +33,8 @@ public class SubOrder extends AbstractEntity {
     private int prt_qty;
     @Column(name="proj_type")
     private int proj_type;
+    @Column(name="alias")
+    private String alias;
     
 	//ref
     @Column(name="src_type_name", insertable=false, updatable=false)
@@ -143,6 +145,12 @@ public class SubOrder extends AbstractEntity {
 	}
 	public void setBooks_done(int books_done) {
 		this.books_done = books_done;
+	}
+	public String getAlias() {
+		return alias;
+	}
+	public void setAlias(String alias) {
+		this.alias = alias;
 	}
 
 }

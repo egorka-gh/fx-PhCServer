@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 02.10.2014 17:19:33
+-- Дата скрипта: 08.10.2014 18:24:52
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -364,6 +364,16 @@ AVG_ROW_LENGTH = 2340
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
+CREATE TABLE xrep_source_type (
+  id int(5) NOT NULL,
+  name varchar(20) NOT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 5461
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
 CREATE TABLE attr_type (
   id int(5) NOT NULL AUTO_INCREMENT,
   attr_fml int(5) NOT NULL,
@@ -566,13 +576,12 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 128688
+AUTO_INCREMENT = 145841
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
 CREATE TABLE suborders (
-  id varchar(50) NOT NULL DEFAULT '',
   order_id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
   src_type int(5) NOT NULL DEFAULT 0,
@@ -581,6 +590,7 @@ CREATE TABLE suborders (
   ftp_folder varchar(100) DEFAULT NULL,
   prt_qty int(5) DEFAULT 0,
   proj_type int(5) DEFAULT 1,
+  alias varchar(100) DEFAULT NULL,
   PRIMARY KEY (order_id, sub_id),
   CONSTRAINT FK_suborders_orders_id FOREIGN KEY (order_id)
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -605,7 +615,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 902207
+AUTO_INCREMENT = 918616
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -622,6 +632,45 @@ CREATE TABLE tech_point (
 ENGINE = INNODB
 AUTO_INCREMENT = 21
 AVG_ROW_LENGTH = 1260
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE xrep_parameter (
+  id varchar(20) NOT NULL,
+  name varchar(50) DEFAULT 'Параметр',
+  src_type int(5) NOT NULL DEFAULT 0,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_parameter_source_type_id FOREIGN KEY (src_type)
+  REFERENCES xrep_source_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 4096
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE xrep_report (
+  id varchar(30) NOT NULL,
+  src_type int(5) NOT NULL,
+  name varchar(50) DEFAULT 'Отчет',
+  PRIMARY KEY (id),
+  CONSTRAINT FK_report_source_type_id FOREIGN KEY (src_type)
+  REFERENCES xrep_source_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 2340
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE xrep_source (
+  id varchar(20) NOT NULL,
+  type int(5) NOT NULL,
+  name varchar(20) NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_source_srctype FOREIGN KEY (type)
+  REFERENCES xrep_source_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 8192
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -720,7 +769,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2827655
+AUTO_INCREMENT = 2857045
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -772,6 +821,20 @@ CREATE TABLE suborders_template (
 ENGINE = INNODB
 AUTO_INCREMENT = 2
 AVG_ROW_LENGTH = 16384
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE xrep_report_params (
+  report varchar(30) NOT NULL,
+  parameter varchar(20) NOT NULL,
+  PRIMARY KEY (report, parameter),
+  CONSTRAINT FK_report_params_parameter_id FOREIGN KEY (parameter)
+  REFERENCES xrep_parameter (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_report_params_report_id FOREIGN KEY (report)
+  REFERENCES xrep_report (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 1489
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -1276,6 +1339,7 @@ BEGIN
         FROM order_extra_state oes1
         WHERE oes.id = oes1.id
         AND oes.sub_id = oes1.sub_id
+        AND oes1.state_date IS NOT NULL
         AND oes1.state = 450)
       ORDER BY IFNULL(oes.state_date, oes.start_date) DESC) t
     GROUP BY t.id, t.sub_id;
@@ -1317,6 +1381,7 @@ BEGIN
     WHERE pg.order_id = t.id
     AND pg.sub_id = t.sub_id);
   -- set book alias
+  -- 4 pro books
   UPDATE tmp_spy t
   SET alias =
   (SELECT MAX(pg.path)
@@ -1324,6 +1389,14 @@ BEGIN
     WHERE pg.order_id = t.id
     AND pg.sub_id = t.sub_id)
   WHERE t.sub_id = '';
+  -- 4 sub orders
+  UPDATE tmp_spy t
+  SET alias =
+  (SELECT alias
+    FROM suborders s
+    WHERE s.order_id = t.id
+    AND s.sub_id = t.sub_id)
+  WHERE t.sub_id != '';
   -- calc delay in hours
   UPDATE tmp_spy
   SET delay = TIMESTAMPDIFF(HOUR, lastDate, NOW());
