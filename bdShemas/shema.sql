@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 08.10.2014 18:24:52
+-- Дата скрипта: 09.10.2014 18:08:19
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -576,7 +576,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 145841
+AUTO_INCREMENT = 149179
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -615,7 +615,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 918616
+AUTO_INCREMENT = 923478
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -769,7 +769,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2857045
+AUTO_INCREMENT = 2863043
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -1612,7 +1612,7 @@ BEGIN
       UPDATE suborders o
       SET o.state = 250,
           o.state_date = NOW()
-      WHERE o.id = vOrderId
+      WHERE o.order_id = vOrderId
       AND o.sub_id = vSubId
       AND o.state < 250;
     END IF;
@@ -2080,7 +2080,7 @@ DELIMITER ;
 CREATE OR REPLACE
 VIEW suborderOtkV
 AS
-SELECT `es`.`id` AS `order_id`, `es`.`sub_id` AS `sub_id`, `es`.`state` AS `state`, `es`.`start_date` AS `state_date`, COUNT(DISTINCT `tl`.`sheet`) AS `books_done`, IFNULL(`s`.`prt_qty`, IFNULL((SELECT MAX(`pg`.`book_num`) FROM `print_group` `pg` WHERE ((`pg`.`order_id` = `es`.`id`) AND (`pg`.`sub_id` = `es`.`sub_id`))), 0)) AS `prt_qty`
+SELECT `es`.`id` AS `order_id`, `es`.`sub_id` AS `sub_id`, `es`.`state` AS `state`, `es`.`start_date` AS `state_date`, COUNT(DISTINCT `tl`.`sheet`) AS `books_done`, ifnull(`s`.`prt_qty`, ifnull((SELECT MAX(`pg`.`book_num`) FROM `print_group` `pg` WHERE ((`pg`.`order_id` = `es`.`id`) AND (`pg`.`sub_id` = `es`.`sub_id`))), 0)) AS `prt_qty`
 FROM ((((`order_extra_state` `es`
   LEFT JOIN `orders` `o` ON ((`o`.`id` = `es`.`id`)))
   LEFT JOIN `suborders` `s` ON (((`es`.`id` = `s`.`order_id`)
@@ -2091,6 +2091,6 @@ FROM ((((`order_extra_state` `es`
     AND (`tl`.`sub_id` = `es`.`sub_id`)
     AND (`tl`.`sheet` <> 0))))
 WHERE ((`es`.`state` = 450)
-AND ISNULL(`es`.`state_date`))
+AND isnull(`es`.`state_date`))
 GROUP BY `es`.`id`, `es`.`sub_id`
 ORDER BY `es`.`start_date`;

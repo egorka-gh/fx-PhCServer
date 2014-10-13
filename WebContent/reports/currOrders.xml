@@ -1,0 +1,28 @@
+<element-set>
+  <element name="rpbody">
+    <sql>
+      <![CDATA[    
+SELECT tt.id, tt.start_date, tt.lastdate, (SELECT os.name FROM order_state os WHERE os.id= tt.lastState) lastsate, tt.delay, ROUND(tt.delay/24,1) daydelay
+FROM(
+SELECT t.id, t.start_date, MAX(IFNULL(t.state_date, t.start_date)) lastdate, MAX(t.state) lastState, TIMESTAMPDIFF( HOUR, t.start_date, NOW()) delay
+FROM
+(SELECT oes.id, oes.sub_id, oes.state, oes.start_date, oes.state_date
+      FROM order_extra_state oes
+      INNER JOIN order_state os ON oes.state=os.id
+      WHERE oes.state BETWEEN 200 AND 455
+      AND NOT EXISTS
+      (SELECT 1
+        FROM order_extra_state oes1
+        WHERE oes.id = oes1.id
+        AND oes.sub_id = oes1.sub_id
+        AND oes1.state_date IS NOT NULL
+        AND oes1.state = 450)
+        AND EXISTS (SELECT 1 FROM print_group pg WHERE pg.order_id=oes.id AND pg.sub_id=oes.sub_id AND pg.book_type>0)
+      ORDER BY oes.start_date ASC) t
+GROUP BY t.id -- , t.sub_id
+ORDER BY t.start_date ASC ) tt
+	]]>
+    </sql>
+  </element>
+
+</element-set>
