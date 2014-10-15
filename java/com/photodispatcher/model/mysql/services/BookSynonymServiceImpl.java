@@ -16,7 +16,8 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 	@Override
 	public SelectResult<BookSynonym> loadFull(){
 		SelectResult<BookSynonym> result;
-		String sql="SELECT * FROM book_synonym";
+		//exclude deleted (synonym_type=-1)
+		String sql="SELECT * FROM book_synonym WHERE synonym_type!=-1";
 		result=runSelect(BookSynonym.class, sql);
 		if (result.isComplete()){
 			//load childs
@@ -72,6 +73,22 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 					" INNER JOIN book_part bp ON pg.book_part = bp.id"+
 					" WHERE pg.book=?";
 		result=runSelect(BookPgTemplate.class, sql, book);
+		return result;
+	}
+
+	@Override
+	public SqlResult clone(int pId){
+		SqlResult result= new SqlResult();
+		//PROCEDURE phcconfig.bookSynonymClone(IN pId int)
+		String sql= "{CALL bookSynonymClone(?)}";
+		SelectResult<BookSynonym> subResult=runCallSelect(BookSynonym.class, sql, pId);
+		if(!subResult.isComplete()){
+			result.cloneError(subResult);
+		}else{
+			if(subResult.getData()!=null && !subResult.getData().isEmpty()){
+				result.setResultCode(subResult.getData().get(0).getId());
+			}
+		}
 		return result;
 	}
 

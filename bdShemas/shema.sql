@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 09.10.2014 18:08:19
+-- Дата скрипта: 15.10.2014 16:53:30
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -408,7 +408,7 @@ CREATE TABLE book_synonym (
   REFERENCES book_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 342
+AUTO_INCREMENT = 363
 AVG_ROW_LENGTH = 155
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -576,7 +576,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 149179
+AUTO_INCREMENT = 163097
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -615,7 +615,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 923478
+AUTO_INCREMENT = 937071
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -769,7 +769,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2863043
+AUTO_INCREMENT = 2884386
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -907,7 +907,7 @@ CREATE TABLE book_pg_template (
   REFERENCES book_synonym (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 539
+AUTO_INCREMENT = 582
 AVG_ROW_LENGTH = 267
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -1019,6 +1019,40 @@ CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
 DELIMITER $$
+
+CREATE PROCEDURE bookSynonymClone (IN pId int)
+MODIFIES SQL DATA
+BEGIN
+  DECLARE vNewId int DEFAULT 0;
+  DECLARE vNewSynonym varchar(100);
+
+  SELECT SUBSTR(CONCAT(bs.synonym, '(', COUNT(*), ')'), 1, 100) INTO vNewSynonym
+  FROM book_synonym bs
+    INNER JOIN book_synonym bs1 ON bs.src_type = bs1.src_type
+      AND bs.synonym_type = bs1.synonym_type
+      AND (bs.synonym = bs1.synonym
+      OR bs1.synonym LIKE CONCAT(bs.synonym, '(%)'))
+  WHERE bs.id = pId;
+
+  IF vNewSynonym IS NOT NULL THEN
+    -- create
+    INSERT INTO book_synonym
+    (src_type, synonym, book_type, is_horizontal, synonym_type)
+      SELECT src_type, vNewSynonym, book_type, is_horizontal, synonym_type
+      FROM book_synonym
+      WHERE id = pId;
+    SET vNewId = LAST_INSERT_ID();
+    -- clone templates
+    INSERT INTO book_pg_template
+    (book, book_part, width, height, height_add, paper, frame, correction, cutting, is_duplex, is_pdf, is_sheet_ready, sheet_width, sheet_len, page_width, page_len, page_hoffset, font_size, font_offset, fontv_size, fontv_offset, notching, stroke, bar_size, bar_offset, tech_bar, tech_add, tech_bar_step, tech_bar_color, is_tech_center, tech_bar_offset, is_tech_top, tech_bar_toffset, is_tech_bot, tech_bar_boffset, backprint, tech_stair_add, tech_stair_step, is_tech_stair_top, is_tech_stair_bot)
+      SELECT vNewId, book_part, width, height, height_add, paper, frame, correction, cutting, is_duplex, is_pdf, is_sheet_ready, sheet_width, sheet_len, page_width, page_len, page_hoffset, font_size, font_offset, fontv_size, fontv_offset, notching, stroke, bar_size, bar_offset, tech_bar, tech_add, tech_bar_step, tech_bar_color, is_tech_center, tech_bar_offset, is_tech_top, tech_bar_toffset, is_tech_bot, tech_bar_boffset, backprint, tech_stair_add, tech_stair_step, is_tech_stair_top, is_tech_stair_bot
+      FROM book_pg_template bpt
+      WHERE bpt.book = pId;
+  END IF;
+
+  SELECT vNewId AS id;
+END
+$$
 
 CREATE PROCEDURE extraStateProlong (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int, IN pComment varchar(250))
 MODIFIES SQL DATA
@@ -2080,7 +2114,7 @@ DELIMITER ;
 CREATE OR REPLACE
 VIEW suborderOtkV
 AS
-SELECT `es`.`id` AS `order_id`, `es`.`sub_id` AS `sub_id`, `es`.`state` AS `state`, `es`.`start_date` AS `state_date`, COUNT(DISTINCT `tl`.`sheet`) AS `books_done`, ifnull(`s`.`prt_qty`, ifnull((SELECT MAX(`pg`.`book_num`) FROM `print_group` `pg` WHERE ((`pg`.`order_id` = `es`.`id`) AND (`pg`.`sub_id` = `es`.`sub_id`))), 0)) AS `prt_qty`
+SELECT `es`.`id` AS `order_id`, `es`.`sub_id` AS `sub_id`, `es`.`state` AS `state`, `es`.`start_date` AS `state_date`, COUNT(DISTINCT `tl`.`sheet`) AS `books_done`, IFNULL(`s`.`prt_qty`, IFNULL((SELECT MAX(`pg`.`book_num`) FROM `print_group` `pg` WHERE ((`pg`.`order_id` = `es`.`id`) AND (`pg`.`sub_id` = `es`.`sub_id`))), 0)) AS `prt_qty`
 FROM ((((`order_extra_state` `es`
   LEFT JOIN `orders` `o` ON ((`o`.`id` = `es`.`id`)))
   LEFT JOIN `suborders` `s` ON (((`es`.`id` = `s`.`order_id`)
@@ -2091,6 +2125,6 @@ FROM ((((`order_extra_state` `es`
     AND (`tl`.`sub_id` = `es`.`sub_id`)
     AND (`tl`.`sheet` <> 0))))
 WHERE ((`es`.`state` = 450)
-AND isnull(`es`.`state_date`))
+AND ISNULL(`es`.`state_date`))
 GROUP BY `es`.`id`, `es`.`sub_id`
 ORDER BY `es`.`start_date`;

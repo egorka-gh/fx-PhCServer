@@ -16,4 +16,5 @@ public interface BookSynonymService {
 	public SqlResult persistBatch(List<BookSynonym> items);
 	public SelectResult<BookSynonym> loadAll(int src_type, int contentFilter);
 	public SelectResult<BookPgTemplate> loadTemplates(int book);
+	public SqlResult clone(int pId);
 }
