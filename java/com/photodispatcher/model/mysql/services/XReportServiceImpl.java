@@ -29,6 +29,7 @@ import org.xreport.util.ValueDistributorImpl;
 import com.photodispatcher.model.mysql.ConnectionFactory;
 import com.photodispatcher.model.mysql.entities.report.Parameter;
 import com.photodispatcher.model.mysql.entities.report.Report;
+import com.photodispatcher.model.mysql.entities.report.ReportGroup;
 import com.photodispatcher.model.mysql.entities.report.ReportResult;
 import com.photodispatcher.model.mysql.entities.report.ReportSource;
 import com.photodispatcher.model.mysql.entities.report.ReportSourceType;
@@ -83,11 +84,30 @@ public class XReportServiceImpl implements XReportService {
 	}
 
 	@Override
+	public List<ReportGroup> getGroups(final int sourceType) {
+		return new SqlClosure<List<ReportGroup>>(ConnectionFactory.getDataSource()) {
+			public List<ReportGroup> execute(Connection connection) {
+				String sql="SELECT rg.* FROM xrep_report_group rg WHERE rg.hidden = 0 AND rg.src_type IN(0, ?) ORDER BY rg.id";
+				try {
+					PreparedStatement pstmt = connection.prepareStatement(sql);
+					return OrmElf.statementToList(pstmt, ReportGroup.class, sourceType);
+				} catch (SQLException e) {
+					e.printStackTrace();
+					return null;
+				}
+			}
+		}.execute();		
+	}
+
+	@Override
 	public List<Report> getReports(final int sourceType) {
 		return new SqlClosure<List<Report>>(ConnectionFactory.getDataSource()) {
 			public List<Report> execute(Connection connection) {
+				String sql="SELECT r.*, rg.name group_name"+
+							" FROM xrep_report r INNER JOIN xrep_report_group rg ON r.rep_group = rg.id" +
+							" WHERE r.hidden = 0 AND rg.hidden = 0 AND r.src_type = ?";
 				try {
-					PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM xrep_report WHERE src_type = ?");
+					PreparedStatement pstmt = connection.prepareStatement(sql);
 					return OrmElf.statementToList(pstmt, Report.class, sourceType);
 				} catch (SQLException e) {
 					e.printStackTrace();

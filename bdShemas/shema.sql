@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 15.10.2014 16:53:30
+-- Дата скрипта: 22.10.2014 18:21:50
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -408,7 +408,7 @@ CREATE TABLE book_synonym (
   REFERENCES book_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 363
+AUTO_INCREMENT = 577
 AVG_ROW_LENGTH = 155
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -576,7 +576,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 163097
+AUTO_INCREMENT = 182051
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -615,7 +615,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 937071
+AUTO_INCREMENT = 953318
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -648,16 +648,17 @@ AVG_ROW_LENGTH = 4096
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE xrep_report (
-  id varchar(30) NOT NULL,
-  src_type int(5) NOT NULL,
-  name varchar(50) DEFAULT 'Отчет',
+CREATE TABLE xrep_report_group (
+  id int(5) NOT NULL,
+  name varchar(20) NOT NULL,
+  hidden tinyint(1) DEFAULT 0,
+  src_type int(5) DEFAULT 0,
   PRIMARY KEY (id),
-  CONSTRAINT FK_report_source_type_id FOREIGN KEY (src_type)
+  CONSTRAINT FK_xrep_report_group_xrep_source_type_id FOREIGN KEY (src_type)
   REFERENCES xrep_source_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 2340
+AVG_ROW_LENGTH = 5461
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -769,7 +770,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2884386
+AUTO_INCREMENT = 2917296
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -824,17 +825,20 @@ AVG_ROW_LENGTH = 16384
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
-CREATE TABLE xrep_report_params (
-  report varchar(30) NOT NULL,
-  parameter varchar(20) NOT NULL,
-  PRIMARY KEY (report, parameter),
-  CONSTRAINT FK_report_params_parameter_id FOREIGN KEY (parameter)
-  REFERENCES xrep_parameter (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT FK_report_params_report_id FOREIGN KEY (report)
-  REFERENCES xrep_report (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+CREATE TABLE xrep_report (
+  id varchar(30) NOT NULL,
+  src_type int(5) NOT NULL,
+  name varchar(50) DEFAULT 'Отчет',
+  rep_group int(5) DEFAULT 0,
+  hidden tinyint(1) DEFAULT 0,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_report_source_type_id FOREIGN KEY (src_type)
+  REFERENCES xrep_source_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_xrep_report_xrep_report_group_id FOREIGN KEY (rep_group)
+  REFERENCES xrep_report_group (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 1489
+AVG_ROW_LENGTH = 2340
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -907,7 +911,7 @@ CREATE TABLE book_pg_template (
   REFERENCES book_synonym (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 582
+AUTO_INCREMENT = 1056
 AVG_ROW_LENGTH = 267
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -958,7 +962,7 @@ CREATE TABLE lab_print_code (
   REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2256
+AUTO_INCREMENT = 2257
 AVG_ROW_LENGTH = 80
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -978,6 +982,20 @@ CREATE TABLE services (
 )
 ENGINE = INNODB
 AVG_ROW_LENGTH = 356
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE xrep_report_params (
+  report varchar(30) NOT NULL,
+  parameter varchar(20) NOT NULL,
+  PRIMARY KEY (report, parameter),
+  CONSTRAINT FK_report_params_parameter_id FOREIGN KEY (parameter)
+  REFERENCES xrep_parameter (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_report_params_report_id FOREIGN KEY (report)
+  REFERENCES xrep_report (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 1489
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 

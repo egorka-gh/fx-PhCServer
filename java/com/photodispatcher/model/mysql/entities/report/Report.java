@@ -17,10 +17,23 @@ public class Report extends AbstractEntity {
 
     @Column(name="src_type")
     private int src_type;
-    
+
+    @Column(name="rep_group")
+    private int group;
+
+    @Column(name="hidden")
+    private boolean hidden;
+
     @Column(name="name")
     private String name;
     
+    //ref
+    /**
+     * 
+     */
+    @Column(name="group_name", updatable=false, insertable=false)
+    private String group_name;
+
     @Transient
     private Parameter[] parameters;
     
@@ -50,6 +63,24 @@ public class Report extends AbstractEntity {
 	}
 	public void setParameters(Parameter[] parameters) {
 		this.parameters = parameters;
+	}
+	public boolean isHidden() {
+		return hidden;
+	}
+	public void setHidden(boolean hidden) {
+		this.hidden = hidden;
+	}
+	public int getGroup() {
+		return group;
+	}
+	public void setGroup(int group) {
+		this.group = group;
+	}
+	public String getGroup_name() {
+		return group_name;
+	}
+	public void setGroup_name(String group_name) {
+		this.group_name = group_name;
 	}
 	
 	
