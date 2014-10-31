@@ -79,19 +79,19 @@ class OrmBase
         {
             Introspected introspected = Introspector.getIntrospected(clazz);
             StringBuilder sb = new StringBuilder();
-            String[] columnNames = introspected.getColumnNames();
-            String[] columnTableNames = introspected.getColumnTableNames();
-            for (int i = 0; i < columnNames.length; i++)
-            {
+            //used only 4 getObject - include in select only updatable columns from root table (exists in table) 
+            String[] columnNames = introspected.getSelectableColumns();
+            //String[] columnNames = introspected.getColumnNames();
+            //getObject - include in select only updatable columns (exists in table) 
+            //String[] columnTableNames = introspected.getColumnTableNames();
+            for (int i = 0; i < columnNames.length; i++){
                 String column = columnNames[i];
-                String columnTableName = columnTableNames[i];
-
-                if (columnTableName != null)
-                {
+                //String columnTableName = columnTableNames[i];
+                /*
+                if (columnTableName != null){
                     sb.append(columnTableName).append('.');
-                }
-                else if (tablePrefix.length > 0)
-                {
+                }else */
+                if (tablePrefix.length > 0){
                     sb.append(tablePrefix[0]).append('.');
                 }
 

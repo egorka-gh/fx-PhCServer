@@ -66,6 +66,7 @@ public class Introspected
 
     private String[] insertableColumns;
     private String[] updatableColumns;
+    private String[] selectableColumns;
     
     // Instance initializer
     {
@@ -379,6 +380,32 @@ public class Introspected
 
         updatableColumns = columns.toArray(new String[0]);
         return updatableColumns;
+    }
+
+    /**
+     * Get the selectabel columns for this object.
+     * return all updatabel columns (include auto id)
+     *
+     * @return the columns
+     */
+    public String[] getSelectableColumns(){
+        if (selectableColumns != null) return selectableColumns;
+
+        LinkedList<String> columns = new LinkedList<String>();
+        columns.addAll(Arrays.asList(columnNames));
+        Iterator<String> iterator = columns.iterator();
+        while (iterator.hasNext()){
+            if (!isUpdatableColumn(iterator.next())){
+                iterator.remove();
+            }
+        }
+        //add ids if excluded
+        for (String idField : idColumnNames){
+        	if(!columns.contains(idField)) columns.addFirst(idField);
+        }
+
+        selectableColumns = columns.toArray(new String[0]);
+        return selectableColumns;
     }
 
     /**
