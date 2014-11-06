@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 22.10.2014 18:21:50
+-- Дата скрипта: 06.11.2014 18:41:09
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -408,7 +408,7 @@ CREATE TABLE book_synonym (
   REFERENCES book_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 577
+AUTO_INCREMENT = 654
 AVG_ROW_LENGTH = 155
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -576,7 +576,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 182051
+AUTO_INCREMENT = 219713
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -615,7 +615,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 953318
+AUTO_INCREMENT = 1001280
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -770,7 +770,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2917296
+AUTO_INCREMENT = 2977191
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -911,7 +911,7 @@ CREATE TABLE book_pg_template (
   REFERENCES book_synonym (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 1056
+AUTO_INCREMENT = 1287
 AVG_ROW_LENGTH = 267
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -1990,6 +1990,8 @@ BEGIN
   IF vDone = pBooks * pSheets
     OR (pState = 320
     AND vDone = pBooks * 2) -- 320 - TECH_FOLDING (log first & end sheet per book)
+    OR (pState = 360
+    AND vDone > 0) -- 360 - TECH_CUTTING (log first scan)
     OR (pState = 380
     AND vDone = pBooks) THEN -- 380 - TECH_JOIN   (log books)
     -- complited

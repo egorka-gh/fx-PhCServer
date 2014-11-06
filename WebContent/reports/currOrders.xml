@@ -12,7 +12,7 @@ FROM
       WHERE oes.state BETWEEN 200 AND 455
       AND NOT EXISTS
       	(SELECT 1 FROM order_extra_state oes1 WHERE oes.id = oes1.id AND oes.sub_id = oes1.sub_id AND oes1.state_date IS NOT NULL AND oes1.state = 450)
-      AND NOT EXISTS(SELECT 1 FROM orders o WHERE o.id=oes.id AND o.state>500)
+      AND EXISTS(SELECT 1 FROM orders o WHERE o.id=oes.id AND o.state BETWEEN 200 AND 500)
       AND EXISTS (SELECT 1 FROM print_group pg WHERE pg.order_id=oes.id AND pg.sub_id=oes.sub_id AND pg.book_type>0)
       ORDER BY oes.start_date ASC) t
 GROUP BY t.id -- , t.sub_id
