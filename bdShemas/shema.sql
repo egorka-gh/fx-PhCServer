@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 06.11.2014 18:41:09
+-- Дата скрипта: 13.11.2014 16:32:05
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -576,7 +576,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 219713
+AUTO_INCREMENT = 238823
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -615,7 +615,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 1001280
+AUTO_INCREMENT = 1028180
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -770,7 +770,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2977191
+AUTO_INCREMENT = 3003804
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -1803,6 +1803,16 @@ BEGIN
       FROM tmp_orders t
       WHERE t.source = pSourceId
       AND t.is_preload = 0);
+    -- set extra state
+    INSERT INTO order_extra_state
+    (id, sub_id, state, start_date, state_date)
+      SELECT t.id, '', 200, NOW(), NOW()
+      FROM tmp_orders t
+        INNER JOIN orders o ON o.id = t.id
+          AND o.state = 199
+      WHERE t.source = pSourceId
+      AND t.is_preload = 0
+    ON DUPLICATE KEY UPDATE state_date = NOW();
     -- orders
     UPDATE orders o
     SET state = 200,
