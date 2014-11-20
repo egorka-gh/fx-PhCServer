@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 13.11.2014 16:32:05
+-- Дата скрипта: 20.11.2014 18:35:56
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -576,7 +576,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 238823
+AUTO_INCREMENT = 259149
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -615,7 +615,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 1028180
+AUTO_INCREMENT = 1062837
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -770,7 +770,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 3003804
+AUTO_INCREMENT = 3032036
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -1373,6 +1373,12 @@ $$
 
 CREATE PROCEDURE loadSpy (IN pDate datetime, IN pFromState int, IN pToState int, IN pBookPart int)
 BEGIN
+  CALL loadSpyInternal(pDate, pFromState, pToState, pBookPart, -1);
+END
+$$
+
+CREATE PROCEDURE loadSpyInternal (IN pDate datetime, IN pFromState int, IN pToState int, IN pBookPart int, IN pKeepReset int)
+BEGIN
   -- create temp
   CREATE TEMPORARY TABLE IF NOT EXISTS tmp_spy LIKE tmpt_spy;
   -- get last states by condition
@@ -1422,9 +1428,25 @@ BEGIN
     WHERE oep.id = tmp_spy.id
     AND oep.sub_id = tmp_spy.sub_id
     AND oep.state = tmp_spy.state);
-  UPDATE tmp_spy
-  SET reset = 1
-  WHERE resetDate >= pDate;
+
+  /*
+   * pKeepReset 
+   * -1 - update reset
+   * 0 - del records
+   * 1 - keep records
+   */
+  IF pKeepReset = -1 THEN
+    -- update
+    UPDATE tmp_spy
+    SET reset = 1
+    WHERE resetDate >= pDate;
+  ELSEIF pKeepReset = 0 THEN
+    -- del
+    DELETE
+      FROM tmp_spy
+    WHERE resetDate >= pDate;
+  END IF;
+
   -- set book type
   UPDATE tmp_spy t
   SET book_type =
