@@ -10,6 +10,7 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import com.xreport.common.ReportViewerWeb;
 			import com.xreport.view.ReportRuner;
 			
 			import mx.controls.Alert;
@@ -43,7 +44,9 @@
 				*/
 				
 				//ping tomcat and add body !!!
-				addElement(new ReportRuner());
+				var runer:ReportRuner= new ReportRuner();
+				runer.reportViewer= new ReportViewerWeb();
+				addElement(runer);
 			}
 			
 			/*

@@ -1,0 +1,10 @@
+<element-set>
+  <element name="rpbody">
+    <sql>
+      <![CDATA[
+      {CALL loadSpyInternal(:pdatetime, :pstate, :pstateto, :pbookpart, :ptoggle)}     
+	]]>
+    </sql>
+  </element>
+
+</element-set>

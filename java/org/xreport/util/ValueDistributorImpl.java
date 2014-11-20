@@ -4,7 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-
 import com.mavaris.webcaravella.element.ValueDistributor;
 import com.photodispatcher.model.mysql.entities.report.Parameter;
 
@@ -24,7 +23,11 @@ public class ValueDistributorImpl implements ValueDistributor {
 					values.put("pto", dateFormat.format(p.getValTo()));
 				}else if(p.getId().equals(ParameterType.PDate.getType())){
 					values.put(p.getId().toLowerCase(), dateFormat.format(p.getValDate()));
-				/*}else if(p.getId().equals(ParameterType.PStore.getType())){
+				}else if(p.getId().equals(ParameterType.PDateTime.getType())){
+					dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					values.put(p.getId().toLowerCase(), dateFormat.format(p.getValDate()));
+				/*}else if(p.getId().equals(ParameterType.PState.getType())
+						|| p.getId().equals(ParameterType.PStateTo.getType())){
 					values.put(p.getId().toLowerCase(), p.getValInt() );*/
 				}else{
 					values.put(p.getId().toLowerCase(), p.getValString());
