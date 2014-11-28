@@ -1,5 +1,7 @@
 package com.photodispatcher.model.mysql.entities;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -29,6 +31,24 @@ public class OrderExtraInfo extends AbstractEntity {
     private String corner_type;
     @Column(name="kaptal")
     private String kaptal;
+    @Column(name="cover_material")
+    private String coverMaterial;
+    @Column(name="books")
+    private int books;
+    @Column(name="sheets")
+    private int sheets;
+    @Column(name="date_in")
+    private Date dateIn;
+    @Column(name="date_out")
+    private Date dateOut;
+    @Column(name="book_thickness")
+    private float bookThickness;
+    @Column(name="group_id")
+    private int groupId;
+    @Column(name="remark")
+    private String remark;
+    @Column(name="paper")
+    private String paper;
     
     //ref
     @Column(name="book_type", updatable=false, insertable=false)
@@ -93,6 +113,60 @@ public class OrderExtraInfo extends AbstractEntity {
 	}
 	public void setBook_type(int book_type) {
 		this.book_type = book_type;
+	}
+	public String getCoverMaterial() {
+		return coverMaterial;
+	}
+	public void setCoverMaterial(String coverMaterial) {
+		this.coverMaterial = coverMaterial;
+	}
+	public int getBooks() {
+		return books;
+	}
+	public void setBooks(int books) {
+		this.books = books;
+	}
+	public int getSheets() {
+		return sheets;
+	}
+	public void setSheets(int sheets) {
+		this.sheets = sheets;
+	}
+	public Date getDateIn() {
+		return dateIn;
+	}
+	public void setDateIn(Date dateIn) {
+		this.dateIn = dateIn;
+	}
+	public Date getDateOut() {
+		return dateOut;
+	}
+	public void setDateOut(Date dateOut) {
+		this.dateOut = dateOut;
+	}
+	public float getBookThickness() {
+		return bookThickness;
+	}
+	public void setBookThickness(float bookThickness) {
+		this.bookThickness = bookThickness;
+	}
+	public int getGroupId() {
+		return groupId;
+	}
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
+	}
+	public String getRemark() {
+		return remark;
+	}
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+	public String getPaper() {
+		return paper;
+	}
+	public void setPaper(String paper) {
+		this.paper = paper;
 	}
     
 }
