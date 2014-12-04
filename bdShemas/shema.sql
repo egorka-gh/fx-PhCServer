@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 20.11.2014 18:35:56
+-- Дата скрипта: 01.12.2014 18:10:31
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -386,7 +386,7 @@ CREATE TABLE attr_type (
   REFERENCES attr_family (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 31
+AUTO_INCREMENT = 40
 AVG_ROW_LENGTH = 655
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -473,6 +473,15 @@ CREATE TABLE order_extra_info (
   corner_type varchar(100) DEFAULT NULL,
   kaptal varchar(100) DEFAULT NULL,
   tempId varchar(50) DEFAULT NULL,
+  cover_material varchar(250) DEFAULT NULL,
+  books int(5) DEFAULT 0,
+  sheets int(5) DEFAULT 0,
+  date_in datetime DEFAULT NULL,
+  date_out datetime DEFAULT NULL,
+  book_thickness float(5, 2) DEFAULT NULL,
+  group_id int(11) DEFAULT 0,
+  remark varchar(255) DEFAULT NULL,
+  paper varchar(250) DEFAULT NULL,
   PRIMARY KEY (id, sub_id),
   CONSTRAINT FK_order_extra_info_orders_id FOREIGN KEY (id)
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -576,7 +585,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 259149
+AUTO_INCREMENT = 304631
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -615,7 +624,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 1062837
+AUTO_INCREMENT = 1099600
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -770,7 +779,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 3032036
+AUTO_INCREMENT = 3180491
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -962,7 +971,7 @@ CREATE TABLE lab_print_code (
   REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2257
+AUTO_INCREMENT = 2259
 AVG_ROW_LENGTH = 80
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -1180,14 +1189,16 @@ BEGIN
     UPDATE orders o
     SET o.state = pState,
         o.state_date = pDate
-    WHERE o.id = pOrder;
+    WHERE o.id = pOrder
+    AND o.state < pState;
   ELSE
     -- set suborder state
     UPDATE suborders s
     SET s.state = pState,
         s.state_date = pDate
     WHERE s.order_id = pOrder
-    AND s.sub_id = pSubOrder;
+    AND s.sub_id = pSubOrder
+    AND s.state < pState;
 
     -- calc min extra by suborders filter by book part   
     SELECT IFNULL(MIN(t.state), 0) INTO vMinExtraState

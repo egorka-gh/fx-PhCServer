@@ -37,4 +37,5 @@ public interface OrderService {
 	public SelectResult<SubOrder> loadSubOrderByOrder(String orderId, String code);
 	public SelectResult<SubOrder> loadSubOrdersOtk();
 	public SelectResult<Order> loadOrder4Otk(String id, String sub_id);
+	public DmlResult<OrderExtraInfo> persistExtraInfo(OrderExtraInfo info);
 }

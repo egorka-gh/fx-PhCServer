@@ -471,6 +471,20 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	@Override
+	public DmlResult<OrderExtraInfo> persistExtraInfo(OrderExtraInfo info){
+		DmlResult<OrderExtraInfo> result= new DmlResult<OrderExtraInfo>();
+		if(info==null) return result;
+		if(info.getPersistState()==0){
+			//insert 
+			result=runInsert(info);
+		}else{
+			//update
+			result=runUpdate(info);
+		}
+		return result;
+	}
+
+	@Override
 	public SqlResult fillUpOrder(Order order){
 		SqlResult result= new SqlResult();
 		if(order==null) return result;
