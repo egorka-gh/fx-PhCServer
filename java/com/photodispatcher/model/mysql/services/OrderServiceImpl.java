@@ -17,6 +17,7 @@ import com.photodispatcher.model.mysql.ConnectionFactory;
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.Order;
 import com.photodispatcher.model.mysql.entities.OrderExtraInfo;
+import com.photodispatcher.model.mysql.entities.OrderExtraMessage;
 import com.photodispatcher.model.mysql.entities.OrderExtraState;
 import com.photodispatcher.model.mysql.entities.OrderExtraStateProlong;
 import com.photodispatcher.model.mysql.entities.OrderTemp;
@@ -481,6 +482,10 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			//update
 			result=runUpdate(info);
 		}
+		if(result.isComplete() && info.getMessagesLog()!=null){
+			SqlResult subres=runInsertBatch(info.getMessagesLog());
+			if(!subres.isComplete()) result.cloneError(subres);
+		}
 		return result;
 	}
 
@@ -494,6 +499,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			return result;
 		}
 		List<OrderExtraInfo> einfos = new ArrayList<OrderExtraInfo>();
+		List<OrderExtraMessage> emsg = new ArrayList<OrderExtraMessage>();
 		List<SubOrder> subOrders = new ArrayList<SubOrder>();
 		List<PrintGroup> printGroups = new ArrayList<PrintGroup>();
 		List<PrintGroupFile> pgFiles = new ArrayList<PrintGroupFile>();
@@ -503,6 +509,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			order.getExtraInfo().setId(order.getId());
 			order.getExtraInfo().setSub_id("");
 			einfos.add(order.getExtraInfo());
+			if(order.getExtraInfo().getMessagesLog()!=null) emsg.addAll(order.getExtraInfo().getMessagesLog());
 		}
 		if(order.getSuborders()!=null && !order.getSuborders().isEmpty()){
 			for (SubOrder so : order.getSuborders()){
@@ -511,6 +518,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 					so.getExtraInfo().setId(order.getId());
 					so.getExtraInfo().setSub_id(so.getSub_id());
 					einfos.add(so.getExtraInfo());
+					if(so.getExtraInfo().getMessagesLog()!=null) emsg.addAll(so.getExtraInfo().getMessagesLog());
 				}
 				subOrders.add(so);
 			}
@@ -547,6 +555,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			OrmElf.insertListBatched(connection, subOrders);
 			//add extra info
 			OrmElf.insertListBatched(connection, einfos);
+			//add extra messages
+			OrmElf.insertListBatched(connection, emsg);
 			//add printGroups
 			OrmElf.insertListBatched(connection, printGroups);
 			//add files

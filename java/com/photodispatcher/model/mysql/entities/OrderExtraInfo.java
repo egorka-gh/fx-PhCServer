@@ -1,10 +1,12 @@
 package com.photodispatcher.model.mysql.entities;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Table(name = "order_extra_info")
 public class OrderExtraInfo extends AbstractEntity {
@@ -49,10 +51,20 @@ public class OrderExtraInfo extends AbstractEntity {
     private String remark;
     @Column(name="paper")
     private String paper;
+    @Column(name="calc_alias")
+    private String calcAlias;
+    @Column(name="calc_title")
+    private String calcTitle;
+    @Column(name="weight")
+    private int weight;
     
     //ref
     @Column(name="book_type", updatable=false, insertable=false)
     private int book_type;
+   
+    //childs
+    @Transient
+    private List<OrderExtraMessage> messagesLog;
 
 	public String getId() {
 		return id;
@@ -167,6 +179,30 @@ public class OrderExtraInfo extends AbstractEntity {
 	}
 	public void setPaper(String paper) {
 		this.paper = paper;
+	}
+	public String getCalcAlias() {
+		return calcAlias;
+	}
+	public void setCalcAlias(String calcAlias) {
+		this.calcAlias = calcAlias;
+	}
+	public String getCalcTitle() {
+		return calcTitle;
+	}
+	public void setCalcTitle(String calcTitle) {
+		this.calcTitle = calcTitle;
+	}
+	public int getWeight() {
+		return weight;
+	}
+	public void setWeight(int weight) {
+		this.weight = weight;
+	}
+	public List<OrderExtraMessage> getMessagesLog() {
+		return messagesLog;
+	}
+	public void setMessagesLog(List<OrderExtraMessage> messagesLog) {
+		this.messagesLog = messagesLog;
 	}
     
 }
