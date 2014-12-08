@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 01.12.2014 18:10:31
+-- Дата скрипта: 08.12.2014 18:01:33
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -386,7 +386,7 @@ CREATE TABLE attr_type (
   REFERENCES attr_family (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 40
+AUTO_INCREMENT = 44
 AVG_ROW_LENGTH = 655
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -482,12 +482,29 @@ CREATE TABLE order_extra_info (
   group_id int(11) DEFAULT 0,
   remark varchar(255) DEFAULT NULL,
   paper varchar(250) DEFAULT NULL,
+  calc_alias varchar(50) DEFAULT NULL,
+  calc_title varchar(255) DEFAULT NULL,
+  weight int(5) DEFAULT 0,
   PRIMARY KEY (id, sub_id),
   CONSTRAINT FK_order_extra_info_orders_id FOREIGN KEY (id)
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
 AVG_ROW_LENGTH = 377
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE order_extra_message (
+  id varchar(50) NOT NULL DEFAULT '',
+  sub_id varchar(50) NOT NULL DEFAULT '',
+  lod_key varchar(25) NOT NULL DEFAULT '',
+  log_user varchar(50) DEFAULT NULL,
+  message varchar(255) DEFAULT NULL,
+  PRIMARY KEY (id, sub_id, lod_key),
+  CONSTRAINT FK_order_extra_message_orders_id FOREIGN KEY (id)
+  REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -585,7 +602,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 304631
+AUTO_INCREMENT = 334649
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -624,7 +641,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 1099600
+AUTO_INCREMENT = 1121885
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -779,7 +796,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 3180491
+AUTO_INCREMENT = 3241365
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -971,7 +988,7 @@ CREATE TABLE lab_print_code (
   REFERENCES src_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 2259
+AUTO_INCREMENT = 2260
 AVG_ROW_LENGTH = 80
 CHARACTER SET utf8
 COLLATE utf8_general_ci;

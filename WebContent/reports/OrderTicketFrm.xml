@@ -3,10 +3,11 @@
     <sql>
       <![CDATA[
       SELECT CONCAT_WS(' ', s.code, o.src_id) ordNum, oei.group_id, oei.date_in, oei.date_out, bt.name booktype, 
-      		 CONCAT_WS(' ', bp.name, IF(pg.is_reprint = 1, 'Брак', '')) bookpart, oei.books,
-      		 IF(pg.sub_id='', oei.calc_type, CONCAT_WS(' ', 'Онлайн редактор', bt.name)) calc_type, oei.cover, 
-      		 oei.format, oei.cover_material, oei.endpaper, oei.corner_type, IFNULL(oei.paper, av.value) paper, oei.interlayer, 
-      		 oei.kaptal, oei.sheets, oei.book_thickness, oei.remark, :pbarcode barcode
+      		 CONCAT_WS(' ', bp.name, IF(pg.is_reprint = 1, 'Брак', '')) bookpart,
+      		 IF(pg.sub_id='', oei.calc_title, CONCAT_WS(' ', 'Онлайн редактор', bt.name)) calc_title, oei.cover, 
+      		 oei.format, oei.cover_material, oei.endpaper, oei.corner_type, IFNULL(oei.paper, av.value) paper, oei.interlayer, oei.kaptal, 
+      		 oei.books, oei.sheets, (oei.books*oei.sheets) sheetstotal, oei.book_thickness, oei.remark, oei.weight,
+      		 :pbarcode barcode, :pbarcodebest barcodebest
 		FROM print_group pg
 		  INNER JOIN orders o ON pg.order_id = o.id
 		  INNER JOIN sources s ON o.source = s.id
@@ -16,6 +17,18 @@
 		  LEFT OUTER JOIN order_extra_info oei ON oei.id = pg.order_id
 		    AND oei.sub_id = pg.sub_id
 		WHERE pg.id = :pgid
+	]]>
+    </sql>
+  </element>
+
+  <element name="rpmess">
+    <sql>
+      <![CDATA[
+      SELECT oem.lod_key, oem.log_user, oem.message
+		FROM print_group pg
+		  INNER JOIN order_extra_message oem ON oem.id = pg.order_id AND oem.sub_id = pg.sub_id
+		WHERE pg.id = :pgid
+		ORDER BY oem.lod_key
 	]]>
     </sql>
   </element>
