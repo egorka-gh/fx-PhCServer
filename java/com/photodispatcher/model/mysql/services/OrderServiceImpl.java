@@ -454,7 +454,21 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	@Override
 	public SelectResult<OrderExtraInfo> loadExtraIfo(String id, String subId){
 		String sql="SELECT ei.* FROM order_extra_info ei WHERE ei.id=? AND ei.sub_id=?";
-		return runSelect(OrderExtraInfo.class,sql, id, subId);
+		SelectResult<OrderExtraInfo> result=runSelect(OrderExtraInfo.class,sql, id, subId);
+		if(result.isComplete() && !result.getData().isEmpty()){
+			SelectResult<OrderExtraMessage> subRes=loadExtraMessages(id,subId);
+			if(!subRes.isComplete()){
+				result.cloneError(subRes);
+			}else{
+				result.getData().get(0).setMessagesLog(subRes.getData());
+			}
+		}
+		return result;
+	}
+
+	public SelectResult<OrderExtraMessage> loadExtraMessages(String id, String subId){
+		String sql="SELECT * FROM order_extra_message oem WHERE oem.id=? AND oem.sub_id=?";
+		return runSelect(OrderExtraMessage.class,sql, id, subId);
 	}
 
 	@Override
@@ -463,7 +477,16 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 					" FROM print_group pg"+
 					" INNER JOIN order_extra_info ei ON pg.order_id=ei.id AND pg.sub_id=ei.sub_id"+
 					" WHERE pg.id=?";
-		return runSelect(OrderExtraInfo.class,sql, pgId);
+		SelectResult<OrderExtraInfo> result=runSelect(OrderExtraInfo.class,sql, pgId);
+		if(result.isComplete() && !result.getData().isEmpty()){
+			SelectResult<OrderExtraMessage> subRes=loadExtraMessages(result.getData().get(0).getId(),result.getData().get(0).getSub_id());
+			if(!subRes.isComplete()){
+				result.cloneError(subRes);
+			}else{
+				result.getData().get(0).setMessagesLog(subRes.getData());
+			}
+		}
+		return result;
 	}
 	
 	@Override

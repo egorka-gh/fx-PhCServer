@@ -2,7 +2,9 @@
   <element name="rpbody">
     <sql>
       <![CDATA[
-      SELECT CONCAT_WS(' ', s.code, o.src_id) ordNum, oei.group_id, oei.date_in, oei.date_out, bt.name booktype, 
+      SELECT CONCAT_WS(' ', s.code, o.src_id) ordNum, oei.group_id, 
+      		 DATE_FORMAT(oei.date_in,'%d.%m.%y %H-%i') date_in, DATE_FORMAT(oei.date_out,'%d.%m.%y %H-%i') date_out,
+      		 bt.name booktype, 
       		 CONCAT_WS(' ', bp.name, IF(pg.is_reprint = 1, 'Брак', '')) bookpart,
       		 IF(pg.sub_id='', oei.calc_title, CONCAT_WS(' ', 'Онлайн редактор', bt.name)) calc_title, oei.cover, 
       		 oei.format, oei.cover_material, oei.endpaper, oei.corner_type, IFNULL(oei.paper, av.value) paper, oei.interlayer, oei.kaptal, 

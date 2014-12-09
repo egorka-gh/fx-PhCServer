@@ -1,0 +1,20 @@
+<element-set>
+  <element name="rpbody">
+    <sql>
+      <![CDATA[    
+SELECT s.name, COUNT(*) cnt, AVG(TIMESTAMPDIFF(HOUR, oes.start_date, oes2.state_date)) avh, MIN(TIMESTAMPDIFF(HOUR, oes.start_date, oes2.state_date)) minh, MAX(TIMESTAMPDIFF(HOUR, oes.start_date, oes2.state_date)) maxh
+FROM order_extra_state oes
+  INNER JOIN orders o ON oes.id = o.id
+  INNER JOIN sources s ON o.source = s.id
+  INNER JOIN order_extra_state oes2 ON oes.id = oes2.id
+    AND oes.sub_id = oes2.sub_id
+    AND oes2.state = 450
+    AND oes2.state_date IS NOT NULL
+WHERE oes.state = 210
+AND oes.start_date BETWEEN :pfrom AND DATE_ADD( :pto , INTERVAL 1 DAY)
+GROUP BY s.name
+	]]>
+    </sql>
+  </element>
+
+</element-set>
