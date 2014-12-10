@@ -17,6 +17,8 @@ public class Order extends AbstractEntity {
     private String id;
     @Column(name="source")
     private int source;
+    @Column(name="group_id")
+    private int groupId;
     @Column(name="src_id")
     private String src_id;
     @Column(name="src_date")
@@ -205,6 +207,12 @@ public class Order extends AbstractEntity {
 	}
 	public void setExtraStateProlong(List<OrderExtraStateProlong> extraStateProlong) {
 		this.extraStateProlong = extraStateProlong;
+	}
+	public int getGroupId() {
+		return groupId;
+	}
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
 	}
     
 

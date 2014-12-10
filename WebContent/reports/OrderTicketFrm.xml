@@ -2,7 +2,7 @@
   <element name="rpbody">
     <sql>
       <![CDATA[
-      SELECT CONCAT_WS(' ', s.code, o.src_id) ordNum, oei.group_id, 
+      SELECT CONCAT_WS(' ', s.code, o.src_id) ordNum, o.group_id, 
       		 DATE_FORMAT(oei.date_in,'%d.%m.%y %H-%i') date_in, DATE_FORMAT(oei.date_out,'%d.%m.%y %H-%i') date_out,
       		 bt.name booktype, 
       		 CONCAT_WS(' ', bp.name, IF(pg.is_reprint = 1, 'Брак', '')) bookpart,

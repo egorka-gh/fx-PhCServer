@@ -15,6 +15,9 @@ public class OrderExtraMessage extends AbstractEntity {
     @Column(name="sub_id")
     private String sub_id;
     @Id
+    @Column(name="msg_type")
+    private int msg_type;
+    @Id
     @Column(name="lod_key")
     private String lod_key;
 
@@ -53,6 +56,12 @@ public class OrderExtraMessage extends AbstractEntity {
 	}
 	public void setMessage(String message) {
 		this.message = message;
+	}
+	public int getMsg_type() {
+		return msg_type;
+	}
+	public void setMsg_type(int msg_type) {
+		this.msg_type = msg_type;
 	}
     
     

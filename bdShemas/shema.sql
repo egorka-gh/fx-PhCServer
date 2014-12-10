@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 08.12.2014 18:01:33
+-- Дата скрипта: 10.12.2014 18:18:20
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -227,6 +227,16 @@ AVG_ROW_LENGTH = 4096
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
+CREATE TABLE order_extra_message_type (
+  id int(5) NOT NULL,
+  name varchar(50) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 4096
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
 CREATE TABLE order_state (
   id int(5) NOT NULL,
   name varchar(50) DEFAULT NULL,
@@ -255,6 +265,7 @@ CREATE TABLE orders (
   sync int(11) DEFAULT 0,
   is_preload tinyint(1) DEFAULT 0,
   reported_state int(5) DEFAULT 0,
+  group_id int(11) DEFAULT 0,
   PRIMARY KEY (id)
 )
 ENGINE = INNODB
@@ -386,7 +397,7 @@ CREATE TABLE attr_type (
   REFERENCES attr_family (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 44
+AUTO_INCREMENT = 45
 AVG_ROW_LENGTH = 655
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -497,10 +508,13 @@ COLLATE utf8_general_ci;
 CREATE TABLE order_extra_message (
   id varchar(50) NOT NULL DEFAULT '',
   sub_id varchar(50) NOT NULL DEFAULT '',
+  msg_type int(5) NOT NULL DEFAULT 1,
   lod_key varchar(25) NOT NULL DEFAULT '',
   log_user varchar(50) DEFAULT NULL,
   message varchar(255) DEFAULT NULL,
-  PRIMARY KEY (id, sub_id, lod_key),
+  PRIMARY KEY (id, sub_id, msg_type, lod_key),
+  CONSTRAINT FK_order_extra_message_order_extra_message_type_id FOREIGN KEY (msg_type)
+  REFERENCES order_extra_message_type (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT FK_order_extra_message_orders_id FOREIGN KEY (id)
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
@@ -602,7 +616,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 334649
+AUTO_INCREMENT = 344993
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -641,7 +655,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 1121885
+AUTO_INCREMENT = 1129709
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -796,7 +810,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 3241365
+AUTO_INCREMENT = 3254090
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -2194,7 +2208,7 @@ DELIMITER ;
 CREATE OR REPLACE
 VIEW suborderOtkV
 AS
-SELECT `es`.`id` AS `order_id`, `es`.`sub_id` AS `sub_id`, `es`.`state` AS `state`, `es`.`start_date` AS `state_date`, COUNT(DISTINCT `tl`.`sheet`) AS `books_done`, IFNULL(`s`.`prt_qty`, IFNULL((SELECT MAX(`pg`.`book_num`) FROM `print_group` `pg` WHERE ((`pg`.`order_id` = `es`.`id`) AND (`pg`.`sub_id` = `es`.`sub_id`))), 0)) AS `prt_qty`
+SELECT `es`.`id` AS `order_id`, `es`.`sub_id` AS `sub_id`, `es`.`state` AS `state`, `es`.`start_date` AS `state_date`, COUNT(DISTINCT `tl`.`sheet`) AS `books_done`, ifnull(`s`.`prt_qty`, ifnull((SELECT MAX(`pg`.`book_num`) FROM `print_group` `pg` WHERE ((`pg`.`order_id` = `es`.`id`) AND (`pg`.`sub_id` = `es`.`sub_id`))), 0)) AS `prt_qty`
 FROM ((((`order_extra_state` `es`
   LEFT JOIN `orders` `o` ON ((`o`.`id` = `es`.`id`)))
   LEFT JOIN `suborders` `s` ON (((`es`.`id` = `s`.`order_id`)
@@ -2205,6 +2219,6 @@ FROM ((((`order_extra_state` `es`
     AND (`tl`.`sub_id` = `es`.`sub_id`)
     AND (`tl`.`sheet` <> 0))))
 WHERE ((`es`.`state` = 450)
-AND ISNULL(`es`.`state_date`))
+AND isnull(`es`.`state_date`))
 GROUP BY `es`.`id`, `es`.`sub_id`
 ORDER BY `es`.`start_date`;

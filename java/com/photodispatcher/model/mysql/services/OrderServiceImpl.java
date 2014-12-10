@@ -467,7 +467,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	public SelectResult<OrderExtraMessage> loadExtraMessages(String id, String subId){
-		String sql="SELECT * FROM order_extra_message oem WHERE oem.id=? AND oem.sub_id=?";
+		String sql="SELECT * FROM order_extra_message oem WHERE oem.id=? AND oem.sub_id=? ORDER BY lod_key";
 		return runSelect(OrderExtraMessage.class,sql, id, subId);
 	}
 
