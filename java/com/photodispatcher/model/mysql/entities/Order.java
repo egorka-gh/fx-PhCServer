@@ -19,6 +19,8 @@ public class Order extends AbstractEntity {
     private int source;
     @Column(name="group_id")
     private int groupId;
+    @Column(name="client_id")
+    private int clientId;
     @Column(name="src_id")
     private String src_id;
     @Column(name="src_date")
@@ -39,6 +41,7 @@ public class Order extends AbstractEntity {
     private int sync;
     @Column(name="is_preload")
     private boolean is_preload;
+    
     /*
     @Column(name="is_new")
     private boolean is_new;
@@ -213,6 +216,12 @@ public class Order extends AbstractEntity {
 	}
 	public void setGroupId(int groupId) {
 		this.groupId = groupId;
+	}
+	public int getClientId() {
+		return clientId;
+	}
+	public void setClientId(int clientId) {
+		this.clientId = clientId;
 	}
     
 

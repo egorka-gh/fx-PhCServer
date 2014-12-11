@@ -45,8 +45,6 @@ public class OrderExtraInfo extends AbstractEntity {
     private Date dateOut;
     @Column(name="book_thickness")
     private float bookThickness;
-    @Column(name="group_id")
-    private int groupId;
     @Column(name="remark")
     private String remark;
     @Column(name="paper")
@@ -161,12 +159,6 @@ public class OrderExtraInfo extends AbstractEntity {
 	}
 	public void setBookThickness(float bookThickness) {
 		this.bookThickness = bookThickness;
-	}
-	public int getGroupId() {
-		return groupId;
-	}
-	public void setGroupId(int groupId) {
-		this.groupId = groupId;
 	}
 	public String getRemark() {
 		return remark;

@@ -33,6 +33,10 @@ public class OrderTemp extends AbstractEntity {
     private int fotos_num;
     @Column(name="sync")
     private int sync;
+    @Column(name="group_id")
+    private int groupId;
+    @Column(name="client_id")
+    private int clientId;
     @Column(name="is_preload")
     private boolean is_preload;
     
@@ -108,6 +112,18 @@ public class OrderTemp extends AbstractEntity {
 	}
 	public void setIs_preload(boolean is_preload) {
 		this.is_preload = is_preload;
+	}
+	public int getGroupId() {
+		return groupId;
+	}
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
+	}
+	public int getClientId() {
+		return clientId;
+	}
+	public void setClientId(int clientId) {
+		this.clientId = clientId;
 	}
 
 }
