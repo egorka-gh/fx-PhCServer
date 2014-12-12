@@ -1,7 +1,7 @@
 --
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 10.12.2014 18:18:20
+-- Дата скрипта: 12.12.2014 18:27:02
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -266,6 +266,7 @@ CREATE TABLE orders (
   is_preload tinyint(1) DEFAULT 0,
   reported_state int(5) DEFAULT 0,
   group_id int(11) DEFAULT 0,
+  client_id int(11) DEFAULT 0,
   PRIMARY KEY (id)
 )
 ENGINE = INNODB
@@ -336,6 +337,8 @@ CREATE TABLE tmp_orders (
   reload tinyint(1) DEFAULT 0,
   is_new tinyint(1) DEFAULT 0,
   is_preload tinyint(1) DEFAULT 0,
+  group_id int(11) DEFAULT 0,
+  client_id int(11) DEFAULT 0,
   PRIMARY KEY (id),
   INDEX IDX_tmp_orders_source (source)
 )
@@ -397,7 +400,7 @@ CREATE TABLE attr_type (
   REFERENCES attr_family (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 45
+AUTO_INCREMENT = 46
 AVG_ROW_LENGTH = 655
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -519,6 +522,7 @@ CREATE TABLE order_extra_message (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
+AVG_ROW_LENGTH = 4096
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -616,7 +620,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 344993
+AUTO_INCREMENT = 353051
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -655,7 +659,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 1129709
+AUTO_INCREMENT = 1141882
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -810,7 +814,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 3254090
+AUTO_INCREMENT = 3263942
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -1827,8 +1831,8 @@ BEGIN
     WHERE to1.source = pSourceId;
     -- insert new
     INSERT INTO orders
-    (id, source, src_id, src_date, state, state_date, ftp_folder, fotos_num, sync, is_preload, data_ts)
-      SELECT id, source, src_id, src_date, state, state_date, ftp_folder, fotos_num, sync, is_preload, data_ts
+    (id, source, src_id, src_date, state, state_date, ftp_folder, fotos_num, sync, is_preload, data_ts, group_id, client_id)
+      SELECT id, source, src_id, src_date, state, state_date, ftp_folder, fotos_num, sync, is_preload, data_ts, group_id, client_id
       FROM tmp_orders to1
       WHERE to1.source = pSourceId
       AND to1.is_new = 1;
@@ -1838,13 +1842,14 @@ BEGIN
     WHERE source = pSourceId
       AND is_new = 1;
 
-    -- update sync
-    UPDATE orders
-    SET sync = vSync
-    WHERE orders.id IN
-    (SELECT id
-      FROM tmp_orders to1
-      WHERE to1.source = pSourceId);
+    -- update sync & group_id
+    UPDATE orders o
+    INNER JOIN tmp_orders t
+      ON o.id = t.id
+    SET o.sync = vSync,
+        o.group_id = t.group_id,
+        o.client_id = t.client_id
+    WHERE t.source = pSourceId;
 
     -- check/process preload
     -- update printgroup 
@@ -1867,6 +1872,7 @@ BEGIN
       FROM tmp_orders t
       WHERE t.source = pSourceId
       AND t.is_preload = 0);
+
     -- set extra state
     INSERT INTO order_extra_state
     (id, sub_id, state, start_date, state_date)
@@ -1877,6 +1883,7 @@ BEGIN
       WHERE t.source = pSourceId
       AND t.is_preload = 0
     ON DUPLICATE KEY UPDATE state_date = NOW();
+
     -- orders
     UPDATE orders o
     SET state = 200,
