@@ -1,7 +1,7 @@
 --
--- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.2.280.0
+-- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 6.3.330.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 12.12.2014 18:27:02
+-- Дата скрипта: 30.12.2014 15:58:02
 -- Версия сервера: 5.1.67
 -- Версия клиента: 4.1
 --
@@ -522,7 +522,7 @@ CREATE TABLE order_extra_message (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AVG_ROW_LENGTH = 4096
+AVG_ROW_LENGTH = 780
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
@@ -620,7 +620,7 @@ CREATE TABLE state_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 353051
+AUTO_INCREMENT = 403061
 AVG_ROW_LENGTH = 67
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -659,7 +659,7 @@ CREATE TABLE tech_log (
   REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 1141882
+AUTO_INCREMENT = 1197271
 AVG_ROW_LENGTH = 69
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -814,7 +814,7 @@ CREATE TABLE print_group_file (
   REFERENCES print_group (id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 ENGINE = INNODB
-AUTO_INCREMENT = 3263942
+AUTO_INCREMENT = 3340664
 AVG_ROW_LENGTH = 87
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
@@ -1089,27 +1089,25 @@ BEGIN
   DECLARE vNewSynonym varchar(100);
 
   SELECT SUBSTR(CONCAT(bs.synonym, '(', COUNT(*), ')'), 1, 100) INTO vNewSynonym
-  FROM book_synonym bs
-    INNER JOIN book_synonym bs1 ON bs.src_type = bs1.src_type
-      AND bs.synonym_type = bs1.synonym_type
-      AND (bs.synonym = bs1.synonym
-      OR bs1.synonym LIKE CONCAT(bs.synonym, '(%)'))
-  WHERE bs.id = pId;
+    FROM book_synonym bs
+      INNER JOIN book_synonym bs1 ON bs.src_type = bs1.src_type
+        AND bs.synonym_type = bs1.synonym_type
+        AND (bs.synonym = bs1.synonym
+        OR bs1.synonym LIKE CONCAT(bs.synonym, '(%)'))
+    WHERE bs.id = pId;
 
   IF vNewSynonym IS NOT NULL THEN
     -- create
-    INSERT INTO book_synonym
-    (src_type, synonym, book_type, is_horizontal, synonym_type)
+    INSERT INTO book_synonym (src_type, synonym, book_type, is_horizontal, synonym_type)
       SELECT src_type, vNewSynonym, book_type, is_horizontal, synonym_type
-      FROM book_synonym
-      WHERE id = pId;
+        FROM book_synonym
+        WHERE id = pId;
     SET vNewId = LAST_INSERT_ID();
     -- clone templates
-    INSERT INTO book_pg_template
-    (book, book_part, width, height, height_add, paper, frame, correction, cutting, is_duplex, is_pdf, is_sheet_ready, sheet_width, sheet_len, page_width, page_len, page_hoffset, font_size, font_offset, fontv_size, fontv_offset, notching, stroke, bar_size, bar_offset, tech_bar, tech_add, tech_bar_step, tech_bar_color, is_tech_center, tech_bar_offset, is_tech_top, tech_bar_toffset, is_tech_bot, tech_bar_boffset, backprint, tech_stair_add, tech_stair_step, is_tech_stair_top, is_tech_stair_bot)
+    INSERT INTO book_pg_template (book, book_part, width, height, height_add, paper, frame, correction, cutting, is_duplex, is_pdf, is_sheet_ready, sheet_width, sheet_len, page_width, page_len, page_hoffset, font_size, font_offset, fontv_size, fontv_offset, notching, stroke, bar_size, bar_offset, tech_bar, tech_add, tech_bar_step, tech_bar_color, is_tech_center, tech_bar_offset, is_tech_top, tech_bar_toffset, is_tech_bot, tech_bar_boffset, backprint, tech_stair_add, tech_stair_step, is_tech_stair_top, is_tech_stair_bot)
       SELECT vNewId, book_part, width, height, height_add, paper, frame, correction, cutting, is_duplex, is_pdf, is_sheet_ready, sheet_width, sheet_len, page_width, page_len, page_hoffset, font_size, font_offset, fontv_size, fontv_offset, notching, stroke, bar_size, bar_offset, tech_bar, tech_add, tech_bar_step, tech_bar_color, is_tech_center, tech_bar_offset, is_tech_top, tech_bar_toffset, is_tech_bot, tech_bar_boffset, backprint, tech_stair_add, tech_stair_step, is_tech_stair_top, is_tech_stair_bot
-      FROM book_pg_template bpt
-      WHERE bpt.book = pId;
+        FROM book_pg_template bpt
+        WHERE bpt.book = pId;
   END IF;
 
   SELECT vNewId AS id;
@@ -1119,8 +1117,7 @@ $$
 CREATE PROCEDURE extraStateProlong (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int, IN pComment varchar(250))
 MODIFIES SQL DATA
 BEGIN
-  INSERT IGNORE INTO order_exstate_prolong
-  (id, sub_id, state, state_date, comment)
+  INSERT IGNORE INTO order_exstate_prolong (id, sub_id, state, state_date, comment)
     VALUES (pOrder, pSubOrder, pState, NOW(), pComment);
 END
 $$
@@ -1140,9 +1137,9 @@ BEGIN
   IF pSubOrder = '' THEN
     -- no suborders
     SELECT IFNULL(MIN(oes.state), 210) INTO vMinExtraState
-    FROM order_extra_state oes
-    WHERE oes.id = pOrder
-    AND oes.state_date IS NOT NULL;
+      FROM order_extra_state oes
+      WHERE oes.id = pOrder
+        AND oes.state_date IS NOT NULL;
     UPDATE orders o
     SET o.state = vMinExtraState,
         o.state_date = vNow
@@ -1152,10 +1149,10 @@ BEGIN
   ELSE
     -- set suborder state
     SELECT IFNULL(MIN(oes.state), 210) INTO vMinExtraState
-    FROM order_extra_state oes
-    WHERE oes.id = pOrder
-    AND oes.sub_id = pSubOrder
-    AND oes.state_date IS NOT NULL;
+      FROM order_extra_state oes
+      WHERE oes.id = pOrder
+        AND oes.sub_id = pSubOrder
+        AND oes.state_date IS NOT NULL;
     UPDATE suborders o
     SET o.state = vMinExtraState,
         o.state_date = vNow
@@ -1165,11 +1162,11 @@ BEGIN
     AND o.state != vMinExtraState;
     -- set order extrastate
     SELECT IFNULL(MIN(oes.state), 210) INTO vMinExtraState
-    FROM suborders so
-      LEFT OUTER JOIN order_extra_state oes ON oes.id = so.order_id
-        AND so.sub_id = oes.sub_id
-        AND oes.state_date IS NOT NULL
-    WHERE so.order_id = pOrder;
+      FROM suborders so
+        LEFT OUTER JOIN order_extra_state oes ON oes.id = so.order_id
+          AND so.sub_id = oes.sub_id
+          AND oes.state_date IS NOT NULL
+      WHERE so.order_id = pOrder;
     -- del order extra state
     DELETE
       FROM order_extra_state
@@ -1199,8 +1196,7 @@ BEGIN
   END IF;
 
   -- fix extra state
-  INSERT INTO order_extra_state
-  (id, sub_id, state, start_date, state_date)
+  INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date)
     VALUES (pOrder, pSubOrder, pState, pDate, pDate)
   ON DUPLICATE KEY UPDATE state_date = pDate;
 
@@ -1216,8 +1212,8 @@ BEGIN
         */
 
   SELECT os.book_part INTO vBookPart
-  FROM order_state os
-  WHERE os.id = pState;
+    FROM order_state os
+    WHERE os.id = pState;
 
   IF pSubOrder = '' THEN
     -- set order state
@@ -1237,16 +1233,13 @@ BEGIN
 
     -- calc min extra by suborders filter by book part   
     SELECT IFNULL(MIN(t.state), 0) INTO vMinExtraState
-    FROM
-    (SELECT IFNULL(MAX(os.id), 0) state
-      FROM suborders so
-        LEFT OUTER JOIN order_extra_state oes ON oes.id = so.order_id
-          AND so.sub_id = oes.sub_id
-          AND oes.state_date IS NOT NULL
-        LEFT OUTER JOIN order_state os ON oes.state = os.id
-          AND os.book_part = vBookPart
-      WHERE so.order_id = pOrder
-      GROUP BY so.sub_id) t;
+      FROM (SELECT IFNULL(MAX(os.id), 0) state
+          FROM suborders so
+            LEFT OUTER JOIN order_extra_state oes ON oes.id = so.order_id AND so.sub_id = oes.sub_id AND oes.state_date IS
+              NOT NULL
+            LEFT OUTER JOIN order_state os ON oes.state = os.id AND os.book_part = vBookPart
+          WHERE so.order_id = pOrder
+          GROUP BY so.sub_id) t;
 
     -- close order extra states
     IF vMinExtraState > 0 THEN
@@ -1258,11 +1251,10 @@ BEGIN
       AND es.state <= vMinExtraState
       AND es.state_date IS NULL
       AND (vBookPart = 0
-      OR EXISTS
-      (SELECT 1
-        FROM order_state os
-        WHERE os.id = es.state
-        AND os.book_part = vBookPart));
+      OR EXISTS (SELECT 1
+          FROM order_state os
+          WHERE os.id = es.state
+            AND os.book_part = vBookPart));
 
       IF vBookPart = 0 THEN
         -- forvard order state
@@ -1338,8 +1330,8 @@ BEGIN
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET vOrder = NULL;
 
   SELECT pg.order_id, pg.sub_id INTO vOrder, vSubOrder
-  FROM print_group pg
-  WHERE pg.id = pPrintGroup;
+    FROM print_group pg
+    WHERE pg.id = pPrintGroup;
 
   IF vOrder IS NOT NULL THEN
     UPDATE print_group pg
@@ -1359,13 +1351,11 @@ BEGIN
   IF pDate IS NULL THEN
     SET pDate = NOW();
   END IF;
-  INSERT IGNORE INTO order_extra_state
-  (id, sub_id, state, start_date)
+  INSERT IGNORE INTO order_extra_state (id, sub_id, state, start_date)
     VALUES (pOrder, pSubOrder, pState, pDate);
   IF pSubOrder != '' THEN
     -- start order
-    INSERT IGNORE INTO order_extra_state
-    (id, sub_id, state, start_date)
+    INSERT IGNORE INTO order_extra_state (id, sub_id, state, start_date)
       VALUES (pOrder, '', pState, pDate);
   END IF;
 END
@@ -1375,23 +1365,22 @@ CREATE PROCEDURE findeSubOrderByOrder (IN pOrderId varchar(50), IN pSrcCode char
 BEGIN
 
   SELECT o.id order_id, '' sub_id, sr.name source_name, sr.code source_code, os.name state_name, o.state, o.state_date, (SELECT MAX(pg.book_num) FROM print_group pg WHERE o.id = pg.order_id AND pg.sub_id = '') prt_qty
-  FROM orders o
-    INNER JOIN sources sr ON o.source = sr.id
-    INNER JOIN order_state os ON os.id = o.state
-  WHERE o.id LIKE pOrderId
-  AND sr.code = IFNULL(pSrcCode, sr.code)
-  AND NOT EXISTS
-  (SELECT 1
-    FROM suborders s
-    WHERE s.order_id = o.id)
+    FROM orders o
+      INNER JOIN sources sr ON o.source = sr.id
+      INNER JOIN order_state os ON os.id = o.state
+    WHERE o.id LIKE pOrderId
+      AND sr.code = IFNULL(pSrcCode, sr.code)
+      AND NOT EXISTS (SELECT 1
+          FROM suborders s
+          WHERE s.order_id = o.id)
   UNION ALL
   SELECT s.order_id, s.sub_id, sr.name source_name, sr.code source_code, os.name state_name, s.state, s.state_date, s.prt_qty
-  FROM suborders s
-    INNER JOIN orders o ON s.order_id = o.id
-    INNER JOIN sources sr ON o.source = sr.id
-    INNER JOIN order_state os ON os.id = s.state
-  WHERE s.order_id LIKE pOrderId
-  AND sr.code = IFNULL(pSrcCode, sr.code);
+    FROM suborders s
+      INNER JOIN orders o ON s.order_id = o.id
+      INNER JOIN sources sr ON o.source = sr.id
+      INNER JOIN order_state os ON os.id = s.state
+    WHERE s.order_id LIKE pOrderId
+      AND sr.code = IFNULL(pSrcCode, sr.code);
 
 END
 $$
@@ -1399,21 +1388,18 @@ $$
 CREATE PROCEDURE loadMonitorEState (IN pState int, IN pWaiteState int)
 BEGIN
   SELECT es.id, es.sub_id, es.state, es.start_date, os.name state_name, (CASE WHEN es2.id IS NULL THEN 1000 WHEN es2.state_date IS NULL THEN 900 ELSE es2.state END) state2, es2.start_date start_date2, es2.state_date state_date2, os2.name state_name2
-  FROM order_extra_state es
-    INNER JOIN order_state os ON os.id = es.state
-    LEFT OUTER JOIN order_extra_state es2 ON es.id = es2.id
-      AND es.sub_id = es2.sub_id
-      AND es2.state = pWaiteState --  waite State
-    LEFT OUTER JOIN order_state os2 ON os2.id = es2.state
-  WHERE es.state = pState -- base state
-  AND es.state_date IS NULL
-  AND NOT EXISTS
-  (SELECT 1
-    FROM order_extra_state oes
-    WHERE es.id = oes.id
-    AND es.sub_id = oes.sub_id
-    AND oes.state = 450)
-  ORDER BY (CASE WHEN es2.id IS NULL THEN 1000 WHEN es2.state_date IS NULL THEN 900 ELSE es2.state END), es.state_date;
+    FROM order_extra_state es
+      INNER JOIN order_state os ON os.id = es.state
+      LEFT OUTER JOIN order_extra_state es2 ON es.id = es2.id AND es.sub_id = es2.sub_id AND es2.state = pWaiteState --  waite State
+      LEFT OUTER JOIN order_state os2 ON os2.id = es2.state
+    WHERE es.state = pState -- base state
+      AND es.state_date IS NULL
+      AND NOT EXISTS (SELECT 1
+          FROM order_extra_state oes
+          WHERE es.id = oes.id
+            AND es.sub_id = oes.sub_id
+            AND oes.state = 450)
+    ORDER BY (CASE WHEN es2.id IS NULL THEN 1000 WHEN es2.state_date IS NULL THEN 900 ELSE es2.state END), es.state_date;
 END
 $$
 
@@ -1428,25 +1414,22 @@ BEGIN
   -- create temp
   CREATE TEMPORARY TABLE IF NOT EXISTS tmp_spy LIKE tmpt_spy;
   -- get last states by condition
-  INSERT INTO tmp_spy
-  (id, sub_id, state, start_date, state_date, lastDate)
+  INSERT INTO tmp_spy (id, sub_id, state, start_date, state_date, lastDate)
     SELECT t.id, t.sub_id, t.state, t.start_date, t.state_date, t.lastDt
-    FROM
-    (SELECT oes.id, oes.sub_id, oes.state, oes.start_date, oes.state_date, IFNULL(oes.state_date, oes.start_date) lastDt
-      FROM order_extra_state oes
-        INNER JOIN order_state os ON oes.state = os.id
-      WHERE oes.state BETWEEN pFromState AND pToState
-      AND (pBookPart = 0
-      OR os.book_part IN (0, pBookPart))
-      AND NOT EXISTS
-      (SELECT 1
-        FROM order_extra_state oes1
-        WHERE oes.id = oes1.id
-        AND oes.sub_id = oes1.sub_id
-        AND oes1.state_date IS NOT NULL
-        AND oes1.state = 450)
-      ORDER BY IFNULL(oes.state_date, oes.start_date) DESC) t
-    GROUP BY t.id, t.sub_id;
+      FROM (SELECT oes.id, oes.sub_id, oes.state, oes.start_date, oes.state_date, IFNULL(oes.state_date, oes.start_date) lastDt
+          FROM order_extra_state oes
+            INNER JOIN order_state os ON oes.state = os.id
+          WHERE oes.state BETWEEN pFromState AND pToState
+            AND (pBookPart = 0
+            OR os.book_part IN (0, pBookPart))
+            AND NOT EXISTS (SELECT 1
+                FROM order_extra_state oes1
+                WHERE oes.id = oes1.id
+                  AND oes.sub_id = oes1.sub_id
+                  AND oes1.state_date IS NOT NULL
+                  AND oes1.state = 450)
+          ORDER BY IFNULL(oes.state_date, oes.start_date) DESC) t
+      GROUP BY t.id, t.sub_id;
   -- remove by date
   DELETE
     FROM tmp_spy
@@ -1454,26 +1437,23 @@ BEGIN
   -- remove photo
   DELETE
     FROM tmp_spy
-  WHERE NOT EXISTS
-    (SELECT 1
-      FROM print_group pg
-      WHERE pg.order_id = tmp_spy.id
-      AND pg.sub_id = tmp_spy.sub_id
-      AND pg.book_type > 0);
+  WHERE NOT EXISTS (SELECT 1
+        FROM print_group pg
+        WHERE pg.order_id = tmp_spy.id
+          AND pg.sub_id = tmp_spy.sub_id
+          AND pg.book_type > 0);
   -- set reset date
   UPDATE tmp_spy
-  SET resetDate =
-  (SELECT MAX(oep.state_date)
-    FROM order_exstate_prolong oep
-    WHERE oep.id = tmp_spy.id
-    AND oep.sub_id = tmp_spy.sub_id
-    AND oep.state = tmp_spy.state)
-  WHERE EXISTS
-  (SELECT 1
-    FROM order_exstate_prolong oep
-    WHERE oep.id = tmp_spy.id
-    AND oep.sub_id = tmp_spy.sub_id
-    AND oep.state = tmp_spy.state);
+  SET resetDate = (SELECT MAX(oep.state_date)
+      FROM order_exstate_prolong oep
+      WHERE oep.id = tmp_spy.id
+        AND oep.sub_id = tmp_spy.sub_id
+        AND oep.state = tmp_spy.state)
+  WHERE EXISTS (SELECT 1
+      FROM order_exstate_prolong oep
+      WHERE oep.id = tmp_spy.id
+        AND oep.sub_id = tmp_spy.sub_id
+        AND oep.state = tmp_spy.state);
 
   /*
    * pKeepReset 
@@ -1495,27 +1475,24 @@ BEGIN
 
   -- set book type
   UPDATE tmp_spy t
-  SET book_type =
-  (SELECT MAX(pg.book_type)
-    FROM print_group pg
-    WHERE pg.order_id = t.id
-    AND pg.sub_id = t.sub_id);
+  SET book_type = (SELECT MAX(pg.book_type)
+      FROM print_group pg
+      WHERE pg.order_id = t.id
+        AND pg.sub_id = t.sub_id);
   -- set book alias
   -- 4 pro books
   UPDATE tmp_spy t
-  SET alias =
-  (SELECT MAX(pg.path)
-    FROM print_group pg
-    WHERE pg.order_id = t.id
-    AND pg.sub_id = t.sub_id)
+  SET alias = (SELECT MAX(pg.path)
+      FROM print_group pg
+      WHERE pg.order_id = t.id
+        AND pg.sub_id = t.sub_id)
   WHERE t.sub_id = '';
   -- 4 sub orders
   UPDATE tmp_spy t
-  SET alias =
-  (SELECT alias
-    FROM suborders s
-    WHERE s.order_id = t.id
-    AND s.sub_id = t.sub_id)
+  SET alias = (SELECT alias
+      FROM suborders s
+      WHERE s.order_id = t.id
+        AND s.sub_id = t.sub_id)
   WHERE t.sub_id != '';
   -- calc delay in hours
   UPDATE tmp_spy
@@ -1523,11 +1500,11 @@ BEGIN
 
   -- result select
   SELECT t.id, t.sub_id, t.state, t.start_date, t.state_date, t.lastDate, t.resetDate, t.reset, t.book_type, t.delay, t.alias, os.name op_name, os.book_part, bp.name bp_name, bt.name bt_name
-  FROM tmp_spy t
-    INNER JOIN order_state os ON t.state = os.id
-    INNER JOIN book_part bp ON os.book_part = bp.id
-    INNER JOIN book_type bt ON bt.id = t.book_type
-  ORDER BY t.delay DESC;
+    FROM tmp_spy t
+      INNER JOIN order_state os ON t.state = os.id
+      INNER JOIN book_part bp ON os.book_part = bp.id
+      INNER JOIN book_type bt ON bt.id = t.book_type
+    ORDER BY t.delay DESC;
   -- kill temp
   DROP TEMPORARY TABLE tmp_spy;
 END
@@ -1536,11 +1513,10 @@ $$
 CREATE PROCEDURE logStateByPg (IN pPgId varchar(50), IN pSate int, IN pMsg varchar(250))
 MODIFIES SQL DATA
 BEGIN
-  INSERT INTO state_log
-  (order_id, sub_id, pg_id, state, state_date, comment)
+  INSERT INTO state_log (order_id, sub_id, pg_id, state, state_date, comment)
     SELECT pg.order_id, pg.sub_id, pg.id, pSate, NOW(), pMsg
-    FROM print_group pg
-    WHERE pg.id = pPgId;
+      FROM print_group pg
+      WHERE pg.id = pPgId;
 END
 $$
 
@@ -1585,8 +1561,7 @@ BEGIN
   SET state = 100,
       state_date = vDate
   WHERE id = pId;
-  INSERT INTO state_log
-  (order_id, state, state_date, comment)
+  INSERT INTO state_log (order_id, state, state_date, comment)
     VALUES (pId, 100, vDate, 'reset');
 END
 $$
@@ -1620,8 +1595,8 @@ BEGIN
   WHERE pg.id = pPgroupId;
 
   SELECT pg.order_id, pg.sub_id INTO vOrderId, vSubId
-  FROM print_group pg
-  WHERE pg.id = pPgroupId;
+    FROM print_group pg
+    WHERE pg.id = pPgroupId;
 
   IF vOrderId IS NOT NULL THEN
     -- reset order/suborder state & extra
@@ -1671,8 +1646,8 @@ BEGIN
   WHERE pg.id = pPgroupId;
 
   SELECT pg.order_id, pg.sub_id, pg.reprint_id INTO vOrderId, vSubId, vParent
-  FROM print_group pg
-  WHERE pg.id = pPgroupId;
+    FROM print_group pg
+    WHERE pg.id = pPgroupId;
 
   IF vOrderId IS NOT NULL THEN
     -- check reprint
@@ -1684,9 +1659,9 @@ BEGIN
     END IF;
     -- chek if all pg started
     SELECT IFNULL(MIN(pg.state), 0) INTO vMinState
-    FROM print_group pg
-    WHERE pg.order_id = vOrderId
-    AND pg.sub_id = vSubId;
+      FROM print_group pg
+      WHERE pg.order_id = vOrderId
+        AND pg.sub_id = vSubId;
     IF vMinState >= 300 THEN
       -- all pg printed end order/suborder
       CALL extraStateSet(vOrderId, vSubId, 300, NOW());
@@ -1718,8 +1693,8 @@ BEGIN
   AND pg.state != 250;
 
   SELECT pg.order_id, pg.sub_id INTO vOrderId, vSubId
-  FROM print_group pg
-  WHERE pg.id = pPgroupId;
+    FROM print_group pg
+    WHERE pg.id = pPgroupId;
 
   IF vOrderId IS NOT NULL THEN
     -- rise order/suborder state
@@ -1739,9 +1714,9 @@ BEGIN
 
     -- chek if all pg started
     SELECT IFNULL(MIN(pg.state), 0) INTO vMinState
-    FROM print_group pg
-    WHERE pg.order_id = vOrderId
-    AND pg.sub_id = vSubId;
+      FROM print_group pg
+      WHERE pg.order_id = vOrderId
+        AND pg.sub_id = vSubId;
     IF vMinState >= 250 THEN
       -- all pg started end order/suborder
       CALL extraStateSet(vOrderId, vSubId, 210, NOW());
@@ -1762,13 +1737,13 @@ BEGIN
   DECLARE vIsEnd int DEFAULT (0);
   DECLARE vCur CURSOR FOR
   SELECT s.id
-  FROM sources s
-  WHERE s.online = 1;
+    FROM sources s
+    WHERE s.online = 1;
 
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET vIsEnd = 1;
 
   OPEN vCur;
-wet:
+wet :
   LOOP
     FETCH vCur INTO vId;
     IF vIsEnd THEN
@@ -1783,218 +1758,200 @@ $$
 
 CREATE PROCEDURE syncSource (IN pSourceId int)
 MODIFIES SQL DATA
-main:
-BEGIN
-  DECLARE vSync integer(11) DEFAULT (0);
-  DECLARE vCnt integer(11) DEFAULT (0);
-
-  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+main :
   BEGIN
-    ROLLBACK;
-  END;
-  DECLARE CONTINUE HANDLER FOR NOT FOUND SET vSync = 0;
+    DECLARE vSync integer(11) DEFAULT (0);
+    DECLARE vCnt integer(11) DEFAULT (0);
 
-  IF NOT EXISTS
-    (SELECT 1
-      FROM tmp_orders t
-      WHERE t.source = pSourceId) THEN
-    LEAVE main;
-  END IF;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+      ROLLBACK;
+    END;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET vSync = 0;
 
-  -- reset sync state
-  UPDATE sources_sync ss
-  SET ss.sync_date = NOW(),
-      ss.sync_state = 0
-  WHERE ss.id = pSourceId;
+    IF NOT EXISTS (SELECT 1
+          FROM tmp_orders t
+          WHERE t.source = pSourceId) THEN
+      LEAVE main;
+    END IF;
 
-  -- keep in transaction
-  START TRANSACTION;
-
-    -- get next sync
-    SELECT ss.sync INTO vSync
-    FROM sources_sync ss
+    -- reset sync state
+    UPDATE sources_sync ss
+    SET ss.sync_date = NOW(),
+        ss.sync_state = 0
     WHERE ss.id = pSourceId;
-    SET vSync = IFNULL(vSync, 0) + 1;
 
-    -- set sync
-    UPDATE tmp_orders to1
-    SET to1.sync = vSync
-    WHERE to1.source = pSourceId;
+    -- keep in transaction
+    START TRANSACTION;
 
-    -- add new
-    -- search new
-    UPDATE tmp_orders to1
-    SET to1.is_new = IFNULL(
-    (SELECT 0
-      FROM orders o
-      WHERE o.id = to1.id), 1)
-    WHERE to1.source = pSourceId;
-    -- insert new
-    INSERT INTO orders
-    (id, source, src_id, src_date, state, state_date, ftp_folder, fotos_num, sync, is_preload, data_ts, group_id, client_id)
-      SELECT id, source, src_id, src_date, state, state_date, ftp_folder, fotos_num, sync, is_preload, data_ts, group_id, client_id
-      FROM tmp_orders to1
-      WHERE to1.source = pSourceId
-      AND to1.is_new = 1;
-    -- remove new
-    DELETE
-      FROM tmp_orders
-    WHERE source = pSourceId
-      AND is_new = 1;
+      -- get next sync
+      SELECT ss.sync INTO vSync
+        FROM sources_sync ss
+        WHERE ss.id = pSourceId;
+      SET vSync = IFNULL(vSync, 0) + 1;
 
-    -- update sync & group_id
-    UPDATE orders o
-    INNER JOIN tmp_orders t
-      ON o.id = t.id
-    SET o.sync = vSync,
-        o.group_id = t.group_id,
-        o.client_id = t.client_id
-    WHERE t.source = pSourceId;
+      -- set sync
+      UPDATE tmp_orders to1
+      SET to1.sync = vSync
+      WHERE to1.source = pSourceId;
 
-    -- check/process preload
-    -- update printgroup 
-    UPDATE print_group
-    SET state = 200,
-        state_date = NOW()
-    WHERE state = 199
-    AND order_id IN
-    (SELECT t.id
-      FROM tmp_orders t
-      WHERE t.source = pSourceId
-      AND t.is_preload = 0);
-    -- suborders
-    UPDATE suborders s
-    SET s.state = 200,
-        s.state_date = NOW()
-    WHERE s.state = 199
-    AND s.order_id IN
-    (SELECT t.id
-      FROM tmp_orders t
-      WHERE t.source = pSourceId
-      AND t.is_preload = 0);
+      -- add new
+      -- search new
+      UPDATE tmp_orders to1
+      SET to1.is_new = IFNULL((SELECT 0
+          FROM orders o
+          WHERE o.id = to1.id), 1)
+      WHERE to1.source = pSourceId;
+      -- insert new
+      INSERT INTO orders (id, source, src_id, src_date, state, state_date, ftp_folder, fotos_num, sync, is_preload, data_ts, group_id, client_id)
+        SELECT id, source, src_id, IF(src_date = '1970-01-01 03:00', NOW(), src_date), state, state_date, ftp_folder, fotos_num, sync, is_preload, data_ts, group_id, client_id
+          FROM tmp_orders to1
+          WHERE to1.source = pSourceId
+            AND to1.is_new = 1;
+      -- remove new
+      DELETE
+        FROM tmp_orders
+      WHERE source = pSourceId
+        AND is_new = 1;
 
-    -- set extra state
-    INSERT INTO order_extra_state
-    (id, sub_id, state, start_date, state_date)
-      SELECT t.id, '', 200, NOW(), NOW()
-      FROM tmp_orders t
-        INNER JOIN orders o ON o.id = t.id
-          AND o.state = 199
-      WHERE t.source = pSourceId
-      AND t.is_preload = 0
-    ON DUPLICATE KEY UPDATE state_date = NOW();
+      -- update sync & group_id
+      UPDATE orders o
+      INNER JOIN tmp_orders t
+        ON o.id = t.id
+      SET o.sync = vSync,
+          o.group_id = t.group_id,
+          o.client_id = t.client_id
+      WHERE t.source = pSourceId;
 
-    -- orders
-    UPDATE orders o
-    SET state = 200,
-        state_date = NOW(),
-        is_preload = 0
-    WHERE o.state = 199
-    AND o.id IN
-    (SELECT t.id
-      FROM tmp_orders t
-      WHERE t.source = pSourceId
-      AND t.is_preload = 0);
+      -- check/process preload
+      -- update printgroup 
+      UPDATE print_group
+      SET state = 200,
+          state_date = NOW()
+      WHERE state = 199
+      AND order_id IN (SELECT t.id
+          FROM tmp_orders t
+          WHERE t.source = pSourceId
+            AND t.is_preload = 0);
+      -- suborders
+      UPDATE suborders s
+      SET s.state = 200,
+          s.state_date = NOW()
+      WHERE s.state = 199
+      AND s.order_id IN (SELECT t.id
+          FROM tmp_orders t
+          WHERE t.source = pSourceId
+            AND t.is_preload = 0);
 
-    -- cancel not in sync
-    -- cancel print groups
-    UPDATE print_group
-    SET state = 510,
-        state_date = NOW()
-    WHERE order_id IN
-    (SELECT id
-      FROM orders o
+      -- set extra state
+      INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date)
+        SELECT t.id, '', 200, NOW(), NOW()
+          FROM tmp_orders t
+            INNER JOIN orders o ON o.id = t.id AND o.state = 199
+          WHERE t.source = pSourceId
+            AND t.is_preload = 0
+      ON DUPLICATE KEY UPDATE state_date = NOW();
+
+      -- orders
+      UPDATE orders o
+      SET state = 200,
+          state_date = NOW(),
+          is_preload = 0
+      WHERE o.state = 199
+      AND o.id IN (SELECT t.id
+          FROM tmp_orders t
+          WHERE t.source = pSourceId
+            AND t.is_preload = 0);
+
+      -- cancel not in sync
+      -- cancel print groups
+      UPDATE print_group
+      SET state = 510,
+          state_date = NOW()
+      WHERE order_id IN (SELECT id
+          FROM orders o
+          WHERE o.source = pSourceId
+            AND o.state BETWEEN 100 AND 200
+            AND o.sync != vSync);
+      -- cancel suborders
+      UPDATE suborders s
+      SET s.state = 510,
+          s.state_date = NOW()
+      WHERE s.order_id IN (SELECT id
+          FROM orders o
+          WHERE o.source = pSourceId
+            AND o.state BETWEEN 100 AND 200
+            AND o.sync != vSync);
+      -- cancel orders
+      UPDATE orders o
+      SET state = 510,
+          state_date = NOW()
       WHERE o.source = pSourceId
       AND o.state BETWEEN 100 AND 200
-      AND o.sync != vSync);
-    -- cancel suborders
-    UPDATE suborders s
-    SET s.state = 510,
-        s.state_date = NOW()
-    WHERE s.order_id IN
-    (SELECT id
-      FROM orders o
-      WHERE o.source = pSourceId
-      AND o.state BETWEEN 100 AND 200
-      AND o.sync != vSync);
-    -- cancel orders
-    UPDATE orders o
-    SET state = 510,
-        state_date = NOW()
-    WHERE o.source = pSourceId
-    AND o.state BETWEEN 100 AND 200
-    AND o.sync != vSync;
+      AND o.sync != vSync;
 
-    -- finde reload candidate by project data time
-    UPDATE tmp_orders t
-    SET t.reload = 1
-    WHERE t.source = pSourceId
-    AND t.data_ts IS NOT NULL
-    AND EXISTS
-    (SELECT 1
-      FROM orders o
-      WHERE o.id = t.id
-      AND o.data_ts IS NOT NULL
-      AND o.data_ts != o.data_ts
-      AND o.state BETWEEN 199 AND 200);
-    -- clean orders 4 reload
-    -- clean print_group
-    DELETE
-      FROM print_group
-    WHERE order_id IN
-      (SELECT id
-        FROM tmp_orders t
-        WHERE t.source = pSourceId
-        AND t.reload = 1);
-    -- clean extra info
-    DELETE
-      FROM order_extra_info
-    WHERE id IN
-      (SELECT id
-        FROM tmp_orders t
-        WHERE t.source = pSourceId
-        AND t.reload = 1);
-    -- clean suborder
-    DELETE
-      FROM suborders
-    WHERE order_id IN
-      (SELECT id
-        FROM tmp_orders t
-        WHERE t.source = pSourceId
-        AND t.reload = 1);
-    -- reset order state
-    UPDATE orders o
-    SET o.state = 100,
-        o.state_date = NOW()
-    WHERE o.id IN
-    (SELECT id
-      FROM tmp_orders t
+      -- finde reload candidate by project data time
+      UPDATE tmp_orders t
+      SET t.reload = 1
       WHERE t.source = pSourceId
-      AND t.reload = 1);
-    -- set project data time
-    UPDATE orders o
-    SET o.data_ts =
-    (SELECT tt.data_ts
-      FROM tmp_orders tt
-      WHERE tt.id = o.id)
-    WHERE o.source = pSourceId
-    AND EXISTS
-    (SELECT 1
-      FROM tmp_orders t
-      WHERE t.id = o.id
       AND t.data_ts IS NOT NULL
-      AND t.data_ts != IFNULL(o.data_ts, ''));
+      AND EXISTS (SELECT 1
+          FROM orders o
+          WHERE o.id = t.id
+            AND o.data_ts IS NOT NULL
+            AND o.data_ts != o.data_ts
+            AND o.state BETWEEN 199 AND 200);
+      -- clean orders 4 reload
+      -- clean print_group
+      DELETE
+        FROM print_group
+      WHERE order_id IN (SELECT id
+            FROM tmp_orders t
+            WHERE t.source = pSourceId
+              AND t.reload = 1);
+      -- clean extra info
+      DELETE
+        FROM order_extra_info
+      WHERE id IN (SELECT id
+            FROM tmp_orders t
+            WHERE t.source = pSourceId
+              AND t.reload = 1);
+      -- clean suborder
+      DELETE
+        FROM suborders
+      WHERE order_id IN (SELECT id
+            FROM tmp_orders t
+            WHERE t.source = pSourceId
+              AND t.reload = 1);
+      -- reset order state
+      UPDATE orders o
+      SET o.state = 100,
+          o.state_date = NOW()
+      WHERE o.id IN (SELECT id
+          FROM tmp_orders t
+          WHERE t.source = pSourceId
+            AND t.reload = 1);
+      -- set project data time
+      UPDATE orders o
+      SET o.data_ts = (SELECT tt.data_ts
+          FROM tmp_orders tt
+          WHERE tt.id = o.id)
+      WHERE o.source = pSourceId
+      AND EXISTS (SELECT 1
+          FROM tmp_orders t
+          WHERE t.id = o.id
+            AND t.data_ts IS NOT NULL
+            AND t.data_ts != IFNULL(o.data_ts, ''));
 
-    -- finalize
-    DELETE
-      FROM tmp_orders
-    WHERE source = pSourceId;
-    INSERT INTO sources_sync
-    (id, sync, sync_date, sync_state)
-      VALUES (pSourceId, vSync, NOW(), 1)
-    ON DUPLICATE KEY UPDATE sync = vSync, sync_date = NOW(), sync_state = 1;
-  COMMIT;
-END
+      -- finalize
+      DELETE
+        FROM tmp_orders
+      WHERE source = pSourceId;
+      INSERT INTO sources_sync (id, sync, sync_date, sync_state)
+        VALUES (pSourceId, vSync, NOW(), 1)
+      ON DUPLICATE KEY UPDATE sync = vSync, sync_date = NOW(), sync_state = 1;
+    COMMIT;
+  END
 $$
 
 CREATE PROCEDURE techLogPg (IN pPgroup varchar(50), IN pSheet int, IN pTechPoint int, IN pDate datetime)
@@ -2009,12 +1966,12 @@ BEGIN
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET vOrderId = NULL;
 
   SELECT pg.order_id, pg.sub_id, pg.book_num, pg.sheet_num INTO vOrderId, vSubId, vBooks, vSheets
-  FROM print_group pg
-  WHERE pg.id = pPgroup;
+    FROM print_group pg
+    WHERE pg.id = pPgroup;
 
   SELECT tp.tech_type INTO vState
-  FROM tech_point tp
-  WHERE tp.id = pTechPoint;
+    FROM tech_point tp
+    WHERE tp.id = pTechPoint;
 
   IF vOrderId IS NOT NULL THEN
     IF vState <= 300 THEN
@@ -2022,8 +1979,7 @@ BEGIN
       SET pPgroup = printPg2Reprint(pPgroup);
     END IF;
     -- log
-    INSERT INTO tech_log
-    (order_id, sub_id, print_group, sheet, src_id, log_date)
+    INSERT INTO tech_log (order_id, sub_id, print_group, sheet, src_id, log_date)
       VALUES (vOrderId, vSubId, pPgroup, pSheet, pTechPoint, pDate);
     -- check
     CALL techUnitCalc(vOrderId, vSubId, pPgroup, vState, vBooks, vSheets);
@@ -2050,12 +2006,12 @@ BEGIN
   END IF;
 
   SELECT IFNULL(COUNT(DISTINCT tl.sheet), 0), IFNULL(MIN(tl.log_date), NOW()), IFNULL(MAX(tl.log_date), NOW()) INTO vDone, vStart, vEnd
-  FROM tech_log tl
-    INNER JOIN tech_point tp ON tl.src_id = tp.id
-  WHERE tl.order_id = pOrder
-  AND tl.sub_id = pSubOrder
-  AND tl.print_group = pPgroup
-  AND tp.tech_type = pState;
+    FROM tech_log tl
+      INNER JOIN tech_point tp ON tl.src_id = tp.id
+    WHERE tl.order_id = pOrder
+      AND tl.sub_id = pSubOrder
+      AND tl.print_group = pPgroup
+      AND tp.tech_type = pState;
   /*
   INSERT INTO tech_unit (order_id, sub_id, pg_id, state, start_date, end_date, books, sheets, done)
                     VALUES( pOrder, pSubOrder, pPgroup, pState, vStart, vEnd, pBooks, pSheets, vDone)
@@ -2096,9 +2052,9 @@ BEGIN
       END IF;
       -- print state, check pringroups
       SELECT IFNULL(MIN(pg.state), 0) INTO vMinState
-      FROM print_group pg
-      WHERE pg.order_id = pOrder
-      AND pg.sub_id = pSubOrder;
+        FROM print_group pg
+        WHERE pg.order_id = pOrder
+          AND pg.sub_id = pSubOrder;
       IF vMinState >= 300 THEN
         -- all pg printed end order/suborder
         CALL extraStateSet(pOrder, pSubOrder, pState, vEnd);
@@ -2125,12 +2081,12 @@ BEGIN
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET vPgId = pPgroupId;
 
   SELECT pg1.id INTO vPgId
-  FROM print_group pg
-    INNER JOIN print_group pg1 ON pg.order_id = pg1.order_id
-      AND pg.id = pg1.reprint_id
-      AND pg1.state < 300
-  WHERE pg.id = pPgroupId
-  AND pg.is_reprint = 0
+    FROM print_group pg
+      INNER JOIN print_group pg1 ON pg.order_id = pg1.order_id
+        AND pg.id = pg1.reprint_id
+        AND pg1.state < 300
+    WHERE pg.id = pPgroupId
+      AND pg.is_reprint = 0
   LIMIT 1;
 
 
@@ -2143,8 +2099,7 @@ AFTER INSERT
 ON orders
 FOR EACH ROW
 BEGIN
-  INSERT INTO state_log
-  (order_id, state, state_date)
+  INSERT INTO state_log (order_id, state, state_date)
     VALUES (NEW.id, NEW.state, NOW());
 END
 $$
@@ -2155,8 +2110,7 @@ ON orders
 FOR EACH ROW
 BEGIN
   IF NOT (OLD.state <=> NEW.state) THEN
-    INSERT INTO state_log
-    (order_id, state, state_date)
+    INSERT INTO state_log (order_id, state, state_date)
       VALUES (NEW.id, NEW.state, NOW());
   END IF;
 END
@@ -2167,8 +2121,7 @@ AFTER INSERT
 ON print_group
 FOR EACH ROW
 BEGIN
-  INSERT INTO state_log
-  (order_id, sub_id, pg_id, state, state_date)
+  INSERT INTO state_log (order_id, sub_id, pg_id, state, state_date)
     VALUES (NEW.order_id, NEW.sub_id, NEW.id, NEW.state, NOW());
 END
 $$
@@ -2179,8 +2132,7 @@ ON print_group
 FOR EACH ROW
 BEGIN
   IF NOT (OLD.state <=> NEW.state) THEN
-    INSERT INTO state_log
-    (order_id, sub_id, pg_id, state, state_date)
+    INSERT INTO state_log (order_id, sub_id, pg_id, state, state_date)
       VALUES (NEW.order_id, NEW.sub_id, NEW.id, NEW.state, NOW());
   END IF;
 END
@@ -2191,8 +2143,7 @@ AFTER INSERT
 ON suborders
 FOR EACH ROW
 BEGIN
-  INSERT INTO state_log
-  (order_id, sub_id, state, state_date)
+  INSERT INTO state_log (order_id, sub_id, state, state_date)
     VALUES (NEW.order_id, NEW.sub_id, NEW.state, NOW());
 END
 $$
@@ -2203,8 +2154,7 @@ ON suborders
 FOR EACH ROW
 BEGIN
   IF NOT (OLD.state <=> NEW.state) THEN
-    INSERT INTO state_log
-    (order_id, sub_id, state, state_date)
+    INSERT INTO state_log (order_id, sub_id, state, state_date)
       VALUES (NEW.order_id, NEW.sub_id, NEW.state, NOW());
   END IF;
 END
@@ -2215,17 +2165,13 @@ DELIMITER ;
 CREATE OR REPLACE
 VIEW suborderOtkV
 AS
-SELECT `es`.`id` AS `order_id`, `es`.`sub_id` AS `sub_id`, `es`.`state` AS `state`, `es`.`start_date` AS `state_date`, COUNT(DISTINCT `tl`.`sheet`) AS `books_done`, ifnull(`s`.`prt_qty`, ifnull((SELECT MAX(`pg`.`book_num`) FROM `print_group` `pg` WHERE ((`pg`.`order_id` = `es`.`id`) AND (`pg`.`sub_id` = `es`.`sub_id`))), 0)) AS `prt_qty`
-FROM ((((`order_extra_state` `es`
-  LEFT JOIN `orders` `o` ON ((`o`.`id` = `es`.`id`)))
-  LEFT JOIN `suborders` `s` ON (((`es`.`id` = `s`.`order_id`)
-    AND (`es`.`sub_id` = `s`.`sub_id`))))
-  LEFT JOIN `tech_point` `tp` ON ((`tp`.`tech_type` = `es`.`state`)))
-  LEFT JOIN `tech_log` `tl` ON (((`tl`.`src_id` = `tp`.`id`)
-    AND (`tl`.`order_id` = `es`.`id`)
-    AND (`tl`.`sub_id` = `es`.`sub_id`)
-    AND (`tl`.`sheet` <> 0))))
-WHERE ((`es`.`state` = 450)
-AND isnull(`es`.`state_date`))
-GROUP BY `es`.`id`, `es`.`sub_id`
-ORDER BY `es`.`start_date`;
+SELECT `es`.`id` AS `order_id`, `es`.`sub_id` AS `sub_id`, `es`.`state` AS `state`, `es`.`start_date` AS `state_date`, COUNT(DISTINCT `tl`.`sheet`) AS `books_done`, IFNULL(`s`.`prt_qty`, IFNULL((SELECT MAX(`pg`.`book_num`) FROM `print_group` `pg` WHERE ((`pg`.`order_id` = `es`.`id`) AND (`pg`.`sub_id` = `es`.`sub_id`))), 0)) AS `prt_qty`
+  FROM ((((`order_extra_state` `es`
+    LEFT JOIN `orders` `o` ON ((`o`.`id` = `es`.`id`)))
+    LEFT JOIN `suborders` `s` ON (((`es`.`id` = `s`.`order_id`) AND (`es`.`sub_id` = `s`.`sub_id`))))
+    LEFT JOIN `tech_point` `tp` ON ((`tp`.`tech_type` = `es`.`state`)))
+    LEFT JOIN `tech_log` `tl` ON (((`tl`.`src_id` = `tp`.`id`) AND (`tl`.`order_id` = `es`.`id`) AND (`tl`.`sub_id` = `es`
+      .`sub_id`) AND (`tl`.`sheet` <> 0))))
+  WHERE ((`es`.`state` = 450) AND ISNULL(`es`.`state_date`))
+  GROUP BY `es`.`id`, `es`.`sub_id`
+  ORDER BY `es`.`start_date`;

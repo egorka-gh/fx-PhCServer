@@ -8,3 +8,8 @@
 *.hid
 /libRem
 /[source path] src
+/.actionScriptProperties
+/.classpath
+/.flexProperties
+/.granite
+/.project
