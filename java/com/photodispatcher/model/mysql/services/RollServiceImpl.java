@@ -86,6 +86,17 @@ public class RollServiceImpl extends AbstractDAO implements RollService {
 		return result;
 	}
 
-	
+	@Override
+	public SqlResult persistRoll(LabRoll roll){
+		SqlResult result= new SqlResult();
+		if(roll.getPersistState() == 0){
+			// insert
+			result=runInsert(roll);
+		} else if(roll.getPersistState()==-1){
+			// update
+			result=runUpdate(roll);
+		}
+		return result;
+	}
 	
 }

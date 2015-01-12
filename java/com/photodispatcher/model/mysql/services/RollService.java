@@ -16,4 +16,5 @@ public interface RollService {
 	public SelectResult<LabRoll> getByDevice(int device, boolean forEdit);
 	public SelectResult<LabRoll> fillByChannels(int device);
 	public SqlResult persistBatch(List<LabRoll> items);
+	public SqlResult persistRoll(LabRoll roll);
 }
