@@ -13,4 +13,5 @@ public interface TechService {
 	SqlResult logByPg(TechLog item);
 	SelectResult<TechLog> loadBooks4Otk(String id, String sub_id);
 	DmlResult<TechLog> log(TechLog item);
+	SelectResult<TechLog> loadTechPulse(int techPointType);
 }

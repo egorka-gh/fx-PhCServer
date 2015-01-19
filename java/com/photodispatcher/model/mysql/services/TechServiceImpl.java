@@ -34,5 +34,18 @@ public class TechServiceImpl extends AbstractDAO implements TechService {
 					" GROUP BY (tl.sheet DIV 100)*100";
 		return runSelect(TechLog.class, sql, id, sub_id);
 	}
+	
+	@Override
+	public SelectResult<TechLog> loadTechPulse(int techPointType){
+		
+		String sql = "SELECT tl.*  " +
+				"FROM tech_log tl " +
+				"INNER JOIN " +
+				"(SELECT src_id, MAX(log_date) AS log_date FROM tech_log WHERE src_id IN (SELECT tp.id FROM tech_point tp WHERE tp.tech_type=?) " +
+				"GROUP BY src_id) AS max USING (src_id, log_date);";
+		
+		return runSelect(TechLog.class, sql, techPointType);
+		
+	}
 
 }
