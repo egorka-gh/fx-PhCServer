@@ -1,6 +1,7 @@
 package com.photodispatcher.model.mysql.services;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import com.photodispatcher.model.mysql.entities.Lab;
 import com.photodispatcher.model.mysql.entities.LabDevice;
 import com.photodispatcher.model.mysql.entities.LabPrintCode;
 import com.photodispatcher.model.mysql.entities.LabRoll;
+import com.photodispatcher.model.mysql.entities.LabStopLog;
 import com.photodispatcher.model.mysql.entities.LabTimetable;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.SelectResult;
@@ -253,6 +255,33 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 						" (SELECT MAX(tl.log_date) FROM tech_log tl1 WHERE tl1.src_id = ?)";
 		return runSelect(PrintGroup.class, sql, techPontId, techPontId);
 	}
-
+	
+	@Override
+	public DmlResult<LabStopLog> logLabStop(LabStopLog log) {
+		
+		log.setTime_created(new Date());
+		DmlResult<LabStopLog> result = runInsert(log);
+		return result;
+		
+	}
+	
+	@Override
+	public DmlResult<LabStopLog> updateLabStop(LabStopLog log) {
+		
+		return runUpdate(log);
+		
+	}
+	
+	@Override
+	public SelectResult<LabStopLog> getLabStops(Date timeGapStart, Date timeGapEnd){
+		String sql = "SELECT ls.*, st.name lab_stop_type_name FROM lab_stop_log ls " +
+						"LEFT OUTER JOIN lab_stop_type st ON st.id = ls.lab_stop_type " +
+						"WHERE " +
+						"(time_to BETWEEN ? AND ?) OR " +
+						"(time_from BETWEEN ? AND ?) OR " +
+						"(time_from < ? AND time_to IS NULL) OR " +
+						"(time_from < ? AND time_to > ?)";
+		return runSelect(LabStopLog.class, sql, timeGapStart, timeGapEnd, timeGapStart, timeGapEnd, timeGapStart, timeGapStart, timeGapEnd);
+	}
 	
 }
