@@ -258,6 +258,24 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	
 	@Override
 	public DmlResult<LabStopLog> logLabStop(LabStopLog log) {
+		// нужно проверить time_from на максимум time_to, для того чтобы интервалы не пересекались
+		SelectResult<LabStopLog> sResult;
+		
+		String sql = "SELECT MAX(sl.time_to) as time_to FROM lab_stop_log sl WHERE sl.lab_device=? AND sl.time_to>?";
+		//String sql2 = "SELECT sl.* FROM lab_stop_log sl WHERE sl.time_to=(SELECT MAX(sl1.time_to) FROM lab_stop_log sl1 WHERE sl1.lab_device=?) AND sl.lab_device=?";
+		
+		sResult=runSelect(LabStopLog.class, sql, log.getLab_device(), log.getTime_from());
+		
+		if (sResult.isComplete()){
+			if(sResult.getData()!=null && !sResult.getData().isEmpty()){
+				LabStopLog sl = sResult.getData().get(0);
+				
+				if(sl.getTime_to() != null && sl.getTime_to().after(log.getTime_from())){
+					log.setTime_from(sl.getTime_to());
+				}
+				
+			}
+		}
 		
 		log.setTime_created(new Date());
 		DmlResult<LabStopLog> result = runInsert(log);
