@@ -91,18 +91,21 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 
 	@Override
 	public SelectResult<PrintGroup> loadInPrint(int lab){
+		
 		String sql="SELECT pg.*, "+
-						" COUNT(DISTINCT tl.sheet) prints_done"+
-					" FROM print_group pg"+
-						" INNER JOIN orders o ON pg.order_id = o.id"+
-						" INNER JOIN sources s ON o.source = s.id"+
-						" INNER JOIN order_state os ON pg.state = os.id"+
-						" LEFT OUTER JOIN tech_log tl ON pg.id = tl.print_group AND tl.sheet!=0"+
-						" LEFT OUTER JOIN tech_point tp ON tl.src_id=tp.id AND tp.tech_type=300"+
-					" WHERE pg.state=? AND pg.destination=?"+
-					" GROUP BY pg.id"+
-					" ORDER BY pg.state_date";
-		return runSelect(PrintGroup.class, sql, 250, lab);
+				" COUNT(DISTINCT tl.sheet) prints_done"+
+				" FROM print_group pg"+
+					" INNER JOIN orders o ON pg.order_id = o.id"+
+					" INNER JOIN sources s ON o.source = s.id"+
+					" INNER JOIN order_state os ON pg.state = os.id"+
+					" LEFT OUTER JOIN tech_log tl ON pg.id = tl.print_group AND tl.sheet!=0"+
+					" LEFT OUTER JOIN tech_point tp ON tl.src_id=tp.id AND tp.tech_type=300"+
+				" WHERE pg.state=250 AND o.state<450 AND (?=0 OR pg.destination=?) AND pg.book_type !=0"+
+				" GROUP BY pg.id"+
+				" ORDER BY pg.destination, pg.state_date";
+		
+		return runSelect(PrintGroup.class, sql, lab, lab);
+		
 	}
 
 	@Override
