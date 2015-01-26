@@ -31,6 +31,9 @@ public class Lab extends AbstractEntity {
     @Column(name="is_managed")
     private boolean is_managed;
     
+    @Column(name="soft_speed")
+    private int soft_speed;
+    
   //db drived
     @Column(name="src_type_name", updatable=false, insertable=false)
     private String src_type_name;
@@ -88,6 +91,14 @@ public class Lab extends AbstractEntity {
 
 	public void setQueue_limit(int queue_limit) {
 		this.queue_limit = queue_limit;
+	}
+	
+	public int getSoft_speed() {
+		return soft_speed;
+	}
+
+	public void setSoft_speed(int soft_speed) {
+		this.soft_speed = soft_speed;
 	}
 
 	public boolean isIs_active() {
