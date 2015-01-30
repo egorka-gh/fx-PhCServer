@@ -1,0 +1,15 @@
+<element-set>
+  <element name="rpbody">
+    <sql>
+      <![CDATA[    
+SELECT  pg.width, av.value paper, SUM(pg.height*pg.prints)/1000 len
+  FROM state_log sl
+  INNER JOIN print_group pg ON sl.pg_id=pg.id
+  INNER JOIN attr_value av ON pg.paper=av.id
+  WHERE sl.state_date BETWEEN :pfrom AND DATE_ADD( :pto , INTERVAL 1 DAY) AND sl.state=250 AND sl.pg_id IS NOT NULL  AND pg.width>0 AND pg.paper!=0
+  GROUP BY pg.width, av.value
+  ]]>
+    </sql>
+  </element>
+
+</element-set>

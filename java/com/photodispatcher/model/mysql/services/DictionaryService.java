@@ -28,5 +28,7 @@ public interface DictionaryService {
 	public SelectResult<AttrJsonMap> getOrderJsonAttr(int family);
 	public SelectResult<SourceProperty> loadSourceProperties();
 	public SelectResult<SubordersTemplate> loadSubordersTemplate();
+	SelectResult<FieldValue> getStaffValueList();
+	SelectResult<FieldValue> getStaffActivityGroupValueList();
 
 }

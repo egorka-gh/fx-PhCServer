@@ -1,0 +1,16 @@
+<element-set>
+  <element name="rpbody">
+    <sql>
+      <![CDATA[    
+SELECT tp.name, pg.width, av.value paper, SUM(pg.height)/1000 len
+  FROM tech_point tp
+  INNER JOIN tech_log tl ON tl.src_id=tp.id
+  INNER JOIN print_group pg ON tl.print_group=pg.id
+  INNER JOIN attr_value av ON pg.paper=av.id
+  WHERE tp.tech_type=300 AND tl.log_date BETWEEN :pfrom AND DATE_ADD( :pto , INTERVAL 1 DAY)
+  GROUP BY tp.name, pg.width, av.value
+  ]]>
+    </sql>
+  </element>
+
+</element-set>
