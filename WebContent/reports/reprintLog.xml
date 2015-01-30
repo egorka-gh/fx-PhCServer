@@ -1,0 +1,20 @@
+<element-set>
+  <element name="rpbody">
+    <sql>
+      <![CDATA[    
+SELECT sa.log_date, s.name staff, s1.name src, CONCAT_WS('', s1.code, o.src_id) ordNum, pg.id gpid, bt.name booktype, bp.name bookpart, av.value paper, pg.width, pg.height, pg.prints, sat.name satype,  sa.remark
+FROM staff_activity sa
+  INNER JOIN staff s ON s.id=sa.staff
+  INNER JOIN staff_activity_type sat ON sa.sa_type = sat.id
+  INNER JOIN orders o ON sa.order_id = o.id
+  INNER JOIN sources s1 ON o.source=s1.id
+  INNER JOIN print_group pg ON sa.pg_id =pg.id
+  INNER JOIN book_part bp ON bp.id = pg.book_part
+  INNER JOIN book_type bt ON bt.id = pg.book_type
+  INNER JOIN attr_value av ON av.id = pg.paper
+  WHERE sa.log_date BETWEEN :pfrom AND DATE_ADD( :pto , INTERVAL 1 DAY)
+	]]>
+    </sql>
+  </element>
+
+</element-set>
