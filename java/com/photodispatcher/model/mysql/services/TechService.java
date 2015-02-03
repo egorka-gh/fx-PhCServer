@@ -14,4 +14,5 @@ public interface TechService {
 	SelectResult<TechLog> loadBooks4Otk(String id, String sub_id);
 	DmlResult<TechLog> log(TechLog item);
 	SelectResult<TechLog> loadTechPulse(int techPointType);
+	boolean testMail();
 }

@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.photodispatcher.mail.SendMailByGoogle;
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.Lab;
 import com.photodispatcher.model.mysql.entities.LabDevice;
@@ -260,6 +261,8 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	public DmlResult<LabStopLog> logLabStop(LabStopLog log) {
 		// нужно проверить time_from на максимум time_to, для того чтобы интервалы не пересекались
 		SelectResult<LabStopLog> sResult;
+		
+		// TODO отправить email в зависимости от типа простоя, SendMailByGoogle.send("Valik <akmeful@gmail.com>", "Valik <akme@tut.by>", "Сообщение о простое2", "Это сообщение о простое2");
 		
 		String sql = "SELECT MAX(sl.time_to) as time_to FROM lab_stop_log sl WHERE sl.lab_device=? AND sl.time_to>?";
 		//String sql2 = "SELECT sl.* FROM lab_stop_log sl WHERE sl.time_to=(SELECT MAX(sl1.time_to) FROM lab_stop_log sl1 WHERE sl1.lab_device=?) AND sl.lab_device=?";
