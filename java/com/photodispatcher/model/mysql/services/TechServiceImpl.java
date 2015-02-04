@@ -3,6 +3,7 @@ package com.photodispatcher.model.mysql.services;
 
 import org.springframework.stereotype.Service;
 
+import com.photodispatcher.mail.SendMailByGoogle;
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
@@ -45,6 +46,13 @@ public class TechServiceImpl extends AbstractDAO implements TechService {
 				"GROUP BY src_id) AS max USING (src_id, log_date);";
 		
 		return runSelect(TechLog.class, sql, techPointType);
+		
+	}
+	
+	@Override
+	public boolean testMail() {
+		
+		return false;
 		
 	}
 
