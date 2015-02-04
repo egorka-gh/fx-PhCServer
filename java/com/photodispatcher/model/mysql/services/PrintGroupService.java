@@ -16,5 +16,6 @@ public interface PrintGroupService {
 	SelectResult<PrintGroup> loadInPrint(int lab);
 	SelectResult<PrintGroup> loadPrinted(Date after);
 	SelectResult<PrintGroup> loadPrintPost(List<String> ids);
+	SelectResult<PrintGroup> capturePrintState(List<PrintGroup> printGroups, boolean loadFiles);
 
 }

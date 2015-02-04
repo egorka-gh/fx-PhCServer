@@ -1,11 +1,16 @@
 package com.photodispatcher.model.mysql.services;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.sansorm.SqlClosureElf;
+import org.sansorm.internal.OrmWriter;
 import org.springframework.stereotype.Service;
 
+import com.photodispatcher.model.mysql.ConnectionFactory;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.PrintGroupFile;
 import com.photodispatcher.model.mysql.entities.SelectResult;
@@ -166,9 +171,9 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 			}
 		}
 		//load print files
-		sql="SELECT pgf.* FROM print_group_file pgf WHERE pgf.print_group = ?";
+		//sql="SELECT pgf.* FROM print_group_file pgf WHERE pgf.print_group = ?";
 		for (PrintGroup pg : result.getData()){
-			SelectResult<PrintGroupFile> fRes=runSelect(PrintGroupFile.class,sql, pg.getId());
+			SelectResult<PrintGroupFile> fRes=loadFiles(pg.getId());
 			if(!fRes.isComplete()){
 				result.cloneError(fRes);
 				return result;
@@ -176,6 +181,50 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 			pg.setFiles(fRes.getData());
 		}
 
+		return result;
+	}
+	
+	private SelectResult<PrintGroupFile> loadFiles(String pgId){
+		//load print files
+		String sql="SELECT pgf.* FROM print_group_file pgf WHERE pgf.print_group = ?";
+		return runSelect(PrintGroupFile.class,sql, pgId);
+	}
+
+	@Override
+	public SelectResult<PrintGroup> capturePrintState(List<PrintGroup> printGroups, boolean loadFiles){
+		SelectResult<PrintGroup> result= new SelectResult<PrintGroup>();
+		result.setData(new ArrayList<PrintGroup>());
+		
+		Connection connection = null;
+		String sqlUpdate="UPDATE print_group pg"+
+						" SET pg.state = ?, pg.state_date = ?"+
+						" WHERE pg.id = ? AND pg.state < ?";
+		boolean updated=false;
+		for(PrintGroup pg : printGroups){
+			updated=false;
+			try {
+				connection=ConnectionFactory.getConnection();
+				updated=OrmWriter.executeUpdate(connection, sqlUpdate, pg.getState(), pg.getState_date(), pg.getId(), pg.getState())>0;
+			} catch (SQLException e) {
+				updated=false;
+			}finally{
+				SqlClosureElf.quietClose(connection);
+			}
+			if(!updated){
+				pg.setState(-300);
+				pg.setFiles(null);
+			}else if(loadFiles){
+				SelectResult<PrintGroupFile> fRes=loadFiles(pg.getId());
+				if(!fRes.isComplete()){
+					pg.setState(-309);
+					pg.setFiles(null);
+				}else{
+					pg.setFiles(fRes.getData());
+				}
+			}
+			result.getData().add(pg);
+		}
+	
 		return result;
 	}
 
