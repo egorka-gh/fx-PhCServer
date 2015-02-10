@@ -23,7 +23,7 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	@Override
 	public SelectResult<FieldValue> getFieldValueList(int fieldId, boolean includeNone){
 		SelectResult<FieldValue> result;
-		String sql="SELECT id value, value label FROM attr_value av WHERE av.attr_tp IN (0,?)";
+		String sql="SELECT id value, value label FROM attr_value av WHERE av.attr_tp IN (0,?) AND id>=0";
 		if(includeNone) sql="SELECT 0 value, ' ' label UNION "+sql;
 		result=runSelect(FieldValue.class, sql, fieldId);
 		return result;

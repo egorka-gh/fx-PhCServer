@@ -45,6 +45,7 @@ public class OrmWriter extends OrmBase
 
     private static Map<Introspected, String> createStatementCache;
     private static Map<Introspected, String> updateStatementCache;
+	private static Map<Introspected, String> insertOrUpdateStatementCache;
 
     static
     {
@@ -67,6 +68,17 @@ public class OrmWriter extends OrmBase
                 return this.size() > CACHE_SIZE;
             }
         });
+
+        insertOrUpdateStatementCache = Collections.synchronizedMap(new LinkedHashMap<Introspected, String>(CACHE_SIZE) {
+			private static final long serialVersionUID = 242873442986132289L;
+
+			@Override
+            protected boolean removeEldestEntry(java.util.Map.Entry<Introspected, String> eldest)
+            {
+                return this.size() > CACHE_SIZE;
+            }
+        });
+
     }
 
     public static <T> void insertListBatched(Connection connection, Iterable<T> iterable) throws SQLException
@@ -211,6 +223,54 @@ public class OrmWriter extends OrmBase
         setParamsExecuteClose(target, introspected, columnNames, stmt, true);
 
         return target;
+    }
+
+    public static <T> void insertOrUpdateListBatched(Connection connection, Iterable<T> iterable) throws SQLException{
+        Iterator<T> iterableIterator = iterable.iterator();
+        if (!iterableIterator.hasNext())  return;
+
+        Class<?> clazz = iterableIterator.next().getClass();
+        Introspected introspected = Introspector.getIntrospected(clazz);
+        final boolean hasSelfJoinColumn = introspected.hasSelfJoinColumn();
+        if (hasSelfJoinColumn)
+        {
+            throw new RuntimeException("insertOrUpdateListBatched() is not supported for objects with self-referencing columns due to Derby limitations");
+        }
+
+        String[] insertColumnNames = introspected.getInsertableColumns();
+        String[] updateColumnNames = introspected.getUpdatableColumns();
+
+        PreparedStatement stmt = createStatementForInsertOrUpdate(connection, introspected, insertColumnNames, updateColumnNames);
+        ParameterMetaData metaData = stmt.getParameterMetaData();
+        for (T item : iterable){
+            int parameterIndex = 1;
+            for (String column : insertColumnNames){
+                int parameterType = metaData.getParameterType(parameterIndex);
+                Object object = mapSqlType(introspected.get(item, column), parameterType);
+                if (object != null && !(hasSelfJoinColumn && introspected.isSelfJoinColumn(column))){
+                    stmt.setObject(parameterIndex, object, parameterType);
+                }else{
+                    stmt.setNull(parameterIndex, parameterType);
+                }
+                ++parameterIndex;
+            }
+            for (String column : updateColumnNames){
+                int parameterType = metaData.getParameterType(parameterIndex);
+                Object object = mapSqlType(introspected.get(item, column), parameterType);
+                if (object != null ){
+                    stmt.setObject(parameterIndex, object, parameterType);
+                }else{
+                    stmt.setNull(parameterIndex, parameterType);
+                }
+                ++parameterIndex;
+            }
+
+            stmt.addBatch();
+            stmt.clearParameters();
+        }
+
+        stmt.executeBatch();
+        stmt.close();
     }
 
     public static <T> void updateObjectBatched(Connection connection, Iterable<T> iterable) throws SQLException{
@@ -464,6 +524,36 @@ public class OrmWriter extends OrmBase
 
             sql = sqlSB.toString();
             updateStatementCache.put(introspected, sql);
+        }
+
+        return connection.prepareStatement(sql);
+    }
+
+    private static <T> PreparedStatement createStatementForInsertOrUpdate(Connection connection, Introspected introspected, String[] insertColumns, String[] updateColumns) throws SQLException
+    {
+        String sql = insertOrUpdateStatementCache.get(introspected);
+        if (sql == null){
+            String tableName = introspected.getTableName();
+            //insert
+            StringBuilder sqlSB = new StringBuilder("INSERT INTO ").append(tableName).append('(');
+            StringBuilder sqlValues = new StringBuilder(") VALUES (");
+            for (String column : insertColumns)
+            {
+                sqlSB.append(column).append(',');
+                sqlValues.append("?,");
+            }
+            sqlValues.deleteCharAt(sqlValues.length() - 1);
+            sqlSB.deleteCharAt(sqlSB.length() - 1).append(sqlValues).append(')');
+            
+            //update
+            sqlSB.append(" ON DUPLICATE KEY UPDATE ");
+            for (String column : updateColumns){
+                sqlSB.append(column).append("=?,");
+            }
+            sqlSB.deleteCharAt(sqlSB.length() - 1);
+            
+            sql = sqlSB.toString();
+            insertOrUpdateStatementCache.put(introspected, sql);
         }
 
         return connection.prepareStatement(sql);

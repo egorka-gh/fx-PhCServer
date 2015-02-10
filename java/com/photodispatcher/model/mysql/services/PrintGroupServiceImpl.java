@@ -228,4 +228,17 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 		return result;
 	}
 
+	@Override
+	public SelectResult<PrintGroup> loadPrintPostByDev(List<Integer> devices, int loadPhoto){
+		StringBuilder in= new StringBuilder("");
+		for(Integer dev : devices){
+			in.append(dev).append(",");
+		}
+		String devLst=in.toString();
+		//load print groups
+		//printLoad4PrintByDev(IN p_devlst TEXT, IN p_photo INT)
+		String sql= "{CALL printLoad4PrintByDev(?,?)}";
+		return runCallSelect(PrintGroup.class, sql, devLst, loadPhoto);
+	}
+
 }
