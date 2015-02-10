@@ -146,7 +146,15 @@ ALTER TABLE orders
 
 ALTER TABLE orders
   ADD INDEX IDX_orders_client (source, client_id);
-  
+
+-- template for temp table vs varchar ids  
+CREATE TABLE tmpt_vch_ids (
+  id varchar(50) NOT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = MYISAM
+CHARACTER SET utf8
+COLLATE utf8_general_ci;  
 
 DELIMITER $$
 --
