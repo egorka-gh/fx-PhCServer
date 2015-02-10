@@ -107,7 +107,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 					" INNER JOIN order_state os ON pg.state = os.id"+
 					" LEFT OUTER JOIN tech_log tl ON pg.id = tl.print_group AND tl.sheet!=0"+
 					" LEFT OUTER JOIN tech_point tp ON tl.src_id=tp.id AND tp.tech_type=300"+
-				" WHERE pg.state>=203 AND pg.state<=210 AND o.state<450 AND (?=0 OR pg.destination=?) AND pg.book_type !=0"+
+				" WHERE pg.state>=203 AND pg.state<=250 AND o.state<450 AND (?=0 OR pg.destination=?) AND pg.book_type !=0"+
 				" GROUP BY pg.id"+
 				" ORDER BY pg.destination, pg.state_date";
 		
