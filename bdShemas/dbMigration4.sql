@@ -35,13 +35,13 @@ ENGINE = INNODB
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
---mail states
+-- mail states
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (455, 'Упаковка', 0, 0, 0, 0);
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (460, 'Отправка', 0, 0, 0, 0);
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (465, 'Отправлен', 0, 0, 0, 0);
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (466, 'Отправлен (сайт)', 0, 0, 0, 0);
 
---mail fields def
+-- mail fields def
 INSERT INTO attr_family(id, name) VALUES (5, 'Упаковка поля');
 INSERT INTO attr_family(id, name) VALUES (6, 'Упаковка доп атрибуты');
 
@@ -95,7 +95,7 @@ INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES (0, 51, 'deliver
 INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES (0, 52, 'status');
 INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES (0, 53, 'status_text');
 
---clean up print codes
+-- clean up print codes
 
 INSERT INTO attr_value(id, attr_tp, value, locked) VALUES (-1, 0, 'Any', 1);
 
