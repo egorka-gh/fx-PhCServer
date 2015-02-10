@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.granite.messaging.service.annotations.RemoteDestination;
 
+import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 
@@ -18,5 +19,6 @@ public interface PrintGroupService {
 	SelectResult<PrintGroup> loadPrintPost(List<String> ids);
 	SelectResult<PrintGroup> capturePrintState(List<PrintGroup> printGroups, boolean loadFiles);
 	SelectResult<PrintGroup> loadPrintPostByDev(List<Integer> devices, int loadPhoto);
+	DmlResult<PrintGroup> fillCaptured(String id);
 	
 }

@@ -47,9 +47,16 @@ public class MailPackage extends AbstractEntity {
     @Column(name="state_name", updatable=false, insertable=false)
     private String state_name;
     
+    @Column(name="min_ord_state", updatable=false, insertable=false)
+    private int min_ord_state;
+    @Column(name="min_ord_state_name", updatable=false, insertable=false)
+    private String min_ord_state_name;
+    
     //childs
     @Transient
     private List<MailPackageProperty> properties;
+    @Transient
+    private List<Order> orders;
 
     
 	public int getId() {
@@ -147,6 +154,24 @@ public class MailPackage extends AbstractEntity {
 	}
 	public void setProperties(List<MailPackageProperty> properties) {
 		this.properties = properties;
+	}
+	public int getMin_ord_state() {
+		return min_ord_state;
+	}
+	public void setMin_ord_state(int min_ord_state) {
+		this.min_ord_state = min_ord_state;
+	}
+	public String getMin_ord_state_name() {
+		return min_ord_state_name;
+	}
+	public void setMin_ord_state_name(String min_ord_state_name) {
+		this.min_ord_state_name = min_ord_state_name;
+	}
+	public List<Order> getOrders() {
+		return orders;
+	}
+	public void setOrders(List<Order> orders) {
+		this.orders = orders;
 	}
 
 

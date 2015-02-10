@@ -11,9 +11,11 @@ import org.sansorm.internal.OrmWriter;
 import org.springframework.stereotype.Service;
 
 import com.photodispatcher.model.mysql.ConnectionFactory;
+import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.PrintGroupFile;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SqlResult;
 
 @Service("printGroupService")
 public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupService {
@@ -226,6 +228,40 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 		}
 	
 		return result;
+	}
+
+	@Override
+	public DmlResult<PrintGroup> fillCaptured(String id){
+		
+		DmlResult<PrintGroup> res=getObject(PrintGroup.class, id); 
+		if(!res.isComplete() || res.getItem()==null) return res;
+		
+		if(res.getItem().getState()!=203){
+			//wrong state
+			res.getItem().setState(-300);
+			return res;
+		}
+		
+		SelectResult<PrintGroupFile> fRes=loadFiles(id);
+		if(!fRes.isComplete()){
+			res.cloneError(fRes);
+			res.getItem().setState(-309);
+		}else{
+			res.getItem().setFiles(fRes.getData());
+			if (fRes.getData()==null || fRes.getData().isEmpty()){
+				//empty file list
+				res.getItem().setState(-300);
+				//persists error
+				String sqlUpdate="UPDATE print_group pg"+
+									" SET pg.state = ?, pg.state_date = ?"+
+									" WHERE pg.id = ?";
+				SqlResult uRes=runDML(sqlUpdate,-300, new Date(), id);
+				if(!uRes.isComplete()){
+					res.cloneError(uRes);
+				}
+			}
+		}
+		return res;
 	}
 
 	@Override
