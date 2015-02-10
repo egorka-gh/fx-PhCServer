@@ -108,7 +108,7 @@ SET paper = -1,
     frame = -1,
     correction = -1,
     cutting = -1,
-    is_duplex = -1,
+    is_duplex = 0,
     is_pdf = 0
 WHERE src_type = 8;
 
@@ -125,7 +125,7 @@ UPDATE lab_print_code
 SET frame = -1,
     correction = -1,
     cutting = -1,
-    is_duplex = -1,
+    is_duplex = 0,
     is_pdf = 0
 WHERE src_type = 6;
 
@@ -133,7 +133,7 @@ WHERE src_type = 6;
 UPDATE lab_print_code
 SET correction = -1,
     cutting = -1,
-    is_duplex = -1,
+    is_duplex = 0,
     is_pdf = 0
 WHERE src_type = 2;
 
@@ -351,7 +351,7 @@ BEGIN
             AND lpc.frame IN (-1, pg.frame)
             AND lpc.correction IN (-1, pg.correction)
             AND lpc.cutting IN (-1, pg.cutting)
-            AND lpc.is_duplex IN (-1, pg.is_duplex)
+            AND lpc.is_duplex = pg.is_duplex
             AND lpc.is_pdf = pg.is_pdf
         WHERE ld.id = vDev
           AND pg.state = 200

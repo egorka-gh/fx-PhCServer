@@ -197,14 +197,14 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 		
 		Connection connection = null;
 		String sqlUpdate="UPDATE print_group pg"+
-						" SET pg.state = ?, pg.state_date = ?"+
+						" SET pg.state = ?, pg.state_date = ?, pg.destination=?"+
 						" WHERE pg.id = ? AND pg.state < ?";
 		boolean updated=false;
 		for(PrintGroup pg : printGroups){
 			updated=false;
 			try {
 				connection=ConnectionFactory.getConnection();
-				updated=OrmWriter.executeUpdate(connection, sqlUpdate, pg.getState(), pg.getState_date(), pg.getId(), pg.getState())>0;
+				updated=OrmWriter.executeUpdate(connection, sqlUpdate, pg.getState(), pg.getState_date(), pg.getDestination(), pg.getId(), pg.getState())>0;
 			} catch (SQLException e) {
 				updated=false;
 			}finally{

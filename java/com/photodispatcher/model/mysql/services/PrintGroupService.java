@@ -18,5 +18,5 @@ public interface PrintGroupService {
 	SelectResult<PrintGroup> loadPrintPost(List<String> ids);
 	SelectResult<PrintGroup> capturePrintState(List<PrintGroup> printGroups, boolean loadFiles);
 	SelectResult<PrintGroup> loadPrintPostByDev(List<Integer> devices, int loadPhoto);
-
+	
 }
