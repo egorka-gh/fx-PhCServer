@@ -99,6 +99,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 	@Override
 	public SelectResult<PrintGroup> loadInPrint(int lab){
 		
+		/*
 		String sql="SELECT pg.*, "+
 				" COUNT(DISTINCT tl.sheet) prints_done"+
 				" FROM print_group pg"+
@@ -110,6 +111,15 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 				" WHERE pg.state>=203 AND pg.state<=250 AND o.state<450 AND (?=0 OR pg.destination=?) AND pg.book_type !=0"+
 				" GROUP BY pg.id"+
 				" ORDER BY pg.destination, pg.state_date";
+		*/
+		
+		String sql="SELECT pg.* "+
+				" FROM print_group pg"+
+					" INNER JOIN orders o ON pg.order_id = o.id"+
+				" WHERE pg.state>=203 AND pg.state<=250 AND o.state<450 AND (?=0 OR pg.destination=?) AND pg.book_type !=0"+
+				" GROUP BY pg.id"+
+				" ORDER BY pg.destination, pg.state_date";
+		
 		
 		return runSelect(PrintGroup.class, sql, lab, lab);
 		
