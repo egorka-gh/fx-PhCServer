@@ -20,6 +20,8 @@ public class AttrJsonMap extends AbstractEntity {
     //ref
     @Column(name="field", insertable=false, updatable=false)
     private String field;
+    @Column(name="field_name", insertable=false, updatable=false)
+    private String field_name;
     @Column(name="list", insertable=false, updatable=false)
     private boolean list;
     @Column(name="persist", insertable=false, updatable=false)
@@ -60,6 +62,12 @@ public class AttrJsonMap extends AbstractEntity {
 	}
 	public void setPersist(boolean persist) {
 		this.persist = persist;
+	}
+	public String getField_name() {
+		return field_name;
+	}
+	public void setField_name(String field_name) {
+		this.field_name = field_name;
 	}
 
 }

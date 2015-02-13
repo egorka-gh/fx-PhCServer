@@ -233,7 +233,13 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 	@Override
 	public DmlResult<PrintGroup> fillCaptured(String id){
 		
-		DmlResult<PrintGroup> res=getObject(PrintGroup.class, id); 
+		DmlResult<PrintGroup> res= new DmlResult<PrintGroup>(); //getObject(PrintGroup.class, id); 
+		String sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder"+
+			" FROM print_group pg"+
+				" INNER JOIN orders o ON pg.order_id = o.id"+
+				" WHERE pg.id = ?";
+		SelectResult<PrintGroup> selRes;
+
 		if(!res.isComplete() || res.getItem()==null) return res;
 		
 		if(res.getItem().getState()!=203){

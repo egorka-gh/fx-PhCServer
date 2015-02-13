@@ -38,6 +38,8 @@ public class MailPackage extends AbstractEntity {
     private String src_state_name;
     @Column(name="mail_service")
     private int mail_service;
+    @Column(name="orders_num")
+    private int orders_num;
     
     //ref
     @Column(name="source_name", updatable=false, insertable=false)
@@ -57,6 +59,8 @@ public class MailPackage extends AbstractEntity {
     private List<MailPackageProperty> properties;
     @Transient
     private List<Order> orders;
+    @Transient
+    private List<MailPackageBarcode> barcodes;
 
     
 	public int getId() {
@@ -172,6 +176,18 @@ public class MailPackage extends AbstractEntity {
 	}
 	public void setOrders(List<Order> orders) {
 		this.orders = orders;
+	}
+	public int getOrders_num() {
+		return orders_num;
+	}
+	public void setOrders_num(int orders_num) {
+		this.orders_num = orders_num;
+	}
+	public List<MailPackageBarcode> getBarcodes() {
+		return barcodes;
+	}
+	public void setBarcodes(List<MailPackageBarcode> barcodes) {
+		this.barcodes = barcodes;
 	}
 
 

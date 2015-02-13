@@ -149,7 +149,7 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	@Override
 	public SelectResult<AttrJsonMap> getOrderJsonAttr(int family){
 		SelectResult<AttrJsonMap> result;
-		String sql="SELECT jm.*, at.field, at.list, at.persist"+
+		String sql="SELECT jm.*, at.field, at.list, at.persist, at.name field_name"+
 				" FROM attr_json_map jm"+
 				" INNER JOIN attr_type at ON jm.attr_type=at.id"+
 				" WHERE at.attr_fml=?"+
