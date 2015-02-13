@@ -248,9 +248,19 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 			" FROM print_group pg"+
 				" INNER JOIN orders o ON pg.order_id = o.id"+
 				" WHERE pg.id = ?";
-		SelectResult<PrintGroup> selRes;
-
-		if(!res.isComplete() || res.getItem()==null) return res;
+		SelectResult<PrintGroup> selRes=runSelect(PrintGroup.class, sql, id);
+		
+		if(!selRes.isComplete()){
+			res.cloneError(selRes);
+			return res;
+		}
+		if(selRes.getData()==null || selRes.getData().isEmpty()){
+			res.setComplete(false);
+			res.setErrMesage("Группа печати не найдена");
+			return res;
+		}
+		
+		res.setItem(selRes.getData().get(0));
 		
 		if(res.getItem().getState()!=203){
 			//wrong state
