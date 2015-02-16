@@ -59,6 +59,21 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 	}
 
 	@Override
+	public SelectResult<PrintGroup> loadReady4Print(int limit){
+		String sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder"+
+					 " FROM print_group pg"+
+					   " INNER JOIN orders o ON pg.order_id = o.id"+
+					  " WHERE pg.state = 200"+
+					  " ORDER BY pg.state_date";
+					//LIMIT 20";
+		if(limit>0){
+			sql=sql +" LIMIT "+Integer.toString(limit);
+		}
+
+		return runSelect(PrintGroup.class, sql);
+	}
+
+	@Override
 	public SelectResult<PrintGroup> loadByOrderState(int stateFrom, int stateTo){
 		String sql="SELECT pg.*, o.source source_id, s.name source_name, o.ftp_folder order_folder, os.name state_name,"+
 						" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name,"+

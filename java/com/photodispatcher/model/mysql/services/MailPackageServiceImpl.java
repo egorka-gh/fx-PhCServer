@@ -107,5 +107,17 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 		return res;
 	}
 
+	@Override
+	public SelectResult<Order> loadChildOrders(int id){
+		SelectResult<Order> result;
+		String sql="SELECT o.*, s.name source_name, s.code source_code, os.name state_name"+
+					" FROM orders o"+
+					" INNER JOIN order_state os ON o.state = os.id"+
+					" INNER JOIN sources s ON o.source = s.id"+
+					" WHERE o.group_id=?";
+		result=runSelect(Order.class,sql, id);
+		return result;
+	}
+
 
 }

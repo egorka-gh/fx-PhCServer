@@ -1,3 +1,5 @@
+-- main cycle 2014-02-13
+
 SET NAMES 'utf8';
 SET SESSION sql_mode='NO_AUTO_VALUE_ON_ZERO';
 
