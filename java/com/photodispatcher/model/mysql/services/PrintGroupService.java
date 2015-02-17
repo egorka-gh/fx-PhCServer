@@ -20,6 +20,6 @@ public interface PrintGroupService {
 	SelectResult<PrintGroup> capturePrintState(List<PrintGroup> printGroups, boolean loadFiles);
 	SelectResult<PrintGroup> loadPrintPostByDev(List<Integer> devices, int loadPhoto);
 	DmlResult<PrintGroup> fillCaptured(String id);
-	SelectResult<PrintGroup> loadReady4Print(int limit);
+	SelectResult<PrintGroup> loadReady4Print(int limit, boolean onlyBook);
 	
 }

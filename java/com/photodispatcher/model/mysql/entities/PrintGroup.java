@@ -91,6 +91,8 @@ public class PrintGroup extends AbstractEntity {
     private String book_type_name;
     @Column(name="book_part_name", insertable=false, updatable=false)
     private String book_part_name;
+    @Column(name="alias", insertable=false, updatable=false)
+    private String alias;
 
     //childs
     @Transient
@@ -382,6 +384,14 @@ public class PrintGroup extends AbstractEntity {
 
 	public void setReprint_id(String reprint_id) {
 		this.reprint_id = reprint_id;
+	}
+
+	public String getAlias() {
+		return alias;
+	}
+
+	public void setAlias(String alias) {
+		this.alias = alias;
 	}
     
 }
