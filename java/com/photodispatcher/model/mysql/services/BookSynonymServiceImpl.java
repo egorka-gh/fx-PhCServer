@@ -17,7 +17,9 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 	public SelectResult<BookSynonym> loadFull(){
 		SelectResult<BookSynonym> result;
 		//exclude deleted (synonym_type=-1)
-		String sql="SELECT * FROM book_synonym WHERE synonym_type!=-1";
+		String sql="SELECT l.*, st.name lab_type_name FROM book_synonym l " +
+				" INNER JOIN src_type st ON st.id=l.lab_type " +
+				" WHERE l.synonym_type!=-1";
 		result=runSelect(BookSynonym.class, sql);
 		if (result.isComplete()){
 			//load childs
@@ -40,17 +42,19 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 		SelectResult<BookSynonym> result;
 		String sql;
 		if(contentFilter==0){
-			sql="SELECT l.*, st.name src_type_name, bt.name book_type_name, 1 is_allow, bst.name synonym_type_name"+
+			sql="SELECT l.*, st1.name lab_type_name, st.name src_type_name, bt.name book_type_name, 1 is_allow, bst.name synonym_type_name"+
 				" FROM book_synonym l"+
-				" INNER JOIN src_type st ON l.src_type = st.id"+
+				" INNER JOIN src_type st ON l.src_type = st.id " +
+				" INNER JOIN src_type st1 ON st1.id=l.lab_type "+
 				" INNER JOIN book_type bt ON l.book_type = bt.id"+
 				" INNER JOIN book_synonym_type bst ON l.synonym_type = bst.id"+
 				" WHERE l.src_type = ?"+
 				" ORDER BY l.synonym";
 			result=runSelect(BookSynonym.class, sql, src_type);
 		}else{
-			sql="SELECT l.*, st.name src_type_name, bt.name book_type_name, ifnull(fa.alias,0) is_allow"+
-				" FROM book_synonym l"+
+			sql="SELECT l.*, st1.name lab_type_name, st.name src_type_name, bt.name book_type_name, ifnull(fa.alias,0) is_allow"+
+				" FROM book_synonym l" +
+				" INNER JOIN src_type st1 ON st1.id=l.lab_type "+
 				" INNER JOIN src_type st ON l.src_type = st.id"+
 				" INNER JOIN book_type bt ON l.book_type = bt.id"+
 				" LEFT OUTER JOIN content_filter_alias fa ON fa.filter= ? AND l.id=fa.alias"+
