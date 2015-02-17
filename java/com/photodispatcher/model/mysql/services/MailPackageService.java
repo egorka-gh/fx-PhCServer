@@ -12,6 +12,8 @@ public interface MailPackageService {
 
 	SqlResult persist(MailPackage item);
 	SelectResult<MailPackage> loadReady4Mail();
-	SelectResult<Order> loadChildOrders(int id);
+	SelectResult<Order> loadChildOrders(int source, int id);
+	SqlResult startPackaging(MailPackage item, boolean force);
+	SelectResult<MailPackage> load(int source, int id);
 
 }
