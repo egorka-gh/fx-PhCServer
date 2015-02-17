@@ -82,3 +82,5 @@ END
 $$
 
 DELIMITER ;
+
+ALTER TABLE `book_synonym` ADD `lab_type` INT(7)  NOT NULL  DEFAULT 0;
