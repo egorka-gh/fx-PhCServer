@@ -1,4 +1,4 @@
--- main cycle 
+-- main cycle 2015-02-17
 
 SET NAMES 'utf8';
 SET SESSION sql_mode='NO_AUTO_VALUE_ON_ZERO';
@@ -7,7 +7,7 @@ DELIMITER $$
 
 DROP PROCEDURE IF EXISTS printLoad4PrintByDev$$
 
-CREATE DEFINER = 'root'@'localhost'
+CREATE 
 PROCEDURE printLoad4PrintByDev(IN p_devlst TEXT, IN p_photo INT)
 BEGIN
   DECLARE vIdx integer(11) DEFAULT (0);

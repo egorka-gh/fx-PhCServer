@@ -92,6 +92,10 @@ public class BookPgTemplate extends AbstractEntity {
     private boolean is_tech_stair_top=false;
     @Column(name="is_tech_stair_bot")
     private boolean is_tech_stair_bot=false;
+    @Column(name="lab_type")
+    private int lab_type;
+    @Column(name="lab_type_name", updatable=false, insertable=false)
+    private String lab_type_name;
 
     //ref name
     @Column(name="book_part_name", updatable=false, insertable=false)
@@ -373,6 +377,18 @@ public class BookPgTemplate extends AbstractEntity {
 	}
 	public void setCutting_name(String cutting_name) {
 		this.cutting_name = cutting_name;
+	}
+	public int getLab_type() {
+		return lab_type;
+	}
+	public void setLab_type(int lab_type) {
+		this.lab_type = lab_type;
+	}
+	public String getLab_type_name() {
+		return lab_type_name;
+	}
+	public void setLab_type_name(String lab_type_name) {
+		this.lab_type_name = lab_type_name;
 	}
 
 }

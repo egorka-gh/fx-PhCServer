@@ -27,8 +27,6 @@ public class BookSynonym extends AbstractEntity {
     private boolean is_horizontal;
     @Column(name="synonym_type")
     private int synonym_type;
-    @Column(name="lab_type")
-    private int lab_type;
 
     //ref name
     @Column(name="src_type_name", updatable=false, insertable=false)
@@ -40,8 +38,6 @@ public class BookSynonym extends AbstractEntity {
 	//content filter mark
     @Column(name="is_allow", updatable=false, insertable=false)
     private boolean is_allow;
-    @Column(name="lab_type_name", updatable=false, insertable=false)
-    private String lab_type_name;
     
     @Transient
     private List<BookPgTemplate> templates;
@@ -132,22 +128,6 @@ public class BookSynonym extends AbstractEntity {
 
 	public void setSynonym_type_name(String synonym_type_name) {
 		this.synonym_type_name = synonym_type_name;
-	}
-	
-	public int getLab_type() {
-		return lab_type;
-	}
-
-	public void setLab_type(int lab_type) {
-		this.lab_type = lab_type;
-	}
-	
-	public String getLab_type_name() {
-		return lab_type_name;
-	}
-
-	public void setLab_type_name(String lab_type_name) {
-		this.lab_type_name = lab_type_name;
 	}
 	
 }
