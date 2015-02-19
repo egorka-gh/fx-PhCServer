@@ -15,5 +15,6 @@ public interface MailPackageService {
 	SelectResult<Order> loadChildOrders(int source, int id);
 	SqlResult startPackaging(MailPackage item, boolean force);
 	SelectResult<MailPackage> load(int source, int id);
+	SelectResult<MailPackage> loadByClient(int source, int client);
 
 }

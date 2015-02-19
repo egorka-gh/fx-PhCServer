@@ -123,8 +123,8 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 
 	@Override
 	public SelectResult<MailPackage> loadReady4Mail(){
-		String sql="SELECT t.source, t.group_id id, t.client_id, 450 state, t.min_ord_state, os.name state_name, os1.name min_ord_state_name, s.name source_name, s.code source_code"+
-				  " FROM (SELECT o.source, o.group_id, o.client_id, MIN(o1.state) min_ord_state"+
+		String sql="SELECT t.source, t.group_id id, t.client_id, 450 state, t.min_ord_state, os.name state_name, os1.name min_ord_state_name, s.name source_name, s.code source_code, t.orders_num, t.state_date"+
+				  " FROM (SELECT o.source, o.group_id, o.client_id, MIN(o1.state) min_ord_state, COUNT(DISTINCT o1.id) orders_num, MAX(o1.state_date) state_date"+
 				     " FROM orders o"+
 				       " INNER JOIN orders o1 ON o.source = o1.source AND o.group_id = o1.group_id"+
 				     " WHERE o.state = 450 AND o.group_id != 0"+
@@ -151,6 +151,21 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 			}
 		}
 		*/
+		return res;
+	}
+
+	@Override
+	public SelectResult<MailPackage> loadByClient(int source, int client){
+		String sql="SELECT t.source, t.group_id id, t.client_id, t.state, t.state_date, t.min_ord_state, os.name state_name, os1.name min_ord_state_name, s.name source_name, s.code source_code, t.orders_num"+
+				  " FROM (SELECT o.source, o.group_id, o.client_id, MAX(o.state) state, MAX(o.state_date) state_date, MIN(o.state) min_ord_state, COUNT(*) orders_num"+
+				  		" FROM orders o"+
+				        " WHERE o.source = ? AND o.client_id = ? AND o.state BETWEEN 100 AND 450"+
+				        " GROUP BY o.source, o.group_id, o.client_id) t"+
+				    " INNER JOIN order_state os ON os.id = t.state"+
+				    " INNER JOIN order_state os1 ON os1.id = t.min_ord_state"+
+				    " INNER JOIN sources s ON s.id = t.source"+
+				  " ORDER BY t.min_ord_state DESC";
+		SelectResult<MailPackage> res=runSelect(MailPackage.class,sql, source, client);
 		return res;
 	}
 
