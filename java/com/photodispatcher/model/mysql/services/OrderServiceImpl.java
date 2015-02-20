@@ -399,7 +399,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		SelectResult<Order> result;
 		String sql="SELECT o.*, s.name source_name, os.name state_name"+
 					" FROM sources s"+
-					" INNER JOIN orders o ON o.id= s.id || '_' || ?"+
+					" INNER JOIN orders o ON o.id = CONCAT_WS('_', s.id, ?)"+
 					" INNER JOIN order_state os ON o.state = os.id"+
 					" WHERE s.code=?";
 		result=runSelect(Order.class,sql, id, code);
@@ -407,10 +407,10 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			if(!result.getData().isEmpty()){
 				Order order=result.getData().get(0);
 				SelectResult<OrderExtraInfo> eir=loadExtraIfo(id,"");
-				if(eir.isComplete() && !eir.getData().isEmpty()){
-					order.setExtraInfo(eir.getData().get(0));
-				}else{
+				if(!eir.isComplete()){
 					result.cloneError(eir);
+				} else if(!eir.getData().isEmpty()){
+					order.setExtraInfo(eir.getData().get(0));
 				}
 			}
 		}
