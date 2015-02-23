@@ -2,12 +2,15 @@ package com.photodispatcher.model.mysql.services;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.sansorm.OrmElf;
 import org.sansorm.SqlClosureElf;
 import org.springframework.stereotype.Service;
 
 import com.photodispatcher.model.mysql.ConnectionFactory;
+import com.photodispatcher.model.mysql.entities.DeliveryTypeDictionary;
 import com.photodispatcher.model.mysql.entities.MailPackage;
 import com.photodispatcher.model.mysql.entities.MailPackageBarcode;
 import com.photodispatcher.model.mysql.entities.MailPackageProperty;
@@ -217,6 +220,32 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 		return result;
 	}
 
+	@Override
+	public SelectResult<DeliveryTypeDictionary> loadDeliveryTypeDictionar4Edit(int source){
+		String sql="SELECT s.id source, dt.id delivery_type, IFNULL(dtd.site_id, 0) site_id, dt.name delivery_type_name, s.name source_name"+
+					 " FROM sources s"+
+					   " INNER JOIN delivery_type dt"+
+					   " LEFT OUTER JOIN delivery_type_dictionary dtd ON dt.id = dtd.delivery_type AND dtd.source = s.id"+
+					 " WHERE s.id = ? AND dt.id != 0"+
+					 " ORDER BY dt.id" ;
+		return runSelect(DeliveryTypeDictionary.class,sql, source);
+	}
 	
+	@Override
+	public SqlResult persistsDeliveryTypeBatch(List<DeliveryTypeDictionary> items){
+		List<DeliveryTypeDictionary> updateList= new ArrayList<DeliveryTypeDictionary>();
+		for(DeliveryTypeDictionary item : items){
+			if(item.getSite_id()>0){
+				updateList.add(item);
+			}
+		}
+		return runInesrtUpdateBatch(updateList);
+	}
+
+	@Override
+	public SelectResult<DeliveryTypeDictionary> loadDeliveryTypeDictionary(){
+		String sql="SELECT dtd.*  FROM delivery_type_dictionary dtd  ORDER BY dtd.source, dtd.delivery_type" ;
+		return runSelect(DeliveryTypeDictionary.class,sql);
+	}
 
 }

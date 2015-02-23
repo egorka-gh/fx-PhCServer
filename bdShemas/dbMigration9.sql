@@ -1,7 +1,9 @@
--- main cycle 
+-- main cycle 2015-02-23
 
 SET NAMES 'utf8';
 SET SESSION sql_mode='NO_AUTO_VALUE_ON_ZERO';
+
+UPDATE attr_type SET field = 'native_delivery_id' WHERE id = 50;
 
 CREATE TABLE delivery_type (
   id int(5) NOT NULL AUTO_INCREMENT,
@@ -15,6 +17,15 @@ CHARACTER SET utf8
 COLLATE utf8_general_ci;
 
 INSERT INTO delivery_type(id, name) VALUES (0, '-');
+INSERT INTO delivery_type(id, name) VALUES (1, 'Курьером по городу');
+INSERT INTO delivery_type(id, name) VALUES (2, 'Самовывоз из пунктов выдачи');
+INSERT INTO delivery_type(id, name) VALUES (3, 'Почта России, посылка');
+INSERT INTO delivery_type(id, name) VALUES (4, 'У представителя г.Омск и г.Новосибирск');
+INSERT INTO delivery_type(id, name) VALUES (5, 'Автотрейдинг');
+INSERT INTO delivery_type(id, name) VALUES (6, 'РАТЭК');
+INSERT INTO delivery_type(id, name) VALUES (7, 'Попутным транспортом');
+INSERT INTO delivery_type(id, name) VALUES (8, ' Получение в г. Барановичи');
+INSERT INTO delivery_type(id, name) VALUES (9, 'Курьером EMS-Белпочта');
 
 CREATE TABLE delivery_type_dictionary (
   source int(7) NOT NULL DEFAULT 0,
@@ -29,6 +40,17 @@ CREATE TABLE delivery_type_dictionary (
 ENGINE = INNODB
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
+
+INSERT INTO delivery_type_dictionary(source, delivery_type, site_id) VALUES (8, 8, 4);
+INSERT INTO delivery_type_dictionary(source, delivery_type, site_id) VALUES (8, 9, 2);
+INSERT INTO delivery_type_dictionary(source, delivery_type, site_id) VALUES (11, 0, 0);
+INSERT INTO delivery_type_dictionary(source, delivery_type, site_id) VALUES (11, 1, 28);
+INSERT INTO delivery_type_dictionary(source, delivery_type, site_id) VALUES (11, 2, 29);
+INSERT INTO delivery_type_dictionary(source, delivery_type, site_id) VALUES (11, 3, 30);
+INSERT INTO delivery_type_dictionary(source, delivery_type, site_id) VALUES (11, 4, 8);
+INSERT INTO delivery_type_dictionary(source, delivery_type, site_id) VALUES (11, 5, 9);
+INSERT INTO delivery_type_dictionary(source, delivery_type, site_id) VALUES (11, 6, 10);
+INSERT INTO delivery_type_dictionary(source, delivery_type, site_id) VALUES(11, 7, 13);
 
 CREATE TABLE form (
   id int(5) NOT NULL AUTO_INCREMENT,
@@ -90,3 +112,15 @@ INSERT INTO form_field_items(id, form_field, sequence, is_field, child_field, at
 INSERT INTO form_field_items(id, form_field, sequence, is_field, child_field, attr_type, delemiter) VALUES (5, 3, 0, 0, 0, 62, '');
 INSERT INTO form_field_items(id, form_field, sequence, is_field, child_field, attr_type, delemiter) VALUES (6, 4, 0, 0, 0, 66, '');
 INSERT INTO form_field_items(id, form_field, sequence, is_field, child_field, attr_type, delemiter) VALUES (7, 5, 0, 0, 0, 59, '');
+
+INSERT INTO attr_value(id, attr_tp, value, locked) VALUES (36, 2, 'Термобумага', 0);
+INSERT INTO attr_value(id, attr_tp, value, locked) VALUES (37, 2, 'Холст', 0);
+
+UPDATE lab_print_code lpc SET lpc.paper=37 WHERE lpc.src_type=6;
+
+UPDATE book_pg_template bpt  SET bpt.paper=36
+  WHERE EXISTS(SELECT 1 FROM book_synonym bs WHERE bs.id=bpt.book AND bs.book_type=8);
+UPDATE book_pg_template bpt  SET bpt.paper=37
+  WHERE EXISTS(SELECT 1 FROM book_synonym bs WHERE bs.id=bpt.book AND bs.book_type=7);  
+  
+INSERT INTO src_type(id, loc_type, name, state, book_part) VALUES (23, 2, 'Термосублимационный', 0, 0);

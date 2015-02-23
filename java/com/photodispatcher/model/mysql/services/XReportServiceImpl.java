@@ -27,6 +27,8 @@ import org.xreport.constants.Constants;
 import org.xreport.util.ValueDistributorImpl;
 
 import com.photodispatcher.model.mysql.ConnectionFactory;
+import com.photodispatcher.model.mysql.entities.PrintFormFieldItem;
+import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.report.Parameter;
 import com.photodispatcher.model.mysql.entities.report.Report;
 import com.photodispatcher.model.mysql.entities.report.ReportGroup;
@@ -38,7 +40,7 @@ import com.reporter.document.XLSDocumentWriter;
 
 
 @Service("xReportService")
-public class XReportServiceImpl implements XReportService {
+public class XReportServiceImpl extends AbstractDAO implements XReportService {
 
 	//private Connection conn;
 	/*
@@ -250,4 +252,11 @@ public class XReportServiceImpl implements XReportService {
 	}
 
 	
+	@Override
+	public SelectResult<PrintFormFieldItem> getPrintFormFieldItems() {
+		String sql="SELECT * FROM form_field_items ORDER BY form_field, sequence";
+		
+		return runSelect(PrintFormFieldItem.class,sql);
+	}
+
 }

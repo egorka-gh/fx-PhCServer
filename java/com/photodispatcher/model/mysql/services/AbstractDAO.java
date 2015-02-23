@@ -162,6 +162,39 @@ public abstract class AbstractDAO {
 		return result;
 	}
 
+	protected <T> SqlResult runInesrtUpdateBatch(List<T> targetList){
+		SqlResult result= new SqlResult();
+		Connection connection = null;
+		try {
+			connection=ConnectionFactory.getConnection();
+			connection.setAutoCommit(false);
+			//TODO refactor to SqlClosure
+			OrmElf.insertOrUpdateListBatched(connection, targetList);
+			connection.commit();
+			for(T item : targetList) if(item instanceof AbstractEntity) ((AbstractEntity) item).setPersistState(1);
+		} catch (SQLException e) {
+			result.setComplete(false);
+			result.setErrCode(e.getErrorCode());
+			result.setErrMesage(e.getMessage());
+			e.printStackTrace();
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}finally{
+			if(connection!=null){
+				try {
+					connection.setAutoCommit(true);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			SqlClosureElf.quietClose(connection);
+		}
+		return result;
+	}
+
 	protected <T> SqlResult runInsertBatch(List<T> targetList){
 		SqlResult result= new SqlResult();
 		Connection connection = null;
