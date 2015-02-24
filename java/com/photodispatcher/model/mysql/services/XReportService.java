@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.granite.messaging.service.annotations.RemoteDestination;
 
+import com.photodispatcher.model.mysql.entities.DeliveryTypePrintForm;
 import com.photodispatcher.model.mysql.entities.PrintFormFieldItem;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.report.Parameter;
@@ -25,5 +26,6 @@ public interface XReportService {
 	public List<Parameter> getReportParams(final String report);
 	public ReportResult buildReport(final Report report, String source);
 	SelectResult<PrintFormFieldItem> getPrintFormFieldItems();
+	SelectResult<DeliveryTypePrintForm> getPrintForms();
 	
 }

@@ -26,6 +26,10 @@ public class PrintFormFieldItem extends AbstractEntity {
     @Column(name="delemiter")
     private String delemiter;
     
+    //ref
+    @Column(name="property_name", updatable=false, insertable=false)
+    private String property_name;
+
 	public int getId() {
 		return id;
 	}
@@ -67,6 +71,12 @@ public class PrintFormFieldItem extends AbstractEntity {
 	}
 	public void setDelemiter(String delemiter) {
 		this.delemiter = delemiter;
+	}
+	public String getProperty_name() {
+		return property_name;
+	}
+	public void setProperty_name(String property_name) {
+		this.property_name = property_name;
 	}
 
     
