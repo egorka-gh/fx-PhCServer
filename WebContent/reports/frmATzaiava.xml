@@ -1,0 +1,9 @@
+<element-set>
+  <element name="rpbody">
+    <sql>
+      <![CDATA[
+      SELECT :pcity city, :pfio fio, :ppass_num pass_num, :ppass_info pass_info, :pphone phone
+	  ]]>
+    </sql>
+  </element>
+</element-set>

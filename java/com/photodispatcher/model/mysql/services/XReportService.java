@@ -6,6 +6,7 @@ import org.granite.messaging.service.annotations.RemoteDestination;
 
 import com.photodispatcher.model.mysql.entities.DeliveryTypePrintForm;
 import com.photodispatcher.model.mysql.entities.PrintFormFieldItem;
+import com.photodispatcher.model.mysql.entities.PrintFormParametr;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.report.Parameter;
 import com.photodispatcher.model.mysql.entities.report.Report;
@@ -27,5 +28,6 @@ public interface XReportService {
 	public ReportResult buildReport(final Report report, String source);
 	SelectResult<PrintFormFieldItem> getPrintFormFieldItems();
 	SelectResult<DeliveryTypePrintForm> getPrintForms();
+	SelectResult<PrintFormParametr> getPrintFormParameters();
 	
 }

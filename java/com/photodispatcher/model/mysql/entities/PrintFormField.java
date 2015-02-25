@@ -15,6 +15,10 @@ public class PrintFormField extends AbstractEntity {
     private int id;
     @Column(name="name")
     private String name;
+    @Column(name="parametr")
+    private String parametr;
+    @Column(name="simplex")
+    private boolean simplex;
     
 	public int getId() {
 		return id;
@@ -27,6 +31,18 @@ public class PrintFormField extends AbstractEntity {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public String getParametr() {
+		return parametr;
+	}
+	public void setParametr(String parametr) {
+		this.parametr = parametr;
+	}
+	public boolean isSimplex() {
+		return simplex;
+	}
+	public void setSimplex(boolean simplex) {
+		this.simplex = simplex;
 	}
 
 }

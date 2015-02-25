@@ -22,3 +22,6 @@ COLLATE utf8_general_ci;
 
 INSERT INTO form(id, name, report) VALUES (1, 'Печать ШК', 'mpBarcodeFrm');
 INSERT INTO delivery_type_form(delivery_type, form) VALUES (0, 1);
+
+INSERT INTO form(id, name, report) VALUES (2, 'Заявление (ат)', 'frmATzaiava');
+INSERT INTO delivery_type_form(delivery_type, form) VALUES (5, 2);

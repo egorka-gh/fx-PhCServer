@@ -29,6 +29,7 @@ import org.xreport.util.ValueDistributorImpl;
 import com.photodispatcher.model.mysql.ConnectionFactory;
 import com.photodispatcher.model.mysql.entities.DeliveryTypePrintForm;
 import com.photodispatcher.model.mysql.entities.PrintFormFieldItem;
+import com.photodispatcher.model.mysql.entities.PrintFormParametr;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.report.Parameter;
 import com.photodispatcher.model.mysql.entities.report.Report;
@@ -255,7 +256,7 @@ public class XReportServiceImpl extends AbstractDAO implements XReportService {
 	
 	@Override
 	public SelectResult<PrintFormFieldItem> getPrintFormFieldItems() {
-		String sql="SELECT it.*, a.field property_name"+
+		String sql="SELECT it.*, a.field property"+
 					 " FROM form_field_items it"+
 					   " LEFT OUTER JOIN attr_type a ON a.id = it.attr_type"+
 					 " ORDER BY form_field, sequence";
@@ -272,6 +273,15 @@ public class XReportServiceImpl extends AbstractDAO implements XReportService {
 					 " ORDER BY df.delivery_type, df.form";
 	
 		return runSelect(DeliveryTypePrintForm.class,sql);
+	}
+
+	@Override
+	public SelectResult<PrintFormParametr> getPrintFormParameters() {
+		String sql="SELECT fp.*, ff.parametr, ff.simplex"+
+					 " FROM form_parametr fp"+
+					   " INNER JOIN form_field ff ON ff.id = fp.form_field"+
+					 " ORDER BY fp.form";
+		return runSelect(PrintFormParametr.class,sql);
 	}
 
 }
