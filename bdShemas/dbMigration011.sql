@@ -1,5 +1,4 @@
--- main cycle 
-
+-- main cycle 2015-02-26
 SET NAMES 'utf8';
 SET SESSION sql_mode='NO_AUTO_VALUE_ON_ZERO';
 
@@ -33,3 +32,12 @@ INSERT INTO form_parametr(form, form_field) VALUES (2, 2);
 INSERT INTO form_parametr(form, form_field) VALUES (2, 3);
 INSERT INTO form_parametr(form, form_field) VALUES (2, 4);
 INSERT INTO form_parametr(form, form_field) VALUES (2, 5);
+
+INSERT INTO form_field(id, name, parametr, simplex) VALUES (6, 'client_id', 'pclient_id', 1);
+INSERT INTO form_field(id, name, parametr, simplex) VALUES (7, 'delivery_name', 'pdelivery_name', 1);
+INSERT INTO form_field(id, name, parametr, simplex) VALUES (8, 'execution_date', 'pexecution_date', 1);
+INSERT INTO form_field(id, name, parametr, simplex) VALUES (9, 'id', 'pid', 1);
+INSERT INTO form_field(id, name, parametr, simplex) VALUES (10, 'id_name', 'pid_name', 1);
+INSERT INTO form_field(id, name, parametr, simplex) VALUES (11, 'source_name', 'psource_name', 1);
+INSERT INTO form_field(id, name, parametr, simplex) VALUES (12, 'source_code', 'psource_code', 1);
+INSERT INTO form_field(id, name, parametr, simplex) VALUES (13, 'orders_num', 'porders_num', 1);
