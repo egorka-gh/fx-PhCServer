@@ -22,5 +22,6 @@ public interface MailPackageService {
 	SqlResult persistsDeliveryTypeBatch(List<DeliveryTypeDictionary> items);
 	SelectResult<DeliveryTypeDictionary> loadDeliveryTypeDictionar4Edit(int source);
 	SelectResult<DeliveryTypeDictionary> loadDeliveryTypeDictionary();
+	SqlResult join(int source, int targetId, List<Integer> joinIds);
 	
 }

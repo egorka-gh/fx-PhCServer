@@ -221,6 +221,21 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	}
 
 	@Override
+	public SqlResult join(int source, int targetId, List<Integer> joinIds){
+		if(joinIds==null || joinIds.isEmpty()) return new SqlResult();
+		//build sql
+		StringBuilder sb= new StringBuilder("UPDATE orders SET group_id = ? WHERE source=? AND group_id IN (");
+		for(Integer id : joinIds){
+			sb.append(id).append(",");
+		}
+		sb.deleteCharAt(sb.length() - 1);
+		sb.append(")");
+		String sql=sb.toString();
+		
+		return runDML(sql, targetId, source) ;
+	}
+
+	@Override
 	public SelectResult<DeliveryTypeDictionary> loadDeliveryTypeDictionar4Edit(int source){
 		String sql="SELECT s.id source, dt.id delivery_type, IFNULL(dtd.site_id, 0) site_id, dt.name delivery_type_name, s.name source_name"+
 					 " FROM sources s"+

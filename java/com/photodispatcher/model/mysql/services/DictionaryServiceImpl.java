@@ -57,6 +57,14 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	}
 
 	@Override
+	public SelectResult<FieldValue> getProductionValueList(){
+		SelectResult<FieldValue> result;
+		String sql="SELECT id value, name label FROM production";
+		result=runSelect(FieldValue.class, sql);
+		return result;
+	}
+
+	@Override
 	public SelectResult<FieldValue> getStaffActivityGroupValueList(){
 		SelectResult<FieldValue> result;
 		String sql="SELECT id value, name label FROM staff_activity_group WHERE id!=0 ORDER BY name";
@@ -105,6 +113,14 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	public SelectResult<FieldValue> getTechTypeValueList(){
 		SelectResult<FieldValue> result;
 		String sql="SELECT id value, name label FROM order_state WHERE tech=1 ORDER BY value";
+		result=runSelect(FieldValue.class, sql);
+		return result;
+	}
+
+	@Override
+	public SelectResult<FieldValue> getStateValueList(){
+		SelectResult<FieldValue> result;
+		String sql="SELECT id value, name label FROM order_state WHERE id>0 AND runtime=0 ORDER BY value";
 		result=runSelect(FieldValue.class, sql);
 		return result;
 	}

@@ -41,6 +41,11 @@ public class Order extends AbstractEntity {
     private int sync;
     @Column(name="is_preload")
     private boolean is_preload;
+    @Column(name="production")
+    private int production;
+    @Column(name="forward_state")
+    private int forward_state;
+    
     
     /*
     @Column(name="is_new")
@@ -56,6 +61,8 @@ public class Order extends AbstractEntity {
     private String source_code;
     @Column(name="state_name", updatable=false, insertable=false)
     private String state_name;
+    @Column(name="production_name", updatable=false, insertable=false)
+    private String production_name;
     /*
     @Column(name="book_type", updatable=false, insertable=false)
     private int book_type;
@@ -222,6 +229,24 @@ public class Order extends AbstractEntity {
 	}
 	public void setClientId(int clientId) {
 		this.clientId = clientId;
+	}
+	public int getProduction() {
+		return production;
+	}
+	public void setProduction(int production) {
+		this.production = production;
+	}
+	public String getProduction_name() {
+		return production_name;
+	}
+	public void setProduction_name(String production_name) {
+		this.production_name = production_name;
+	}
+	public int getForward_state() {
+		return forward_state;
+	}
+	public void setForward_state(int forward_state) {
+		this.forward_state = forward_state;
 	}
     
 

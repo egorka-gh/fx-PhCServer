@@ -30,5 +30,7 @@ public interface DictionaryService {
 	public SelectResult<SubordersTemplate> loadSubordersTemplate();
 	SelectResult<FieldValue> getStaffValueList();
 	SelectResult<FieldValue> getStaffActivityGroupValueList();
+	SelectResult<FieldValue> getProductionValueList();
+	SelectResult<FieldValue> getStateValueList();
 
 }
