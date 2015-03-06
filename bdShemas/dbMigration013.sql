@@ -1,10 +1,12 @@
--- main cycle
+-- main cycle 2015-03-06
 -- moskva
 SET NAMES 'utf8';
 SET SESSION sql_mode='NO_AUTO_VALUE_ON_ZERO';
 
 INSERT INTO attr_type(id, attr_fml, name, field, list, persist) VALUES (85, 6, 'at тип доставки', 'at_delivery_type', 0, 1);
 INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES (0, 85, 'address.atDeliveryType');
+
+INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES (4, 10, 'status');
 
 CREATE TABLE alias_forward (
   id int(11) NOT NULL AUTO_INCREMENT,
@@ -55,6 +57,21 @@ INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (-320,
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (515, 'Отменен производство', 0, 0, 0, 0);
 
 DELETE FROM order_state WHERE id = 310;
+
+ALTER TABLE form_field_items CHANGE COLUMN delemiter delemiter VARCHAR(10) DEFAULT '';
+
+INSERT INTO form_field(id, name, parametr, simplex) VALUES (14, 'Область/Город', 'pregion_city', 0);
+INSERT INTO form_field(id, name, parametr, simplex) VALUES (15, 'Улица/дом/кв', 'pstreet_h_f', 0);
+INSERT INTO form_field(id, name, parametr, simplex) VALUES (16, 'Индекс', 'ppostal', 0);
+
+INSERT INTO form_field_items(id, form_field, sequence, is_field, child_field, attr_type, delemiter) VALUES (8, 14, 0, 0, 0, 64, ', ');
+INSERT INTO form_field_items(id, form_field, sequence, is_field, child_field, attr_type, delemiter) VALUES (9, 14, 1, 0, 0, 65, ', ');
+INSERT INTO form_field_items(id, form_field, sequence, is_field, child_field, attr_type, delemiter) VALUES (10, 14, 2, 0, 0, 66, '');
+INSERT INTO form_field_items(id, form_field, sequence, is_field, child_field, attr_type, delemiter) VALUES (11, 15, 0, 0, 0, 67, ' ');
+INSERT INTO form_field_items(id, form_field, sequence, is_field, child_field, attr_type, delemiter) VALUES (12, 15, 1, 0, 0, 68, ' кв. ');
+INSERT INTO form_field_items(id, form_field, sequence, is_field, child_field, attr_type, delemiter) VALUES (13, 15, 2, 0, 0, 69, '');
+INSERT INTO form_field_items(id, form_field, sequence, is_field, child_field, attr_type, delemiter) VALUES (14, 16, 0, 0, 0, 63, '');
+
 
 DELIMITER $$
 
