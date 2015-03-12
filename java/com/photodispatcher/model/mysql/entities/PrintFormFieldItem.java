@@ -25,6 +25,10 @@ public class PrintFormFieldItem extends AbstractEntity {
     private int attr_type;
     @Column(name="delemiter")
     private String delemiter;
+    @Column(name="prefix")
+    private String prefix;
+    @Column(name="sufix")
+    private String sufix;
     
     //ref
     @Column(name="property", updatable=false, insertable=false)
@@ -77,6 +81,18 @@ public class PrintFormFieldItem extends AbstractEntity {
 	}
 	public void setProperty(String property) {
 		this.property = property;
+	}
+	public String getPrefix() {
+		return prefix;
+	}
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
+	}
+	public String getSufix() {
+		return sufix;
+	}
+	public void setSufix(String sufix) {
+		this.sufix = sufix;
 	}
 
     

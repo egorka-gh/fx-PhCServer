@@ -725,12 +725,12 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	@Override
-	public SqlResult cancelOrders(String[] ids){
+	public SqlResult cancelOrders(String[] ids, int state){
 		SqlResult result= new SqlResult();
-		//PROCEDURE orderCancel(IN pId VARCHAR(50))
-		String sql= "{CALL orderCancel(?)}";
+		//PROCEDURE orderCancel(IN pId VARCHAR(50), IN pState INT)
+		String sql= "{CALL orderCancel( ?, ?)}";
 		for (String id : ids){
-			result=runCall(sql, id);
+			result=runCall(sql, id, state);
 			if(!result.isComplete()) return result;
 		}
 		return result;

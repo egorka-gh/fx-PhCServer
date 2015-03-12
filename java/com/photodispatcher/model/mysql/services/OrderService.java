@@ -25,7 +25,6 @@ public interface OrderService {
 	public SelectResult<Order> loadOrder(String id);
 	public DmlResult<Order> addManual(Order order);
 	public SqlResult cleanUpOrder(String id);
-	public SqlResult cancelOrders(String[] ids);
 	public SelectResult<Order> loadOrderBySrcCode(String code, String id);
 	public SqlResult fillUpOrder(Order order);
 	public SelectResult<OrderExtraInfo> loadExtraIfoByPG(String pgId);
@@ -38,4 +37,5 @@ public interface OrderService {
 	public SelectResult<SubOrder> loadSubOrdersOtk();
 	public SelectResult<Order> loadOrder4Otk(String id, String sub_id);
 	public DmlResult<OrderExtraInfo> persistExtraInfo(OrderExtraInfo info);
+	SqlResult cancelOrders(String[] ids, int state);
 }
