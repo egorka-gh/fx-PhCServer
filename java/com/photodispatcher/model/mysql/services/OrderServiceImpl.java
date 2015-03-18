@@ -506,7 +506,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			result=runUpdate(info);
 		}
 		if(result.isComplete() && info.getMessagesLog()!=null){
-			SqlResult subres=runInsertBatch(info.getMessagesLog());
+			//SqlResult subres=runInsertBatch(info.getMessagesLog());
+			SqlResult subres=runInesrtUpdateBatch(info.getMessagesLog());
 			if(!subres.isComplete()) result.cloneError(subres);
 		}
 		return result;

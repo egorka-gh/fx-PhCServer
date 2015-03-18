@@ -61,6 +61,8 @@ public class MailPackage extends AbstractEntity {
     private List<Order> orders;
     @Transient
     private List<MailPackageBarcode> barcodes;
+    @Transient
+    private List<MailPackageMessage> messages;
 
     
 	public int getId() {
@@ -188,6 +190,12 @@ public class MailPackage extends AbstractEntity {
 	}
 	public void setBarcodes(List<MailPackageBarcode> barcodes) {
 		this.barcodes = barcodes;
+	}
+	public List<MailPackageMessage> getMessages() {
+		return messages;
+	}
+	public void setMessages(List<MailPackageMessage> messages) {
+		this.messages = messages;
 	}
 
 

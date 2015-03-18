@@ -31,6 +31,14 @@ public class ConnectionFactory {
 		DataSource ds=getDataSource(dsKey);
 		Connection conn=null;
 		if(ds!=null) conn=ds.getConnection();
+		if(conn!=null){
+			try {
+				if(conn.getAutoCommit()==false){
+					conn.rollback();
+					conn.setAutoCommit(true);
+				}
+			} catch (Exception e) {}
+		}
 		return conn;
 	}
 

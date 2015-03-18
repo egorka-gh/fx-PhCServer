@@ -51,6 +51,10 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 			if(item.getBarcodes()!=null){
 				OrmElf.insertOrUpdateListBatched(connection, item.getBarcodes());
 			}
+			//insert/update messages
+			if(item.getMessages()!=null){
+				OrmElf.insertOrUpdateListBatched(connection, item.getMessages());
+			}
 			
 			//attempt to commit
 			connection.commit();
