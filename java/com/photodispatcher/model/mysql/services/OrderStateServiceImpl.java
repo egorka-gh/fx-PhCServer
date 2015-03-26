@@ -59,15 +59,12 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 		return runCall(sql, orderId, subId, state, date);
 	}
 
-	/*
-
 	@Override
-	public SqlResult extraStateSetByPGroup(String pgId, int state){
-		//PROCEDURE extraStateSetByPGroup(IN pPrintGroup VARCHAR(50), IN pState INT)
-		String sql= "{CALL extraStateSetByPGroup(?,?)}";
-		return runCall(sql, pgId, state);
+	public SqlResult extraStateFix(String orderId, int state, Date date){
+		//PROCEDURE extraStateFix(IN pOrder varchar(50), IN pState int, IN pDate datetime)
+		String sql= "{CALL extraStateFix(?,?,?)}";
+		return runCall(sql, orderId, state, date);
 	}
-	*/
 
 	@Override
 	public SqlResult extraStateReset(String orderId, String subId, int state){

@@ -37,4 +37,6 @@ public interface OrderStateService {
 
 	public SelectResult<SpyData> loadSpyData(Date pDate, int pFromState, int pToState, int pBookPart);
 
+	SqlResult extraStateFix(String orderId, int state, Date date);
+
 }
