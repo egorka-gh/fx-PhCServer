@@ -1,5 +1,6 @@
 -- main    2015-03-19
 -- moskva 2015-03-23
+-- valichek 2015-03-30
 SET NAMES 'utf8';
 SET SESSION sql_mode='NO_AUTO_VALUE_ON_ZERO';
 
