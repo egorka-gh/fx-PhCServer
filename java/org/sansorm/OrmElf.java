@@ -270,6 +270,10 @@ public final class OrmElf
         return OrmWriter.insertObject(connection, target);
     }
 
+    public static <T> void insertOrUpdateObject(Connection connection, T target) throws SQLException{
+        OrmWriter.insertOrUpdateObject(connection, target);
+    }
+
     /**
      * Update a database row using the specified annotated object, the @Id field(s) is used in the WHERE
      * clause of the generated UPDATE statement.

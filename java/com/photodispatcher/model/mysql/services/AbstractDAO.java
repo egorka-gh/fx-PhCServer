@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import com.photodispatcher.model.mysql.ConnectionFactory;
 import com.photodispatcher.model.mysql.entities.AbstractEntity;
@@ -20,6 +21,9 @@ import org.sansorm.internal.OrmWriter;
 
 
 public abstract class AbstractDAO {
+	public static final int MAX_RETRY_ATTEMPTS=3;
+	public static final int RETRY_WAIT_TIME=2000;
+	public static final int RETRY_WAIT_DEV=1000;
 
 	protected <T> SelectResult<T> runSelect(final Class<T> type, final String sql, final Object...args){
 		final SelectResult<T> result= new SelectResult<T>();
@@ -72,6 +76,24 @@ public abstract class AbstractDAO {
 			//TODO refactor to SqlClosure
 			OrmElf.insertObject(connection, target);
 			if (target instanceof AbstractEntity) ((AbstractEntity )target).setPersistState(1);
+		} catch (SQLException e) {
+			result.setComplete(false);
+			result.setErrCode(e.getErrorCode());
+			result.setErrMesage(e.getMessage());
+			e.printStackTrace();
+		}finally{
+			SqlClosureElf.quietClose(connection);
+		}
+		return result;
+	}
+
+	protected <T> SqlResult runInsertOrUpdate(T target){
+		SqlResult result= new SqlResult();
+		Connection connection = null;
+		try {
+			connection=ConnectionFactory.getConnection();
+			//TODO refactor to SqlClosure
+			OrmElf.insertOrUpdateObject(connection, target);
 		} catch (SQLException e) {
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
@@ -281,17 +303,36 @@ public abstract class AbstractDAO {
 	protected SqlResult runCall(String sql, Object... args){
 		SqlResult result= new SqlResult();
 		Connection connection = null;
-		try {
-			connection=ConnectionFactory.getConnection();
-			//TODO refactor to SqlClosure
-			OrmWriter.executeCall(connection, sql, args);
-		} catch (SQLException e) {
-			result.setComplete(false);
-			result.setErrCode(e.getErrorCode());
-			result.setErrMesage(e.getMessage());
-			e.printStackTrace();
-		}finally{
-			SqlClosureElf.quietClose(connection);
+		Random random= new Random();
+		for (int i = 0; i < MAX_RETRY_ATTEMPTS; i++) {
+			try {
+				connection=ConnectionFactory.getConnection();
+				OrmWriter.executeCall(connection, sql, args);
+				i = MAX_RETRY_ATTEMPTS;
+			} catch (SQLException e) {
+				try {
+					connection.rollback();
+				} catch (SQLException e1) {
+					//e1.printStackTrace();
+				}
+				if(e.getErrorCode()!=1213 || i==(MAX_RETRY_ATTEMPTS-1)){
+					//not deadlock or max attempt reached
+					result.setComplete(false);
+					result.setErrCode(e.getErrorCode());
+					result.setErrMesage(e.getMessage());
+					i = MAX_RETRY_ATTEMPTS;
+				}else{
+					//restart deadlock
+					try {
+						Thread.sleep(RETRY_WAIT_TIME+random.nextInt(RETRY_WAIT_DEV));
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+				}
+				e.printStackTrace();
+			}finally{
+				SqlClosureElf.quietClose(connection);
+			}
 		}
 		return result;
 	}

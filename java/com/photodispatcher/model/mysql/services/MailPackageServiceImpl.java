@@ -43,6 +43,7 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 				OrmElf.updateObject(connection, item);
 			}
 			
+			/*
 			//insert/update props
 			if(item.getProperties()!=null){
 				OrmElf.insertOrUpdateListBatched(connection, item.getProperties());
@@ -55,7 +56,7 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 			if(item.getMessages()!=null){
 				OrmElf.insertOrUpdateListBatched(connection, item.getMessages());
 			}
-			
+			*/
 			//attempt to commit
 			connection.commit();
 		} catch (SQLException e) {
@@ -177,6 +178,18 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	}
 
 	@Override
+	public SelectResult<MailPackage> loadByState(int state){
+		String sql="SELECT p.*, os.name state_name, s.name source_name, s.code source_code" +
+					 " FROM package p" +
+					   " INNER JOIN order_state os ON os.id = p.state" +
+					   " INNER JOIN sources s ON s.id = p.source" +
+					  " WHERE p.state = ?" +
+					 " ORDER BY p.state_date";
+		SelectResult<MailPackage> res=runSelect(MailPackage.class,sql, state);
+		return res;
+	}
+
+	@Override
 	public SelectResult<Order> loadChildOrders(int source, int id){
 		SelectResult<Order> result;
 		String sql="SELECT o.*, s.name source_name, s.code source_code, os.name state_name"+
@@ -187,56 +200,120 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 		result=runSelect(Order.class,sql, source, id);
 		return result;
 	}
-	
+
 	@Override
-	public SqlResult startPackaging(MailPackage item, boolean force){
+	public SqlResult getStateByOrders(int source, int id){
 		int resultCode=0;
 		SqlResult result= new SqlResult();
-		if(!force){
-			String sql;
-			/*="SELECT t.source, t.group_id id, t.client_id, t.min_ord_state, os.name min_ord_state_name FROM"+
-						" (SELECT o.source, o.group_id, o.client_id, MIN(o.state) min_ord_state"+
-						  " FROM orders o"+
-						  " WHERE o.source = ? AND o.group_id = ?"+
-						  " GROUP BY o.source, o.group_id, o.client_id) t"+
-						  " INNER JOIN order_state os ON os.id = t.min_ord_state";
-						  */
-			sql="SELECT o.source, o.group_id, o.client_id, MIN(o.state) min_ord_state"+
-				  " FROM orders o"+
-				  " WHERE o.source = ? AND o.group_id = ?"+
-				  " GROUP BY o.source, o.group_id, o.client_id";
-			SelectResult<MailPackage> subres=runSelect(MailPackage.class,sql, item.getSource(), item.getId());
-			if(!subres.isComplete()){
-				result.cloneError(subres);
-				return result;
-			}
-			if(subres.getData()!= null && !subres.getData().isEmpty()) resultCode=subres.getData().get(0).getMin_ord_state();
-			if(resultCode<450){
-				result.setResultCode(resultCode);
-				return result;
-			}
+		String sql="SELECT o.source, o.group_id, o.client_id, MIN(o.state) min_ord_state"+
+				" FROM orders o"+
+				" WHERE o.source = ? AND o.group_id = ?"+
+				" GROUP BY o.source, o.group_id, o.client_id";
+		SelectResult<MailPackage> subres=runSelect(MailPackage.class,sql, source, id);
+		if(!subres.isComplete()){
+			result.cloneError(subres);
+			return result;
 		}
-		item.setState(455);
-		result=persist(item);
-		if(result.isComplete()) result.setResultCode(455);
-		//TODO start orders extrastate
+		if(subres.getData()!= null && !subres.getData().isEmpty()) resultCode=subres.getData().get(0).getMin_ord_state();
+		result.setResultCode(resultCode);
+		return result;
+	}
+
+	@Override
+	public SqlResult getStateByPackages(int source, List<Integer> packageIds){
+		int resultCode=0;
+		SqlResult result= new SqlResult();
+		if(packageIds==null || packageIds.isEmpty()) return result;
+
+		StringBuilder sbIn=new StringBuilder("");
+		for(Integer id : packageIds){
+			sbIn.append(id).append(",");
+		}
+		sbIn.deleteCharAt(sbIn.length() - 1);
+		String sIn=sbIn.toString();
+		//move orders
+		StringBuilder sb= new StringBuilder("SELECT IFNULL(MAX(p.state),0) state FROM package p WHERE p.source = ? AND p.id IN (");
+		sb.append(sIn).append(")");
+		String sql=sb.toString();
+
+		SelectResult<MailPackage> subres=runSelect(MailPackage.class,sql, source);
+		if(!subres.isComplete()){
+			result.cloneError(subres);
+			return result;
+		}
+		if(subres.getData()!= null && !subres.getData().isEmpty()) resultCode=subres.getData().get(0).getState();
+		result.setResultCode(resultCode);
+		return result;
+		
+	}
+
+	@Override
+	public SqlResult startState(MailPackage item){
+		SqlResult result= new SqlResult();
+		
+		//result=persist(item);
+		result=runInsertOrUpdate(item);
+		
+		if(!result.isComplete()) return result;
+
+		String sql;
+		//ignore errors
+		//set orders state
+		sql="UPDATE orders o"+
+			 " SET o.state=?, o.state_date=?"+
+			 " WHERE o.source=? AND o.group_id=?";
+		runDML(sql, item.getState(), item.getState_date(), item.getSource(), item.getId() );
+		
+		//stop previous extra states
+		stopPreviousExtraStates(item);
+		
+		//start new extra states
+		sql="INSERT IGNORE INTO order_extra_state (id, sub_id, state, start_date)"+
+			 " SELECT o.id, '', ?, ?"+
+			   " FROM orders o"+
+			   " WHERE o.source = ? AND o.group_id = ?";
+		runDML(sql, item.getState(), item.getState_date(), item.getSource(), item.getId() );
 		
 		return result;
 	}
 
 	@Override
+	public SqlResult stopPreviousExtraStates(MailPackage item){
+		String sql="UPDATE order_extra_state"+
+					" SET state_date = ?"+
+					" WHERE id IN (SELECT o.id"+
+								   " FROM orders o"+
+								   " WHERE o.source = ? AND o.group_id = ?)"+
+					" AND sub_id = '' AND state > 450 AND state < ? AND state_date IS NULL";
+		return runDML(sql, item.getState_date(), item.getSource(), item.getId(), item.getState());
+	}
+
+	@Override
 	public SqlResult join(int source, int targetId, List<Integer> joinIds){
+		SqlResult result;
 		if(joinIds==null || joinIds.isEmpty()) return new SqlResult();
-		//build sql
-		StringBuilder sb= new StringBuilder("UPDATE orders SET group_id = ? WHERE source=? AND group_id IN (");
+		//build in list
+		StringBuilder sbIn=new StringBuilder("");
 		for(Integer id : joinIds){
-			sb.append(id).append(",");
+			sbIn.append(id).append(",");
 		}
-		sb.deleteCharAt(sb.length() - 1);
-		sb.append(")");
+		sbIn.deleteCharAt(sbIn.length() - 1);
+		String sIn=sbIn.toString();
+		//move orders
+		StringBuilder sb= new StringBuilder("UPDATE orders SET group_id = ? WHERE source=? AND group_id IN (");
+		sb.append(sIn).append(")");
 		String sql=sb.toString();
+		result=runDML(sql, targetId, source);
 		
-		return runDML(sql, targetId, source) ;
+		//cancel joined 
+		if(result.isComplete()){
+			sb= new StringBuilder("UPDATE package p SET p.state = 511, p.state_date = NOW() WHERE p.source=? AND p.id IN (");
+			sb.append(sIn).append(")");
+			sql=sb.toString();
+			result=runDML(sql, source);
+		}
+
+		return result;
 	}
 
 	@Override

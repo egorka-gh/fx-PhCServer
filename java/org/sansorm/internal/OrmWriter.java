@@ -225,6 +225,46 @@ public class OrmWriter extends OrmBase
         return target;
     }
 
+    public static <T> void insertOrUpdateObject(Connection connection, T target) throws SQLException{
+        Class<?> clazz = target.getClass();
+        Introspected introspected = Introspector.getIntrospected(clazz);
+        final boolean hasSelfJoinColumn = introspected.hasSelfJoinColumn();
+        if (hasSelfJoinColumn){
+            throw new RuntimeException("insertOrUpdateObject() is not supported for objects with self-referencing columns due to Derby limitations");
+        }
+
+        String[] insertColumnNames = introspected.getInsertableColumns();
+        String[] updateColumnNames = introspected.getUpdatableColumns();
+
+        PreparedStatement stmt = createStatementForInsertOrUpdate(connection, introspected, insertColumnNames, updateColumnNames);
+        ParameterMetaData metaData = stmt.getParameterMetaData();
+
+        int parameterIndex = 1;
+        for (String column : insertColumnNames){
+            int parameterType = metaData.getParameterType(parameterIndex);
+            Object object = mapSqlType(introspected.get(target, column), parameterType);
+            if (object != null && !(hasSelfJoinColumn && introspected.isSelfJoinColumn(column))){
+                stmt.setObject(parameterIndex, object, parameterType);
+            }else{
+                stmt.setNull(parameterIndex, parameterType);
+            }
+            ++parameterIndex;
+        }
+        for (String column : updateColumnNames){
+            int parameterType = metaData.getParameterType(parameterIndex);
+            Object object = mapSqlType(introspected.get(target, column), parameterType);
+            if (object != null ){
+                stmt.setObject(parameterIndex, object, parameterType);
+            }else{
+                stmt.setNull(parameterIndex, parameterType);
+            }
+            ++parameterIndex;
+        }
+
+        stmt.executeUpdate();
+        stmt.close();
+    }
+    
     public static <T> void insertOrUpdateListBatched(Connection connection, Iterable<T> iterable) throws SQLException{
         Iterator<T> iterableIterator = iterable.iterator();
         if (!iterableIterator.hasNext())  return;

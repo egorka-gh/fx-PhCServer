@@ -14,3 +14,22 @@ INSERT INTO form_parametr(form, form_field) VALUES (2, 17);
 INSERT INTO form_parametr(form, form_field) VALUES (2, 18);
 
 INSERT INTO attr_value(id, attr_tp, value, locked) VALUES (38, 2, 'Мелованная170ламин', 1);
+
+ALTER TABLE package ADD INDEX IDX_package_state (state);
+
+DELIMITER $$
+
+CREATE
+PROCEDURE extraStateFix (IN pOrder varchar(50), IN pState int, IN pDate datetime)
+BEGIN
+  INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date)
+    SELECT pOrder, '', pState, pDate, pDate
+    UNION ALL
+    SELECT s.order_id, s.sub_id, pState, pDate, pDate
+      FROM suborders s
+      WHERE s.order_id = pOrder
+  ON DUPLICATE KEY UPDATE state_date = pDate;
+END
+$$
+
+DELIMITER ;
