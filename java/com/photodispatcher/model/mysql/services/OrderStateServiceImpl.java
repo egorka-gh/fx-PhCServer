@@ -178,6 +178,23 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 	}
 
 	@Override
+	public SqlResult getStateByPGroups(String orderId){
+		int resultCode=0;
+		SqlResult result= new SqlResult();
+
+		String sql="SELECT IFNULL(MIN(pg.state),0) value FROM print_group pg WHERE pg.order_id = ? AND pg.is_reprint = 0";
+		SelectResult<FieldValue> subres=runSelect(FieldValue.class, sql, orderId);
+		if(!subres.isComplete()){
+			result.cloneError(subres);
+			return result;
+		}
+		if(subres.getData()!= null && !subres.getData().isEmpty()) resultCode=subres.getData().get(0).getValue();
+		result.setResultCode(resultCode);
+		return result;
+	}
+
+	
+	@Override
 	public SqlResult extraStateStartOTK(String orderId, String subId, int stateStart){
 		int resultCode=0;
 		SqlResult result= new SqlResult();
@@ -200,6 +217,20 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 		return result;
 	}
 
+	@Override
+	public SqlResult extraStateSetOTK(String orderId, String subId, Date date){
+		//PROCEDURE extraStateSetOTK(IN pOrder varchar(50), IN pSubOrder varchar(50), IN pDate datetime)
+		String sql= "{CALL extraStateSetOTK(?,?,?)}";
+		return runCall(sql, orderId, subId, date);
+	}
+
+	@Override
+	public SqlResult extraStateSetOTKbyPG(String pgId, Date date){
+		//PROCEDURE extraStateSetOTKByPG(IN pPrintGroup varchar(50), IN pDate datetime)
+		String sql= "{CALL extraStateSetOTKByPG(?,?)}";
+		return runCall(sql, pgId, date);
+	}
+	
 	@Override
 	public SelectResult<SpyData> loadSpyData(Date pDate, int pFromState, int pToState, int pBookPart){
 		//PROCEDURE loadSpy(IN pDate datetime, IN pFromState INT, IN pToState INT, IN pBookPart INT)

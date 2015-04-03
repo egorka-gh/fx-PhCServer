@@ -26,17 +26,22 @@ public interface OrderStateService {
 	public SqlResult extraStateProlong(String orderId, String subId, int state, String comment);
 	//public SqlResult extraStateSetByPGroup(String pgId, int state);
 
-	public SqlResult printPost(String pgId, int lab);
-	public SqlResult printEndManual(String[] pgIds);
-	public SqlResult printCancel(String[] pgIds);
-	public SqlResult printGroupMarkInPrint(String pgId);
+	SqlResult printPost(String pgId, int lab);
+	SqlResult printEndManual(String[] pgIds);
+	SqlResult printCancel(String[] pgIds);
+	SqlResult printGroupMarkInPrint(String pgId);
 	
-	public SelectResult<OrderExtraState> loadMonitorEState(int techState, int waitState);
-	public SqlResult extraStateStartMonitor(String orderId, String subId, int state);
-	public SqlResult extraStateStartOTK(String orderId, String subId, int stateStart);
+	SelectResult<OrderExtraState> loadMonitorEState(int techState, int waitState);
+	SqlResult extraStateStartMonitor(String orderId, String subId, int state);
 
-	public SelectResult<SpyData> loadSpyData(Date pDate, int pFromState, int pToState, int pBookPart);
+	SelectResult<SpyData> loadSpyData(Date pDate, int pFromState, int pToState, int pBookPart);
 
 	SqlResult extraStateFix(String orderId, int state, Date date);
+
+	SqlResult getStateByPGroups(String orderId);
+
+	SqlResult extraStateStartOTK(String orderId, String subId, int stateStart);
+	SqlResult extraStateSetOTK(String orderId, String subId, Date date);
+	SqlResult extraStateSetOTKbyPG(String pgId, Date date);
 
 }

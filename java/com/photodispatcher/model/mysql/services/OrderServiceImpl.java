@@ -118,13 +118,14 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		SelectResult<SubOrder> result;
 		String sql="SELECT pg.order_id, pg.sub_id, sr.name source_name, sr.code source_code,"+
 						" os.name state_name, IFNULL(s.state, o.state) state, IFNULL(s.state_date, o.state_date) state_date,"+
-						" IFNULL(s.prt_qty, pg.book_num) prt_qty"+
+						" IFNULL(s.prt_qty, if(pg.book_type=0, pg.prints, pg.book_num)) prt_qty, pg.book_type proj_type"+
 					" FROM print_group pg"+
 					" INNER JOIN orders o ON pg.order_id = o.id"+
 					" INNER JOIN sources sr ON o.source = sr.id"+
 					" LEFT OUTER JOIN suborders s ON pg.sub_id = s.sub_id"+
 					" LEFT OUTER JOIN order_state os ON os.id= IFNULL(s.state, o.state)"+
 					" WHERE pg.id = ?";
+		
 		result=runSelect(SubOrder.class,sql, pgId);
 		if(!result.isComplete()) return result;
 		if(!result.getData().isEmpty()){

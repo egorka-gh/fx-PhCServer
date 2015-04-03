@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import com.photodispatcher.model.mysql.ConnectionFactory;
 import com.photodispatcher.model.mysql.entities.AbstractEntity;
@@ -21,10 +22,12 @@ import org.sansorm.internal.OrmWriter;
 
 
 public abstract class AbstractDAO {
-	public static final int MAX_RETRY_ATTEMPTS=3;
+	public static final int MAX_RETRY_ATTEMPTS=5;
 	public static final int RETRY_WAIT_TIME=2000;
 	public static final int RETRY_WAIT_DEV=1000;
 
+	private static Logger logger = Logger.getLogger(AbstractDAO.class.getName());
+	
 	protected <T> SelectResult<T> runSelect(final Class<T> type, final String sql, final Object...args){
 		final SelectResult<T> result= new SelectResult<T>();
 		
@@ -308,6 +311,7 @@ public abstract class AbstractDAO {
 			try {
 				connection=ConnectionFactory.getConnection();
 				OrmWriter.executeCall(connection, sql, args);
+				if(i>0) logger.info("Complite after deadlock, attempt:"+i);
 				i = MAX_RETRY_ATTEMPTS;
 			} catch (SQLException e) {
 				try {
@@ -320,16 +324,23 @@ public abstract class AbstractDAO {
 					result.setComplete(false);
 					result.setErrCode(e.getErrorCode());
 					result.setErrMesage(e.getMessage());
+					if(e.getErrorCode()==1213){
+						logger.severe("Deadlock error attempt:"+i+"; Code:"+e.getErrorCode()+"; Message:"+e.getMessage()+"; sql:"+sql);
+					}else{
+						logger.severe("SQLException Code:"+e.getErrorCode()+"; Message:"+e.getMessage()+"; sql:"+sql);
+					}
 					i = MAX_RETRY_ATTEMPTS;
+					e.printStackTrace();
 				}else{
 					//restart deadlock
+					logger.warning("Deadlock detected, attempt:"+i+"; Code:"+e.getErrorCode()+"; Message:"+e.getMessage()+"; sql:"+sql);
 					try {
 						Thread.sleep(RETRY_WAIT_TIME+random.nextInt(RETRY_WAIT_DEV));
 					} catch (InterruptedException e1) {
 						e1.printStackTrace();
 					}
+					logger.warning("Restart after deadlock.");
 				}
-				e.printStackTrace();
 			}finally{
 				SqlClosureElf.quietClose(connection);
 			}

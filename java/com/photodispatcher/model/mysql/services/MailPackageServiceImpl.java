@@ -305,6 +305,7 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 		String sql=sb.toString();
 		result=runDML(sql, targetId, source);
 		
+		/*
 		//cancel joined 
 		if(result.isComplete()){
 			sb= new StringBuilder("UPDATE package p SET p.state = 511, p.state_date = NOW() WHERE p.source=? AND p.id IN (");
@@ -312,6 +313,7 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 			sql=sb.toString();
 			result=runDML(sql, source);
 		}
+		*/
 
 		return result;
 	}
