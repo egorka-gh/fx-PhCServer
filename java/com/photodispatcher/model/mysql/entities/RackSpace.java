@@ -23,19 +23,28 @@ public class RackSpace extends AbstractEntity {
     @Column(name="height")
     private int height;
     @Column(name="weight")
-    private int weight;
+    private float weight;
+    /*
     @Column(name="package_source")
     private int package_source;
     @Column(name="package_id")
     private int package_id;
+    */
 
     //ref
     @Column(name="rack_type_name", updatable=false, insertable=false)
     private String rack_type_name;
     @Column(name="rack_name", updatable=false, insertable=false)
     private String rack_name;
+    @Column(name="unused_weight", updatable=false, insertable=false)
+    private double unused_weight;
+    @Column(name="rating", updatable=false, insertable=false)
+    private double rating;
+    
+    /*
     @Column(name="source_name", updatable=false, insertable=false)
     private String source_name;
+    */
     
 	public int getId() {
 		return id;
@@ -61,12 +70,13 @@ public class RackSpace extends AbstractEntity {
 	public void setHeight(int height) {
 		this.height = height;
 	}
-	public int getWeight() {
+	public float getWeight() {
 		return weight;
 	}
-	public void setWeight(int weight) {
+	public void setWeight(float weight) {
 		this.weight = weight;
 	}
+	/*
 	public int getPackage_source() {
 		return package_source;
 	}
@@ -79,18 +89,21 @@ public class RackSpace extends AbstractEntity {
 	public void setPackage_id(int package_id) {
 		this.package_id = package_id;
 	}
+	*/
 	public String getRack_name() {
 		return rack_name;
 	}
 	public void setRack_name(String rack_name) {
 		this.rack_name = rack_name;
 	}
+	/*
 	public String getSource_name() {
 		return source_name;
 	}
 	public void setSource_name(String source_name) {
 		this.source_name = source_name;
 	}
+	*/
 	public int getRack() {
 		return rack;
 	}
@@ -102,6 +115,25 @@ public class RackSpace extends AbstractEntity {
 	}
 	public void setRack_type_name(String rack_type_name) {
 		this.rack_type_name = rack_type_name;
+	}
+	
+	/**
+	 * ascending decision num
+	 * lesser - better
+	 * -1 - order space or package own space
+	 * @return
+	 */
+	public double getRating() {
+		return rating;
+	}
+	public void setRating(double rating) {
+		this.rating = rating;
+	}
+	public double getUnused_weight() {
+		return unused_weight;
+	}
+	public void setUnused_weight(double unused_weight) {
+		this.unused_weight = unused_weight;
 	}
     
     

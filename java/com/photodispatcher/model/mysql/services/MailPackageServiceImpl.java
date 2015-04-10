@@ -15,6 +15,7 @@ import com.photodispatcher.model.mysql.entities.MailPackage;
 import com.photodispatcher.model.mysql.entities.MailPackageBarcode;
 import com.photodispatcher.model.mysql.entities.MailPackageProperty;
 import com.photodispatcher.model.mysql.entities.Order;
+import com.photodispatcher.model.mysql.entities.RackSpace;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 
@@ -274,6 +275,15 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 			   " WHERE o.source = ? AND o.group_id = ?";
 		runDML(sql, item.getState(), item.getState_date(), item.getSource(), item.getId() );
 		
+		if(item.getState()>=460){
+			//clean rack spaces
+			sql="DELETE FROM rack_orders WHERE order_id IN (SELECT id FROM orders o WHERE o.source=? AND o.group_id=?)";
+			SqlResult subResult= runDML(sql, item.getSource(), item.getId() );
+			if(!subResult.isComplete()){
+				result.cloneError(subResult);
+			}
+		}
+		
 		return result;
 	}
 
@@ -344,6 +354,39 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	public SelectResult<DeliveryTypeDictionary> loadDeliveryTypeDictionary(){
 		String sql="SELECT dtd.*  FROM delivery_type_dictionary dtd  ORDER BY dtd.source, dtd.delivery_type" ;
 		return runSelect(DeliveryTypeDictionary.class,sql);
+	}
+
+	@Override
+	public SelectResult<RackSpace> loadRackSpaces(MailPackage mailPackage){
+		String sql="SELECT r.name rack_name, rs.*"+
+				  " FROM orders o"+
+				   " INNER JOIN rack_orders ro ON o.id = ro.order_id"+
+				   " INNER JOIN rack_space rs ON rs.id = ro.space"+
+				   " INNER JOIN rack r ON r.id = rs.rack"+
+				  " WHERE o.source = ? AND o.group_id = ?"+
+				  " GROUP BY r.id, rs.id"+
+				  " ORDER BY r.name, rs.name";
+		SelectResult<RackSpace> res=runSelect(RackSpace.class, sql, mailPackage.getSource(), mailPackage.getId());
+		return res;
+	}
+
+	@Override
+	public SelectResult<RackSpace> getRackSpaces(String orderId, int techPoint){
+		//PROCEDURE packageGetSpaces(IN pOrderId varchar(50), IN pTechPoint int)
+		String sql= "{CALL packageGetSpaces(?,?)}";
+		return  runCallSelect(RackSpace.class, sql, orderId, techPoint);
+	}
+
+	@Override
+	public SqlResult setRackSpace(String orderId, int space){
+		String sql="INSERT IGNORE INTO rack_orders (order_id, space) VALUES (?, ?)";
+		return runDML(sql, orderId, space);
+	}
+
+	@Override
+	public SqlResult resetRackSpace(String orderId){
+		String sql="DELETE FROM rack_orders WHERE order_id = ?";
+		return runDML(sql, orderId);
 	}
 
 }
