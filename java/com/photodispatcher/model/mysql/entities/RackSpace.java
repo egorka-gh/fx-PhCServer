@@ -116,7 +116,13 @@ public class RackSpace extends AbstractEntity {
 	public void setRack_type_name(String rack_type_name) {
 		this.rack_type_name = rack_type_name;
 	}
-	
+	public double getUnused_weight() {
+		return unused_weight;
+	}
+	public void setUnused_weight(double unused_weight) {
+		this.unused_weight = unused_weight;
+	}
+
 	/**
 	 * ascending decision num
 	 * lesser - better
@@ -129,13 +135,6 @@ public class RackSpace extends AbstractEntity {
 	public void setRating(double rating) {
 		this.rating = rating;
 	}
-	public double getUnused_weight() {
-		return unused_weight;
-	}
-	public void setUnused_weight(double unused_weight) {
-		this.unused_weight = unused_weight;
-	}
-    
     
 
 }

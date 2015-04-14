@@ -244,13 +244,28 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 			if(!updated){
 				pg.setState(-300);
 				pg.setFiles(null);
-			}else if(loadFiles){
-				SelectResult<PrintGroupFile> fRes=loadFiles(pg.getId());
-				if(!fRes.isComplete()){
+			}else{
+				//reload print group
+				String sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder, IFNULL(s.alias,pg.path) alias"+
+							" FROM print_group pg"+
+							" INNER JOIN orders o ON pg.order_id = o.id"+
+							" LEFT OUTER JOIN suborders s ON pg.order_id = s.order_id AND pg.sub_id = s.sub_id"+
+							" WHERE pg.id = ?";
+				SelectResult<PrintGroup> selRes=runSelect(PrintGroup.class, sql, pg.getId());
+				if(!selRes.isComplete() || selRes.getData()==null || selRes.getData().isEmpty()){
 					pg.setState(-309);
 					pg.setFiles(null);
 				}else{
-					pg.setFiles(fRes.getData());
+					pg=selRes.getData().get(0);
+					if(loadFiles){
+						SelectResult<PrintGroupFile> fRes=loadFiles(pg.getId());
+						if(!fRes.isComplete()){
+							pg.setState(-309);
+							pg.setFiles(null);
+						}else{
+							pg.setFiles(fRes.getData());
+						}
+					}
 				}
 			}
 			result.getData().add(pg);
@@ -263,9 +278,10 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 	public DmlResult<PrintGroup> fillCaptured(String id){
 		
 		DmlResult<PrintGroup> res= new DmlResult<PrintGroup>(); //getObject(PrintGroup.class, id); 
-		String sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder"+
-			" FROM print_group pg"+
+		String sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder, IFNULL(s.alias,pg.path) alias"+
+				" FROM print_group pg"+
 				" INNER JOIN orders o ON pg.order_id = o.id"+
+				" LEFT OUTER JOIN suborders s ON pg.order_id = s.order_id AND pg.sub_id = s.sub_id"+
 				" WHERE pg.id = ?";
 		SelectResult<PrintGroup> selRes=runSelect(PrintGroup.class, sql, id);
 		

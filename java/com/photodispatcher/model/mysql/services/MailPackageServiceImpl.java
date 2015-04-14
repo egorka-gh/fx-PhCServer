@@ -378,6 +378,13 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	}
 
 	@Override
+	public SelectResult<RackSpace> getOrderSpace(String orderId){
+		//PROCEDURE packageGetOrderSpace(IN pOrderId varchar(50))
+		String sql= "{CALL packageGetOrderSpace(?)}";
+		return  runCallSelect(RackSpace.class, sql, orderId);
+	}
+
+	@Override
 	public SqlResult setRackSpace(String orderId, int space){
 		String sql="INSERT IGNORE INTO rack_orders (order_id, space) VALUES (?, ?)";
 		return runDML(sql, orderId, space);

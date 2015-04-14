@@ -32,5 +32,6 @@ public interface MailPackageService {
 	SelectResult<RackSpace> getRackSpaces(String orderId, int techPoint);
 	SqlResult setRackSpace(String orderId, int space);
 	SqlResult resetRackSpace(String orderId);
+	SelectResult<RackSpace> getOrderSpace(String orderId);
 	
 }

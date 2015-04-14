@@ -27,6 +27,8 @@ public class BookSynonym extends AbstractEntity {
     private boolean is_horizontal;
     @Column(name="synonym_type")
     private int synonym_type;
+    @Column(name="has_backprint")
+    private boolean has_backprint;
 
     //ref name
     @Column(name="src_type_name", updatable=false, insertable=false)
@@ -128,6 +130,14 @@ public class BookSynonym extends AbstractEntity {
 
 	public void setSynonym_type_name(String synonym_type_name) {
 		this.synonym_type_name = synonym_type_name;
+	}
+
+	public boolean isHas_backprint() {
+		return has_backprint;
+	}
+
+	public void setHas_backprint(boolean has_backprint) {
+		this.has_backprint = has_backprint;
 	}
 	
 }

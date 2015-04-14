@@ -199,17 +199,16 @@ public class Introspected
                 }
                 else if (columnType == BigDecimal.class)
                 {
-                    if (fieldType == BigInteger.class)
-                    {
+                    if (fieldType == BigInteger.class){
                         columnValue = ((BigDecimal) columnValue).toBigInteger();
-                    }
-                    else if (fieldType == Integer.class)
-                    {
+                    }else if (fieldType == Integer.class){
                         columnValue = (int) ((BigDecimal) columnValue).longValue();
-                    }
-                    else if (fieldType == Long.class)
-                    {
+                    }else if (fieldType == Long.class){
                         columnValue = ((BigDecimal) columnValue).longValue();
+                    }else if (fieldType == Double.class || fieldType==double.class){
+                        columnValue = ((BigDecimal) columnValue).doubleValue();
+                    }else if (fieldType == Float.class || fieldType == float.class){
+                        columnValue = ((BigDecimal) columnValue).floatValue();
                     }
                 }
                 else if (fcInfo.enumConstants != null)
