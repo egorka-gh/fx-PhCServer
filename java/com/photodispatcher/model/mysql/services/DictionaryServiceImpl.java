@@ -126,6 +126,14 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	}
 
 	@Override
+	public SelectResult<FieldValue> getRackValueList(){
+		SelectResult<FieldValue> result;
+		String sql="SELECT r.id value, r.name label FROM rack r WHERE r.id != 0 ORDER BY r.name";
+		result=runSelect(FieldValue.class, sql);
+		return result;
+	}
+
+	@Override
 	public SelectResult<FieldValue> getTechLayerValueList(boolean includeDefault){
 		SelectResult<FieldValue> result;
 		String sql="SELECT id value, name label FROM layer ORDER BY 1";

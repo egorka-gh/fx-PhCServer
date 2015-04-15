@@ -7,6 +7,8 @@ import org.granite.messaging.service.annotations.RemoteDestination;
 import com.photodispatcher.model.mysql.entities.DeliveryTypeDictionary;
 import com.photodispatcher.model.mysql.entities.MailPackage;
 import com.photodispatcher.model.mysql.entities.Order;
+import com.photodispatcher.model.mysql.entities.RackOrders;
+import com.photodispatcher.model.mysql.entities.RackOrdersLog;
 import com.photodispatcher.model.mysql.entities.RackSpace;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
@@ -33,5 +35,9 @@ public interface MailPackageService {
 	SqlResult setRackSpace(String orderId, int space);
 	SqlResult resetRackSpace(String orderId);
 	SelectResult<RackSpace> getOrderSpace(String orderId);
+	SqlResult clearSpace(int space);
+	SelectResult<RackSpace> inventorySpaces(int rack);
+	SelectResult<RackOrdersLog> loadOrderSpacesHistory(String order);
+	SelectResult<RackOrders> inventoryRackOrders(int rack);
 	
 }

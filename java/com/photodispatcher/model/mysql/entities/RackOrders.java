@@ -15,10 +15,18 @@ public class RackOrders extends AbstractEntity {
     private int space;
 
     //ref
+    @Column(name="rack", updatable=false, insertable=false)
+    private int rack;
     @Column(name="rack_name", updatable=false, insertable=false)
     private String rack_name;
     @Column(name="space_name", updatable=false, insertable=false)
     private String space_name;
+    @Column(name="source", updatable=false, insertable=false)
+    private int source;
+    @Column(name="source_name", updatable=false, insertable=false)
+    private String source_name;
+    @Column(name="group_id", updatable=false, insertable=false)
+    private int group_id;
     
 	public String getOrder_id() {
 		return order_id;
@@ -43,6 +51,30 @@ public class RackOrders extends AbstractEntity {
 	}
 	public void setSpace_name(String space_name) {
 		this.space_name = space_name;
+	}
+	public int getSource() {
+		return source;
+	}
+	public void setSource(int source) {
+		this.source = source;
+	}
+	public String getSource_name() {
+		return source_name;
+	}
+	public void setSource_name(String source_name) {
+		this.source_name = source_name;
+	}
+	public int getGroup_id() {
+		return group_id;
+	}
+	public void setGroup_id(int group_id) {
+		this.group_id = group_id;
+	}
+	public int getRack() {
+		return rack;
+	}
+	public void setRack(int rack) {
+		this.rack = rack;
 	}
 
 }

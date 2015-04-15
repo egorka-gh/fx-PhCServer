@@ -32,5 +32,6 @@ public interface DictionaryService {
 	SelectResult<FieldValue> getStaffActivityGroupValueList();
 	SelectResult<FieldValue> getProductionValueList();
 	SelectResult<FieldValue> getStateValueList();
+	SelectResult<FieldValue> getRackValueList();
 
 }

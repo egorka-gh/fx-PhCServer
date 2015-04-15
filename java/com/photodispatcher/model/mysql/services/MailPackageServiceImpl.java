@@ -15,6 +15,8 @@ import com.photodispatcher.model.mysql.entities.MailPackage;
 import com.photodispatcher.model.mysql.entities.MailPackageBarcode;
 import com.photodispatcher.model.mysql.entities.MailPackageProperty;
 import com.photodispatcher.model.mysql.entities.Order;
+import com.photodispatcher.model.mysql.entities.RackOrders;
+import com.photodispatcher.model.mysql.entities.RackOrdersLog;
 import com.photodispatcher.model.mysql.entities.RackSpace;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
@@ -394,6 +396,65 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	public SqlResult resetRackSpace(String orderId){
 		String sql="DELETE FROM rack_orders WHERE order_id = ?";
 		return runDML(sql, orderId);
+	}
+
+	@Override
+	public SqlResult clearSpace(int space){
+		String sql="DELETE FROM rack_orders WHERE space= ?";
+		return runDML(sql, space);
+	}
+
+	@Override
+	public SelectResult<RackSpace> inventorySpaces(int rack){
+		SelectResult<RackSpace> result;
+		String sql= "SELECT rs.*, r.name rack_name, IFNULL((SELECT MAX(0) FROM rack_orders ro WHERE ro.space = rs.id), 1) empty"+
+					" FROM rack_space rs"+
+					" INNER JOIN rack r ON r.id = rs.rack"+
+					" WHERE ? IN (0, rs.rack)"+
+					" ORDER BY r.name, rs.name";
+		result=runSelect(RackSpace.class, sql, rack);
+		/*
+		if(result.isComplete()){
+			if(result.getData()!=null && !result.getData().isEmpty()){
+				sql="SELECT ro.order_id id, o.state, os.name state_name, o.source, o.group_id"+
+					 " FROM rack_orders ro"+
+					   " INNER JOIN orders o ON o.id = ro.order_id"+
+					   " INNER JOIN order_state os ON o.state = os.id"+
+					 " WHERE ro.space = ?";
+				for(RackSpace item : result.getData()){
+					SelectResult<Order> subResult=runSelect(Order.class, sql, item.getId());
+					if(!subResult.isComplete()){
+						result.cloneError(subResult);
+						break;
+					}
+					item.setEmpty(subResult.getData().isEmpty());
+					item.setOrders(subResult.getData());
+				}
+			}
+		}
+		*/
+		return  result;
+	}
+
+	@Override
+	public SelectResult<RackOrders> inventoryRackOrders(int rack){
+		String sql= "SELECT ro.*, o.source, s.name source_name, o.group_id, rs.name space_name, r.id rack, r.name rack_name"+
+					 " FROM rack_orders ro"+
+					   " INNER JOIN rack_space rs ON rs.id = ro.space"+
+					   " INNER JOIN rack r ON r.id = rs.rack"+
+					   " LEFT OUTER JOIN orders o ON o.id = ro.order_id"+
+					   " LEFT OUTER JOIN sources s ON s.id=o.source"+
+					 " WHERE ? IN (0, r.id)";
+		return runSelect(RackOrders.class, sql, rack);
+	}
+
+	@Override
+	public SelectResult<RackOrdersLog> loadOrderSpacesHistory(String order){
+		String sql= "SELECT rol.*"+
+					 " FROM rack_orders_log rol"+
+					 " WHERE rol.order_id LIKE ?"+
+					 " ORDER BY rol.event_time DESC";
+		return runSelect(RackOrdersLog.class, sql, "%"+order);
 	}
 
 }

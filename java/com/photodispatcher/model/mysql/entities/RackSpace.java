@@ -1,9 +1,12 @@
 package com.photodispatcher.model.mysql.entities;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Table(name = "rack_space")
 public class RackSpace extends AbstractEntity {
@@ -24,12 +27,6 @@ public class RackSpace extends AbstractEntity {
     private int height;
     @Column(name="weight")
     private float weight;
-    /*
-    @Column(name="package_source")
-    private int package_source;
-    @Column(name="package_id")
-    private int package_id;
-    */
 
     //ref
     @Column(name="rack_type_name", updatable=false, insertable=false)
@@ -40,11 +37,11 @@ public class RackSpace extends AbstractEntity {
     private double unused_weight;
     @Column(name="rating", updatable=false, insertable=false)
     private double rating;
+    @Column(name="empty", updatable=false, insertable=false)
+    private boolean empty;
     
-    /*
-    @Column(name="source_name", updatable=false, insertable=false)
-    private String source_name;
-    */
+    @Transient
+    private List<Order> orders;
     
 	public int getId() {
 		return id;
@@ -76,34 +73,12 @@ public class RackSpace extends AbstractEntity {
 	public void setWeight(float weight) {
 		this.weight = weight;
 	}
-	/*
-	public int getPackage_source() {
-		return package_source;
-	}
-	public void setPackage_source(int package_source) {
-		this.package_source = package_source;
-	}
-	public int getPackage_id() {
-		return package_id;
-	}
-	public void setPackage_id(int package_id) {
-		this.package_id = package_id;
-	}
-	*/
 	public String getRack_name() {
 		return rack_name;
 	}
 	public void setRack_name(String rack_name) {
 		this.rack_name = rack_name;
 	}
-	/*
-	public String getSource_name() {
-		return source_name;
-	}
-	public void setSource_name(String source_name) {
-		this.source_name = source_name;
-	}
-	*/
 	public int getRack() {
 		return rack;
 	}
@@ -134,6 +109,18 @@ public class RackSpace extends AbstractEntity {
 	}
 	public void setRating(double rating) {
 		this.rating = rating;
+	}
+	public List<Order> getOrders() {
+		return orders;
+	}
+	public void setOrders(List<Order> orders) {
+		this.orders = orders;
+	}
+	public boolean isEmpty() {
+		return empty;
+	}
+	public void setEmpty(boolean empty) {
+		this.empty = empty;
 	}
     
 
