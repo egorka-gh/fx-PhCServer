@@ -11,6 +11,7 @@ import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.Lab;
 import com.photodispatcher.model.mysql.entities.LabDevice;
 import com.photodispatcher.model.mysql.entities.LabPrintCode;
+import com.photodispatcher.model.mysql.entities.LabProfile;
 import com.photodispatcher.model.mysql.entities.LabRoll;
 import com.photodispatcher.model.mysql.entities.LabStopLog;
 import com.photodispatcher.model.mysql.entities.LabTimetable;
@@ -93,6 +94,13 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 		result=runSelect(Lab.class, sql);
 		if (result.isComplete()){
 			for (Lab item : result.getData()){
+				//load profiles
+				SelectResult<LabProfile> pres=loadLabProfiles(item.getId(), forEdit);
+				if(!pres.isComplete()){
+					result.cloneError(pres);
+					break;
+				}
+				item.setProfiles(pres.getData());
 				//load childs
 				SqlResult subResult=loadDevices(item, forEdit);
 				if(!subResult.isComplete()){
@@ -128,10 +136,9 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 		//rolls
 		RollServiceImpl rollsvc= new RollServiceImpl();
 		SelectResult<LabRoll> rollres= rollsvc.getByDevice(device.getId(), forEdit);
-		if(!rollres.isComplete()){
-			return rollres;
-		}
+		if(!rollres.isComplete()) return rollres;
 		device.setRolls(rollres.getData());
+
 		//timetable
 		String sql="SELECT wd.id day_id, wd.name day_id_name, ? lab_device,"+
 						" CAST(IFNULL(ltt.time_from,'2000-01-01 08:00:00') AS DATETIME) time_from,"+
@@ -141,10 +148,29 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 					" LEFT OUTER JOIN lab_timetable ltt ON  wd.id=ltt.day_id and ltt.lab_device=?"+
 					" ORDER BY wd.id";
 		SelectResult<LabTimetable> ttres= runSelect(LabTimetable.class, sql, device.getId(), device.getId());
+		if(!ttres.isComplete()) return ttres;
 		device.setTimetable(ttres.getData());
+		
 		return ttres;
 	}
 
+	private SelectResult<LabProfile> loadLabProfiles(int lab, boolean forEdit){
+		String sql;
+		if(forEdit){
+			sql="SELECT ? lab, av.id paper, av.value paper_name, lp.profile_file"+
+				  " FROM attr_value av"+
+				  " LEFT OUTER JOIN lab_profile lp ON lp.lab=? AND lp.paper=av.id"+ 
+				" WHERE av.attr_tp=2";
+		}else{
+			sql="SELECT ? lab, av.id paper, av.value paper_name, lp.profile_file"+
+					  " FROM attr_value av"+
+					  " INNER JOIN lab_profile lp ON lp.lab=? AND lp.paper=av.id"+ 
+					" WHERE av.attr_tp=2";
+		}
+		
+		return runSelect(LabProfile.class, sql, lab, lab);
+	}
+	
 	@Override
 	public DmlResult<Lab> loadLab(int id, boolean forEdit){
 		SelectResult<Lab> sResult;
@@ -157,6 +183,15 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 		if (sResult.isComplete()){
 			if(sResult.getData()!=null && !sResult.getData().isEmpty()){
 				result.setItem(sResult.getData().get(0));
+				
+				//load profiles
+				SelectResult<LabProfile> pres=loadLabProfiles(result.getItem().getId(), forEdit);
+				if(!pres.isComplete()){
+					result.cloneError(pres);
+					return result;
+				}
+				result.getItem().setProfiles(pres.getData());
+
 				SqlResult subResult=loadDevices(result.getItem(), forEdit);
 				if(!subResult.isComplete()){
 					result.cloneError(subResult);
@@ -184,7 +219,20 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 				List<LabDevice> updateDev=new ArrayList<LabDevice>();
 				List<LabRoll>   rollList=new ArrayList<LabRoll>();
 				List<LabTimetable>   ttList=new ArrayList<LabTimetable>();
-				
+				List<LabProfile>   addProfileList=new ArrayList<LabProfile>();
+				List<LabProfile>   delProfileList=new ArrayList<LabProfile>();
+
+				//profiles
+				if(lab.getProfiles()!=null){
+					for(LabProfile p :lab.getProfiles()){
+						if(p.getProfile_file()!=null && !p.getProfile_file().isEmpty()){
+							addProfileList.add(p);
+						}else{
+							delProfileList.add(p);
+						}
+					}
+				}
+
 				if(lab.getDevices()!=null){
 					for(LabDevice dev : lab.getDevices()){
 						if(dev.getPersistState()==0){
@@ -213,6 +261,12 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 				if(subResult.isComplete() && !ttList.isEmpty()){
 					subResult=runUpdateBatch(ttList);
 					if(subResult.isComplete()) subResult=runInsertBatch(ttList);
+				}
+				if(subResult.isComplete() && !addProfileList.isEmpty()){
+					subResult=runInesrtUpdateBatch(addProfileList);
+				}
+				if(subResult.isComplete() && !delProfileList.isEmpty()){
+					subResult=runDeleteBatch(delProfileList);
 				}
 			}
 		}

@@ -44,6 +44,8 @@ public class Lab extends AbstractEntity {
     //childs
     @Transient
     private List<LabDevice> devices;
+    @Transient
+    private List<LabProfile> profiles;
 
 	public int getId() {
 		return id;
@@ -139,6 +141,14 @@ public class Lab extends AbstractEntity {
 
 	public void setDevices(List<LabDevice> devices) {
 		this.devices = devices;
+	}
+
+	public List<LabProfile> getProfiles() {
+		return profiles;
+	}
+
+	public void setProfiles(List<LabProfile> profiles) {
+		this.profiles = profiles;
 	}
 
 }

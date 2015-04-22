@@ -36,6 +36,8 @@ public class LabDevice extends AbstractEntity {
     private List<LabRoll> rolls;
     @Transient
     private List<LabTimetable> timetable;
+    
+    
 	public int getId() {
 		return id;
 	}

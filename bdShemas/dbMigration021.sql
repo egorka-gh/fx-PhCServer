@@ -319,3 +319,17 @@ DELIMITER ;
 
 ALTER TABLE rack_orders_log
   ADD INDEX IDX_rack_orders_log_order_id (order_id);
+  
+CREATE TABLE lab_profile (
+  lab int(5) NOT NULL,
+  paper int(5) NOT NULL,
+  profile_file varchar(100) DEFAULT NULL,
+  PRIMARY KEY (lab, paper),
+  CONSTRAINT FK_lab_profile_attr_value_id FOREIGN KEY (paper)
+  REFERENCES attr_value (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT FK_lab_profile_lab_id FOREIGN KEY (lab)
+  REFERENCES lab (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+CHARACTER SET utf8
+COLLATE utf8_general_ci;  
