@@ -45,6 +45,8 @@ public class Order extends AbstractEntity {
     private int production;
     @Column(name="forward_state")
     private int forward_state;
+    @Column(name="clean_fs")
+    private boolean clean_fs;
     
     
     /*
@@ -247,6 +249,12 @@ public class Order extends AbstractEntity {
 	}
 	public void setForward_state(int forward_state) {
 		this.forward_state = forward_state;
+	}
+	public boolean isClean_fs() {
+		return clean_fs;
+	}
+	public void setClean_fs(boolean clean_fs) {
+		this.clean_fs = clean_fs;
 	}
     
 

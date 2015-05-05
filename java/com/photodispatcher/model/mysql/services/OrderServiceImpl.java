@@ -739,4 +739,23 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		return result;
 	}
 
+	@Override
+	public SelectResult<Order> load4CleanFS(int source, int state, int days, int limit){
+		String sql="SELECT o.* FROM orders o"+
+					" WHERE o.source = ? AND o.state >= ? AND o.state_date <= DATE_SUB(CURDATE(), INTERVAL ? DAY) AND o.clean_fs = 0" +
+		    		" LIMIT "+Integer.toString(limit);
+		return runSelect(Order.class, sql, source, state, days );
+	}
+
+	@Override
+	public SqlResult markCleanFS(String[] ids){
+		SqlResult result= new SqlResult();
+		String sql="UPDATE orders o SET clean_fs=1 WHERE o.id=?";
+		for (String id : ids){
+			result=runDML(sql, id);
+			if(!result.isComplete()) break;
+		}
+		return result;
+	}
+
 }

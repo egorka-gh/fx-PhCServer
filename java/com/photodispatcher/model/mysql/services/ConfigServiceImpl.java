@@ -28,6 +28,11 @@ public class ConfigServiceImpl extends AbstractDAO implements ConfigService {
 	}
 
 	@Override
+	public SqlResult saveConfig(AppConfig cofig){
+		return runUpdate(cofig);
+	}
+
+	@Override
 	public SelectResult<Staff> loadStaff(){
 		String sql="SELECT s.*, g.name staff_group_name"+
 					" FROM staff s"+

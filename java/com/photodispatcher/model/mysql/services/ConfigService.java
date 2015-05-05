@@ -30,5 +30,6 @@ public interface ConfigService {
 	SqlResult persistRackTypes(List<RackType> items);
 	SelectResult<RackTechPoint> loadRackTPoint(List<Integer> tpTypes);
 	SqlResult persistRackTPoint(List<RackTechPoint> items);
+	SqlResult saveConfig(AppConfig cofig);
 
 }

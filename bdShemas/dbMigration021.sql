@@ -333,3 +333,13 @@ CREATE TABLE lab_profile (
 ENGINE = INNODB
 CHARACTER SET utf8
 COLLATE utf8_general_ci;  
+
+ALTER TABLE orders
+  ADD COLUMN clean_fs TINYINT(1) DEFAULT 0 AFTER forward_state;
+  
+ALTER TABLE app_config
+  ADD COLUMN clean_fs TINYINT(1) DEFAULT 0 AFTER production,
+  ADD COLUMN clean_fs_state INT(5) DEFAULT 0 AFTER clean_fs,
+  ADD COLUMN clean_fs_days INT(5) DEFAULT 0 AFTER clean_fs_state,
+  ADD COLUMN clean_fs_limit INT(5) DEFAULT 500 AFTER clean_fs_days;
+  

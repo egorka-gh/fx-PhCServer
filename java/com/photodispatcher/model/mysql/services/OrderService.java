@@ -38,4 +38,6 @@ public interface OrderService {
 	public SelectResult<Order> loadOrder4Otk(String id, String sub_id);
 	public DmlResult<OrderExtraInfo> persistExtraInfo(OrderExtraInfo info);
 	SqlResult cancelOrders(String[] ids, int state);
+	SelectResult<Order> load4CleanFS(int source, int state, int days, int limit);
+	SqlResult markCleanFS(String[] ids);
 }
