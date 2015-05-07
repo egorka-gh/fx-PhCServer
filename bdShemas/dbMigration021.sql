@@ -342,4 +342,7 @@ ALTER TABLE app_config
   ADD COLUMN clean_fs_state INT(5) DEFAULT 0 AFTER clean_fs,
   ADD COLUMN clean_fs_days INT(5) DEFAULT 0 AFTER clean_fs_state,
   ADD COLUMN clean_fs_limit INT(5) DEFAULT 500 AFTER clean_fs_days;
+
+ALTER TABLE app_config
+  ADD COLUMN clean_fs_hour TINYINT(2) DEFAULT 0 AFTER clean_fs_limit;  
   

@@ -22,6 +22,8 @@ public class AppConfig extends AbstractEntity {
     private int clean_fs_days;
     @Column(name="clean_fs_limit")
     private int clean_fs_limit;
+    @Column(name="clean_fs_hour")
+    private int clean_fs_hour;
 
     //ref name
     @Column(name="production_name", updatable=false, insertable=false)
@@ -82,6 +84,14 @@ public class AppConfig extends AbstractEntity {
 
 	public void setClean_fs_limit(int clean_fs_limit) {
 		this.clean_fs_limit = clean_fs_limit;
+	}
+
+	public int getClean_fs_hour() {
+		return clean_fs_hour;
+	}
+
+	public void setClean_fs_hour(int clean_fs_hour) {
+		this.clean_fs_hour = clean_fs_hour;
 	}
 
 }
