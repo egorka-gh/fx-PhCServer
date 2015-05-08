@@ -24,6 +24,10 @@ public class AppConfig extends AbstractEntity {
     private int clean_fs_limit;
     @Column(name="clean_fs_hour")
     private int clean_fs_hour;
+    @Column(name="clean_nr_days")
+    private int clean_nr_days;
+    @Column(name="pdf_quality")
+    private int pdf_quality;
 
     //ref name
     @Column(name="production_name", updatable=false, insertable=false)
@@ -92,6 +96,22 @@ public class AppConfig extends AbstractEntity {
 
 	public void setClean_fs_hour(int clean_fs_hour) {
 		this.clean_fs_hour = clean_fs_hour;
+	}
+
+	public int getClean_nr_days() {
+		return clean_nr_days;
+	}
+
+	public void setClean_nr_days(int clean_nr_days) {
+		this.clean_nr_days = clean_nr_days;
+	}
+
+	public int getPdf_quality() {
+		return pdf_quality;
+	}
+
+	public void setPdf_quality(int pdf_quality) {
+		this.pdf_quality = pdf_quality;
 	}
 
 }

@@ -749,11 +749,16 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 
 	@Override
 	public SqlResult markCleanFS(String[] ids){
+		//TODO refactor batch update?
 		SqlResult result= new SqlResult();
 		String sql="UPDATE orders o SET clean_fs=1 WHERE o.id=?";
+
 		for (String id : ids){
+			runDML(sql, id);
+			/* ignore errs 
 			result=runDML(sql, id);
 			if(!result.isComplete()) break;
+			*/
 		}
 		return result;
 	}

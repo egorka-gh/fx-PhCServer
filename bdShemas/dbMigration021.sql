@@ -1,4 +1,5 @@
--- main 2015-04-13
+-- main 2015-05-08
+-- reserv 2015-05-08
 -- moskva 
 -- valichek
 
@@ -345,4 +346,7 @@ ALTER TABLE app_config
 
 ALTER TABLE app_config
   ADD COLUMN clean_fs_hour TINYINT(2) DEFAULT 0 AFTER clean_fs_limit;  
-  
+
+ALTER TABLE app_config
+  ADD COLUMN clean_nr_days INT(5) DEFAULT 0 AFTER clean_fs_hour,
+  ADD COLUMN pdf_quality INT(5) DEFAULT 95 AFTER clean_nr_days;  
