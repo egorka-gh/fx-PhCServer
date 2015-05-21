@@ -490,7 +490,16 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		}
 		return result;
 	}
-	
+
+	@Override
+	public SelectResult<PrintGroup> loadReprintsByPG(String pgId){
+		String sql="SELECT pg1.*"+
+					 " FROM print_group pg"+
+					   " INNER JOIN print_group pg1 ON pg.order_id = pg1.order_id"+
+					 " WHERE pg.id = ? AND pg1.is_reprint = 1 AND pg.id = pg1.reprint_id";
+		return runSelect(PrintGroup.class,sql, pgId);
+	}
+
 	@Override
 	public DmlResult<Order> addManual(Order order){
 		return runInsert(order);

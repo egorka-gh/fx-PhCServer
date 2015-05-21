@@ -40,4 +40,5 @@ public interface OrderService {
 	SqlResult cancelOrders(String[] ids, int state);
 	SelectResult<Order> load4CleanFS(int source, int state, int days, int limit);
 	SqlResult markCleanFS(String[] ids);
+	SelectResult<PrintGroup> loadReprintsByPG(String pgId);
 }
