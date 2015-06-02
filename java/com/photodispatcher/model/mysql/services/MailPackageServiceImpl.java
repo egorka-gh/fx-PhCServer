@@ -10,6 +10,7 @@ import org.sansorm.SqlClosureElf;
 import org.springframework.stereotype.Service;
 
 import com.photodispatcher.model.mysql.ConnectionFactory;
+import com.photodispatcher.model.mysql.entities.DeliveryType;
 import com.photodispatcher.model.mysql.entities.DeliveryTypeDictionary;
 import com.photodispatcher.model.mysql.entities.MailPackage;
 import com.photodispatcher.model.mysql.entities.MailPackageBarcode;
@@ -331,6 +332,16 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	}
 
 	@Override
+	public SelectResult<DeliveryType> loadDeliveryType(){
+		String sql="SELECT * FROM delivery_type dt WHERE dt.id!=0" ;
+		return runSelect(DeliveryType.class,sql);
+	}
+	@Override
+	public SqlResult persistsDeliveryTypeBatch(List<DeliveryType> items){
+		return runUpdateBatch(items);
+	}
+
+	@Override
 	public SelectResult<DeliveryTypeDictionary> loadDeliveryTypeDictionar4Edit(int source){
 		String sql="SELECT s.id source, dt.id delivery_type, IFNULL(dtd.site_id, 0) site_id, dt.name delivery_type_name, s.name source_name"+
 					 " FROM sources s"+
@@ -342,7 +353,7 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	}
 	
 	@Override
-	public SqlResult persistsDeliveryTypeBatch(List<DeliveryTypeDictionary> items){
+	public SqlResult persistsDeliveryTypeDictionaryBatch(List<DeliveryTypeDictionary> items){
 		List<DeliveryTypeDictionary> updateList= new ArrayList<DeliveryTypeDictionary>();
 		for(DeliveryTypeDictionary item : items){
 			if(item.getSite_id()>0){

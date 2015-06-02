@@ -15,6 +15,8 @@ public class DeliveryType extends AbstractEntity {
     private int id;
     @Column(name="name")
     private String name;
+    @Column(name="hideClient")
+    private boolean hideClient;
     
 	public int getId() {
 		return id;
@@ -27,6 +29,12 @@ public class DeliveryType extends AbstractEntity {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public boolean isHideClient() {
+		return hideClient;
+	}
+	public void setHideClient(boolean hideClient) {
+		this.hideClient = hideClient;
 	}
 
 }

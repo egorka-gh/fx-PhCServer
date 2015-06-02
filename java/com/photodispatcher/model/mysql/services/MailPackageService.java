@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.granite.messaging.service.annotations.RemoteDestination;
 
+import com.photodispatcher.model.mysql.entities.DeliveryType;
 import com.photodispatcher.model.mysql.entities.DeliveryTypeDictionary;
 import com.photodispatcher.model.mysql.entities.MailPackage;
 import com.photodispatcher.model.mysql.entities.Order;
@@ -21,7 +22,6 @@ public interface MailPackageService {
 	SelectResult<Order> loadChildOrders(int source, int id);
 	SelectResult<MailPackage> load(int source, int id);
 	SelectResult<MailPackage> loadByClient(int source, int client);
-	SqlResult persistsDeliveryTypeBatch(List<DeliveryTypeDictionary> items);
 	SelectResult<DeliveryTypeDictionary> loadDeliveryTypeDictionar4Edit(int source);
 	SelectResult<DeliveryTypeDictionary> loadDeliveryTypeDictionary();
 	SqlResult join(int source, int targetId, List<Integer> joinIds);
@@ -39,5 +39,8 @@ public interface MailPackageService {
 	SelectResult<RackSpace> inventorySpaces(int rack);
 	SelectResult<RackOrdersLog> loadOrderSpacesHistory(String order);
 	SelectResult<RackOrders> inventoryRackOrders(int rack);
+	SqlResult persistsDeliveryTypeDictionaryBatch(List<DeliveryTypeDictionary> items);
+	SelectResult<DeliveryType> loadDeliveryType();
+	SqlResult persistsDeliveryTypeBatch(List<DeliveryType> items);
 	
 }

@@ -350,3 +350,7 @@ ALTER TABLE app_config
 ALTER TABLE app_config
   ADD COLUMN clean_nr_days INT(5) DEFAULT 0 AFTER clean_fs_hour,
   ADD COLUMN pdf_quality INT(5) DEFAULT 95 AFTER clean_nr_days;  
+
+ALTER TABLE delivery_type
+  ADD COLUMN hideClient TINYINT(1) DEFAULT 0 AFTER name;
+  
