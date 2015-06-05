@@ -36,9 +36,13 @@ public interface OrderService {
 	public SelectResult<SubOrder> loadSubOrderByOrder(String orderId, String code);
 	public SelectResult<SubOrder> loadSubOrdersOtk();
 	public SelectResult<Order> loadOrder4Otk(String id, String sub_id);
-	public DmlResult<OrderExtraInfo> persistExtraInfo(OrderExtraInfo info);
+	public SqlResult persistExtraInfo(OrderExtraInfo info);
 	SqlResult cancelOrders(String[] ids, int state);
 	SelectResult<Order> load4CleanFS(int source, int state, int days, int limit);
 	SqlResult markCleanFS(String[] ids);
 	SelectResult<PrintGroup> loadReprintsByPG(String pgId);
+	SqlResult saveVsSuborders(Order order);
+	SqlResult captureState(Order order);
+	SqlResult getLock(String key, String owner);
+	SqlResult releaseLock(String key);
 }

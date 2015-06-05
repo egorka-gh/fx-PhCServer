@@ -506,9 +506,11 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	@Override
-	public DmlResult<OrderExtraInfo> persistExtraInfo(OrderExtraInfo info){
-		DmlResult<OrderExtraInfo> result= new DmlResult<OrderExtraInfo>();
+	public SqlResult persistExtraInfo(OrderExtraInfo info){
+		//DmlResult<OrderExtraInfo> result= new DmlResult<OrderExtraInfo>();
+		SqlResult result= new SqlResult();
 		if(info==null) return result;
+		/*
 		if(info.getPersistState()==0){
 			//insert 
 			result=runInsert(info);
@@ -516,6 +518,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			//update
 			result=runUpdate(info);
 		}
+		*/
+		result=runInsertOrUpdate(info);
 		if(result.isComplete() && info.getMessagesLog()!=null){
 			//SqlResult subres=runInsertBatch(info.getMessagesLog());
 			SqlResult subres=runInesrtUpdateBatch(info.getMessagesLog());
@@ -528,7 +532,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	public SqlResult fillUpOrder(Order order){
 		SqlResult result= new SqlResult();
 		if(order==null) return result;
-		if(order.getState()<199){
+		if(order.getState()<170){
 			result.setComplete(false);
 			result.setErrMesage("Не допустимый статус");
 			return result;
@@ -587,15 +591,85 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			//update order
 			OrmElf.updateObject(connection, order);
 			//add subOrders
-			OrmElf.insertListBatched(connection, subOrders);
+			//OrmElf.insertListBatched(connection, subOrders);
+			OrmElf.insertOrUpdateListBatched(connection, subOrders);
 			//add extra info
-			OrmElf.insertListBatched(connection, einfos);
+			OrmElf.insertOrUpdateListBatched(connection, einfos);
 			//add extra messages
-			OrmElf.insertListBatched(connection, emsg);
+			OrmElf.insertOrUpdateListBatched(connection, emsg);
 			//add printGroups
 			OrmElf.insertListBatched(connection, printGroups);
 			//add files
 			OrmElf.insertListBatched(connection, pgFiles);
+			//attempt to commit
+			connection.commit();
+		} catch (SQLException e) {
+			result.setComplete(false);
+			result.setErrCode(e.getErrorCode());
+			result.setErrMesage(e.getMessage());
+			e.printStackTrace();
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}finally{
+			if(connection!=null){
+				try {
+					connection.setAutoCommit(true);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			SqlClosureElf.quietClose(connection);
+		}
+		
+		return result;
+	}
+
+	@Override
+	public SqlResult saveVsSuborders(Order order){
+		SqlResult result= new SqlResult();
+		if(order==null) return result;
+
+		List<OrderExtraInfo> einfos = new ArrayList<OrderExtraInfo>();
+		List<OrderExtraMessage> emsg = new ArrayList<OrderExtraMessage>();
+		List<SubOrder> subOrders = new ArrayList<SubOrder>();
+		
+		//fill lists
+		if(order.getExtraInfo()!=null){
+			order.getExtraInfo().setId(order.getId());
+			order.getExtraInfo().setSub_id("");
+			einfos.add(order.getExtraInfo());
+			if(order.getExtraInfo().getMessagesLog()!=null) emsg.addAll(order.getExtraInfo().getMessagesLog());
+		}
+		if(order.getSuborders()!=null && !order.getSuborders().isEmpty()){
+			for (SubOrder so : order.getSuborders()){
+				so.setOrder_id(order.getId());
+				if(so.getExtraInfo()!=null){
+					so.getExtraInfo().setId(order.getId());
+					so.getExtraInfo().setSub_id(so.getSub_id());
+					einfos.add(so.getExtraInfo());
+					if(so.getExtraInfo().getMessagesLog()!=null) emsg.addAll(so.getExtraInfo().getMessagesLog());
+				}
+				subOrders.add(so);
+			}
+		}
+		
+		//run in transaction
+		Connection connection = null;
+		try {
+			connection=ConnectionFactory.getConnection();
+			connection.setAutoCommit(false);
+			//update order
+			OrmElf.updateObject(connection, order);
+			//add subOrders
+			//OrmElf.insertListBatched(connection, subOrders);
+			OrmElf.insertOrUpdateListBatched(connection, subOrders);
+			//add extra info
+			OrmElf.insertOrUpdateListBatched(connection, einfos);
+			//add extra messages
+			OrmElf.insertOrUpdateListBatched(connection, emsg);
 			//attempt to commit
 			connection.commit();
 		} catch (SQLException e) {
@@ -772,4 +846,47 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		return result;
 	}
 
+	@Override
+	public SqlResult captureState(Order order){
+		SqlResult result= new SqlResult();
+		String sql="UPDATE orders o SET o.state=?, o.state_date=? WHERE o.id=? AND o.state<?";
+		Connection connection = null;
+		boolean updated=false;
+		try {
+			connection=ConnectionFactory.getConnection();
+			updated=OrmWriter.executeUpdate(connection, sql, order.getState(), order.getState_date(), order.getId(), order.getState())>0;
+		} catch (SQLException e){
+			result.setComplete(false);
+			result.setErrCode(e.getErrorCode());
+			result.setErrMesage(e.getMessage());
+			updated=false;
+		}finally{
+			SqlClosureElf.quietClose(connection);
+		}
+		
+		if(updated){
+			result.setResultCode(order.getState());
+		}else{
+			result.setResultCode(0);
+		}
+		
+		return result;
+	}
+
+	@Override
+	public SqlResult getLock(String key, String owner){
+		//PROCEDURE lock_get (IN pkey varchar(100), IN powner varchar(50))
+		String sql= "{CALL lock_get( ?, ?)}";
+		SqlResult result=runCall(sql, key, owner);
+		if(result.isComplete()) result.setResultCode(1);
+		return result;
+	}
+
+	@Override
+	public SqlResult releaseLock(String key){
+		//PROCEDURE PROCEDURE lock_release (IN pkey varchar(100))
+		String sql= "{CALL lock_release (?)}";
+		return runCall(sql, key);
+	}
+	
 }

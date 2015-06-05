@@ -47,6 +47,8 @@ public class Order extends AbstractEntity {
     private int forward_state;
     @Column(name="clean_fs")
     private boolean clean_fs;
+    @Column(name="resume_load")
+    private boolean resume_load;
     
     
     /*
@@ -255,6 +257,12 @@ public class Order extends AbstractEntity {
 	}
 	public void setClean_fs(boolean clean_fs) {
 		this.clean_fs = clean_fs;
+	}
+	public boolean isResume_load() {
+		return resume_load;
+	}
+	public void setResume_load(boolean resume_load) {
+		this.resume_load = resume_load;
 	}
     
 
