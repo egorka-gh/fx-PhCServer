@@ -45,4 +45,5 @@ public interface OrderService {
 	SqlResult captureState(Order order);
 	SqlResult getLock(String key, String owner);
 	SqlResult releaseLock(String key);
+	SqlResult setState(Order order);
 }

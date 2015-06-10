@@ -10,9 +10,7 @@ UPDATE order_state
 SET id = 150, runtime = 0
 WHERE id = 114;
 
-UPDATE order_state
-SET id = 180, runtime = 1
-WHERE id = 140;
+UPDATE order_state SET id = 180, runtime = 1 WHERE id = 140;
 
 DELETE FROM order_state
 WHERE id IN(124,125);
@@ -32,9 +30,7 @@ UPDATE order_state
 SET id = 165
 WHERE id = 120;
 
-UPDATE order_state
-SET id = 130
-WHERE id = 113;
+UPDATE order_state SET id = 130 WHERE id = 113;
 
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(140, 'Цветокоррекция', 0, 0, 0, 0);
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (120, 'Ошибка загрузки', 0, 0, 0, 0);

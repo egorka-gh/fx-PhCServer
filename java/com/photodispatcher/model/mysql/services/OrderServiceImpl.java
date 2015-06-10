@@ -553,6 +553,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		if(order.getSuborders()!=null && !order.getSuborders().isEmpty()){
 			for (SubOrder so : order.getSuborders()){
 				so.setOrder_id(order.getId());
+				so.setState(order.getState());
+				so.setState_date(order.getState_date());
 				if(so.getExtraInfo()!=null){
 					so.getExtraInfo().setId(order.getId());
 					so.getExtraInfo().setSub_id(so.getSub_id());
@@ -565,6 +567,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		if(order.getPrintGroups()!=null && !order.getPrintGroups().isEmpty()){
 			for (PrintGroup pg : order.getPrintGroups()){
 				pg.setOrder_id(order.getId());
+				pg.setState(order.getState());
+				pg.setState_date(order.getState_date());
 				printGroups.add(pg);
 				if(pg.getFiles()!=null){
 					for(PrintGroupFile pgFile : pg.getFiles()){
@@ -844,6 +848,12 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			*/
 		}
 		return result;
+	}
+
+	@Override
+	public SqlResult setState(Order order){
+		String sql="UPDATE orders o SET o.state=?, o.state_date=? WHERE o.id=?";
+		return runDML(sql, order.getState(), order.getState_date(), order.getId());
 	}
 
 	@Override
