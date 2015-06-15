@@ -44,6 +44,8 @@ public interface OrderService {
 	SqlResult saveVsSuborders(Order order);
 	SqlResult captureState(Order order);
 	SqlResult getLock(String key, String owner);
-	SqlResult releaseLock(String key);
 	SqlResult setState(Order order);
+	SqlResult releaseLock(String key, String owner);
+	SqlResult clearLocks();
+	SqlResult setStateBatch(List<Order> orders);
 }

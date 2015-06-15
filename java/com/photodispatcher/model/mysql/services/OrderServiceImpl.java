@@ -857,6 +857,11 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	@Override
+	public SqlResult setStateBatch(List<Order> orders){
+		return runUpdateBatch(orders);
+	}
+
+	@Override
 	public SqlResult captureState(Order order){
 		SqlResult result= new SqlResult();
 		String sql="UPDATE orders o SET o.state=?, o.state_date=? WHERE o.id=? AND o.state<?";
@@ -893,10 +898,17 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	@Override
-	public SqlResult releaseLock(String key){
+	public SqlResult releaseLock(String key, String owner){
 		//PROCEDURE PROCEDURE lock_release (IN pkey varchar(100))
-		String sql= "{CALL lock_release (?)}";
-		return runCall(sql, key);
+		String sql= "{CALL lock_release (?, ?)}";
+		return runCall(sql, key, owner);
 	}
-	
+
+	@Override
+	public SqlResult clearLocks(){
+		//PROCEDURE lock_clear()
+		String sql= "{CALL lock_clear()}";
+		return runCall(sql);
+	}
+
 }

@@ -44,8 +44,8 @@ UPDATE order_state
 SET id = 104
 WHERE id = 106;
 
-INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (105, 'В очереди на загрузку', 0, 0, 0, 0);
-INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (157, 'В очереди на подготовку', 0, 0, 0, 0);
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (105, 'Заблокирован для загрузки', 0, 0, 0, 0);
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (157, 'Заблокирован для подготовки', 0, 0, 0, 0);
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(-321, 'Блокирован другим процессом', 0, 0, 0, 0);
 
 ALTER TABLE orders
@@ -363,14 +363,33 @@ DELIMITER $$
 
 DROP PROCEDURE IF EXISTS lock_release$$
 
-CREATE 
-PROCEDURE lock_release (IN pkey varchar(100))
+CREATE
+PROCEDURE lock_release (IN pkey varchar(100), IN powner varchar(50))
+MODIFIES SQL DATA
 BEGIN
 
   DELETE
     FROM app_locks
-  WHERE lock_key = pkey;
+  WHERE lock_key = pkey
+    AND (lock_owner = powner
+    OR lock_time < (NOW() - INTERVAL 10 MINUTE));
 
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS lock_clear$$
+
+CREATE
+PROCEDURE lock_clear ()
+MODIFIES SQL DATA
+BEGIN
+  DELETE
+    FROM app_locks
+  WHERE lock_time < (NOW() - INTERVAL 10 MINUTE);
 END
 $$
 
