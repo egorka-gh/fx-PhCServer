@@ -48,4 +48,6 @@ public interface OrderService {
 	SqlResult releaseLock(String key, String owner);
 	SqlResult clearLocks();
 	SqlResult setStateBatch(List<Order> orders);
+	SelectResult<Order> loadDownloadErrs();
+	SelectResult<Order> loadBuildErrs();
 }

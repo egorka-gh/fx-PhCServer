@@ -89,7 +89,31 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		}
 		return runSelect(Order.class, sql, stateFrom, stateTo);
 	}
-	
+
+	@Override
+	public SelectResult<Order> loadDownloadErrs(){
+		//lock (105) and lock time > 1 hour or err (120)
+		String sql="SELECT o.*, s.name source_name, os.name state_name"+
+					" FROM orders o"+
+					" INNER JOIN order_state os ON o.state = os.id"+
+					" INNER JOIN sources s ON o.source = s.id"+
+					" WHERE o.state IN(105,120) AND (o.state=120 OR o.state_date < (NOW() - INTERVAL 1 HOUR))"+
+					" ORDER BY o.state_date";
+		return runSelect(Order.class, sql);
+	}
+
+	@Override
+	public SelectResult<Order> loadBuildErrs(){
+		//lock (157) and lock time > 1 hour or err (170)
+		String sql="SELECT o.*, s.name source_name, os.name state_name"+
+					" FROM orders o"+
+					" INNER JOIN order_state os ON o.state = os.id"+
+					" INNER JOIN sources s ON o.source = s.id"+
+					" WHERE o.state IN(157,170) AND (o.state=170 OR o.state_date < (NOW() - INTERVAL 1 HOUR))"+
+					" ORDER BY o.state_date";
+		return runSelect(Order.class, sql);
+	}
+
 	@Override
 	public SelectResult<Order> loadOrder(String id){
 		SelectResult<Order> result;
