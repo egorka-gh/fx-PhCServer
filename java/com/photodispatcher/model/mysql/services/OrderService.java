@@ -42,7 +42,6 @@ public interface OrderService {
 	SqlResult markCleanFS(String[] ids);
 	SelectResult<PrintGroup> loadReprintsByPG(String pgId);
 	SqlResult saveVsSuborders(Order order);
-	SqlResult captureState(Order order);
 	SqlResult getLock(String key, String owner);
 	SqlResult setState(Order order);
 	SqlResult releaseLock(String key, String owner);
@@ -50,4 +49,5 @@ public interface OrderService {
 	SqlResult setStateBatch(List<Order> orders);
 	SelectResult<Order> loadDownloadErrs();
 	SelectResult<Order> loadBuildErrs();
+	SqlResult captureState(String orderId, int fromState, int toState);
 }

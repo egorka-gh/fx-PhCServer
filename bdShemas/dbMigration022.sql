@@ -2,6 +2,7 @@
 -- moskva 
 -- reserv 
 -- valichek
+-- poligon
 
 SET NAMES 'utf8';
 SET SESSION sql_mode='NO_AUTO_VALUE_ON_ZERO';
@@ -44,9 +45,10 @@ UPDATE order_state
 SET id = 104
 WHERE id = 106;
 
-INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (105, 'В очереди на загрузку', 0, 0, 0, 0);
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (105, 'Заблокирован для загрузки', 0, 0, 0, 0);
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (157, 'Заблокирован для подготовки', 0, 0, 0, 0);
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(-321, 'Блокирован другим процессом', 0, 0, 0, 0);
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (-322, 'Не верный статус', 1, 0, 0, 0);
 
 ALTER TABLE orders
   ADD COLUMN resume_load TINYINT(1) DEFAULT 0 AFTER clean_fs;
@@ -208,7 +210,7 @@ main:
           WHERE o.id = t.id
             AND o.data_ts IS NOT NULL
             AND o.data_ts != o.data_ts
-            AND o.state BETWEEN 199 AND 200);
+            AND o.state BETWEEN 120 AND 200);
 
       -- finde reload candidate vs sync cancel (state=505)
       UPDATE tmp_orders t

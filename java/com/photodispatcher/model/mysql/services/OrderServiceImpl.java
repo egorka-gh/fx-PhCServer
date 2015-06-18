@@ -886,14 +886,14 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	@Override
-	public SqlResult captureState(Order order){
+	public SqlResult captureState(String orderId, int fromState, int toState){
 		SqlResult result= new SqlResult();
-		String sql="UPDATE orders o SET o.state=?, o.state_date=? WHERE o.id=? AND o.state<?";
+		String sql="UPDATE orders o SET o.state=?, o.state_date=? WHERE o.id=? AND o.state=?";
 		Connection connection = null;
 		boolean updated=false;
 		try {
 			connection=ConnectionFactory.getConnection();
-			updated=OrmWriter.executeUpdate(connection, sql, order.getState(), order.getState_date(), order.getId(), order.getState())>0;
+			updated=OrmWriter.executeUpdate(connection, sql, toState, new Date(), orderId, fromState)>0;
 		} catch (SQLException e){
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
@@ -904,7 +904,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		}
 		
 		if(updated){
-			result.setResultCode(order.getState());
+			result.setResultCode(toState);
 		}else{
 			result.setResultCode(0);
 		}
