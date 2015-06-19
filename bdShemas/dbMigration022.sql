@@ -334,6 +334,7 @@ CREATE TABLE app_locks (
   lock_key varchar(100) NOT NULL,
   lock_time datetime NOT NULL,
   lock_owner varchar(50) DEFAULT NULL,
+  lock_fixed tinyint(1) DEFAULT 0,
   PRIMARY KEY (lock_key)
 )
 ENGINE = INNODB
@@ -348,12 +349,7 @@ CREATE
 PROCEDURE lock_get (IN pkey varchar(100), IN powner varchar(50))
 MODIFIES SQL DATA
 BEGIN
-  -- lock stay alive 10 minutes
-  DELETE
-    FROM app_locks
-  WHERE lock_key = pkey
-    AND lock_time < (NOW() - INTERVAL 10 MINUTE);
-
+  CALL lock_release(pkey, powner);
   INSERT INTO app_locks (lock_key, lock_time, lock_owner)
     VALUES (pkey, NOW(), powner);
 END
@@ -369,12 +365,12 @@ CREATE
 PROCEDURE lock_release (IN pkey varchar(100), IN powner varchar(50))
 MODIFIES SQL DATA
 BEGIN
+  -- lock stay alive 10 minutes if not fixed
 
-  DELETE
-    FROM app_locks
-  WHERE lock_key = pkey
-    AND (lock_owner = powner
-    OR lock_time < (NOW() - INTERVAL 10 MINUTE));
+  DELETE FROM app_locks
+  WHERE lock_key = pkey 
+    AND (lock_owner=powner 
+          OR (lock_time < (NOW() - INTERVAL 10 MINUTE ) AND lock_fixed=0));
 
 END
 $$
@@ -389,9 +385,10 @@ CREATE
 PROCEDURE lock_clear ()
 MODIFIES SQL DATA
 BEGIN
-  DELETE
-    FROM app_locks
-  WHERE lock_time < (NOW() - INTERVAL 10 MINUTE);
+  -- remove all overdue not fixed locks
+  DELETE FROM app_locks
+  WHERE lock_time < (NOW() - INTERVAL 10 MINUTE)
+    AND lock_fixed = 0;
 END
 $$
 

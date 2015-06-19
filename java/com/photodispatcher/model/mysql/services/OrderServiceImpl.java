@@ -916,7 +916,9 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	public SqlResult getLock(String key, String owner){
 		//PROCEDURE lock_get (IN pkey varchar(100), IN powner varchar(50))
 		String sql= "{CALL lock_get( ?, ?)}";
+		hideTrace=true;
 		SqlResult result=runCall(sql, key, owner);
+		hideTrace=false;
 		if(result.isComplete()) result.setResultCode(1);
 		return result;
 	}

@@ -28,6 +28,8 @@ public abstract class AbstractDAO {
 
 	private static Logger logger = Logger.getLogger(AbstractDAO.class.getName());
 	
+	protected boolean hideTrace=false;
+	
 	protected <T> SelectResult<T> runSelect(final Class<T> type, final String sql, final Object...args){
 		final SelectResult<T> result= new SelectResult<T>();
 		
@@ -41,7 +43,7 @@ public abstract class AbstractDAO {
 					result.setErrCode(e.getErrorCode());
 					result.setErrMesage(e.getMessage());
 					result.setSql(sql);
-					e.printStackTrace();
+					if(!hideTrace) e.printStackTrace();
 					return null;
 				}
 			}
@@ -61,7 +63,7 @@ public abstract class AbstractDAO {
 					result.setComplete(false);
 					result.setErrCode(e.getErrorCode());
 					result.setErrMesage(e.getMessage());
-					e.printStackTrace();
+					if(!hideTrace) e.printStackTrace();
 					return null;
 				}
 			}
@@ -83,7 +85,7 @@ public abstract class AbstractDAO {
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
 			result.setErrMesage(e.getMessage());
-			e.printStackTrace();
+			if(!hideTrace) e.printStackTrace();
 		}finally{
 			SqlClosureElf.quietClose(connection);
 		}
@@ -101,7 +103,7 @@ public abstract class AbstractDAO {
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
 			result.setErrMesage(e.getMessage());
-			e.printStackTrace();
+			if(!hideTrace) e.printStackTrace();
 		}finally{
 			SqlClosureElf.quietClose(connection);
 		}
@@ -121,7 +123,7 @@ public abstract class AbstractDAO {
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
 			result.setErrMesage(e.getMessage());
-			e.printStackTrace();
+			if(!hideTrace) e.printStackTrace();
 		}finally{
 			SqlClosureElf.quietClose(connection);
 		}
@@ -168,18 +170,18 @@ public abstract class AbstractDAO {
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
 			result.setErrMesage(e.getMessage());
-			e.printStackTrace();
+			if(!hideTrace) e.printStackTrace();
 			try {
 				connection.rollback();
 			} catch (SQLException e1) {
-				e1.printStackTrace();
+				if(!hideTrace) e1.printStackTrace();
 			}
 		}finally{
 			if(connection!=null){
 				try {
 					connection.setAutoCommit(true);
 				} catch (SQLException e) {
-					e.printStackTrace();
+					if(!hideTrace) e.printStackTrace();
 				}
 			}
 			SqlClosureElf.quietClose(connection);
@@ -201,18 +203,18 @@ public abstract class AbstractDAO {
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
 			result.setErrMesage(e.getMessage());
-			e.printStackTrace();
+			if(!hideTrace) e.printStackTrace();
 			try {
 				connection.rollback();
 			} catch (SQLException e1) {
-				e1.printStackTrace();
+				if(!hideTrace) e1.printStackTrace();
 			}
 		}finally{
 			if(connection!=null){
 				try {
 					connection.setAutoCommit(true);
 				} catch (SQLException e) {
-					e.printStackTrace();
+					if(!hideTrace) e.printStackTrace();
 				}
 			}
 			SqlClosureElf.quietClose(connection);
@@ -234,18 +236,18 @@ public abstract class AbstractDAO {
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
 			result.setErrMesage(e.getMessage());
-			e.printStackTrace();
+			if(!hideTrace) e.printStackTrace();
 			try {
 				connection.rollback();
 			} catch (SQLException e1) {
-				e1.printStackTrace();
+				if(!hideTrace) e1.printStackTrace();
 			}
 		}finally{
 			if(connection!=null){
 				try {
 					connection.setAutoCommit(true);
 				} catch (SQLException e) {
-					e.printStackTrace();
+					if(!hideTrace) e.printStackTrace();
 				}
 			}
 			SqlClosureElf.quietClose(connection);
@@ -266,18 +268,18 @@ public abstract class AbstractDAO {
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
 			result.setErrMesage(e.getMessage());
-			e.printStackTrace();
+			if(!hideTrace) e.printStackTrace();
 			try {
 				connection.rollback();
 			} catch (SQLException e1) {
-				e1.printStackTrace();
+				if(!hideTrace) e1.printStackTrace();
 			}
 		}finally{
 			if(connection!=null){
 				try {
 					connection.setAutoCommit(true);
 				} catch (SQLException e) {
-					e.printStackTrace();
+					if(!hideTrace) e.printStackTrace();
 				}
 			}
 			SqlClosureElf.quietClose(connection);
@@ -296,7 +298,7 @@ public abstract class AbstractDAO {
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
 			result.setErrMesage(e.getMessage());
-			e.printStackTrace();
+			if(!hideTrace) e.printStackTrace();
 		}finally{
 			SqlClosureElf.quietClose(connection);
 		}
@@ -330,14 +332,14 @@ public abstract class AbstractDAO {
 						logger.severe("SQLException Code:"+e.getErrorCode()+"; Message:"+e.getMessage()+"; sql:"+sql);
 					}
 					i = MAX_RETRY_ATTEMPTS;
-					e.printStackTrace();
+					if(!hideTrace) e.printStackTrace();
 				}else{
 					//restart deadlock
 					logger.warning("Deadlock detected, attempt:"+i+"; Code:"+e.getErrorCode()+"; Message:"+e.getMessage()+"; sql:"+sql);
 					try {
 						Thread.sleep(RETRY_WAIT_TIME+random.nextInt(RETRY_WAIT_DEV));
 					} catch (InterruptedException e1) {
-						e1.printStackTrace();
+						if(!hideTrace) e1.printStackTrace();
 					}
 					logger.warning("Restart after deadlock.");
 				}
@@ -361,7 +363,7 @@ public abstract class AbstractDAO {
 					result.setErrCode(e.getErrorCode());
 					result.setErrMesage(e.getMessage());
 					result.setSql(sql);
-					e.printStackTrace();
+					if(!hideTrace) e.printStackTrace();
 					return null;
 				}
 			}
