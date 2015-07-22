@@ -49,5 +49,5 @@ public interface OrderService {
 	SqlResult setStateBatch(List<Order> orders);
 	SelectResult<Order> loadDownloadErrs();
 	SelectResult<Order> loadBuildErrs();
-	SqlResult captureState(String orderId, int fromState, int toState);
+	SqlResult captureState(String orderId, int fromState, int toState, String owner);
 }

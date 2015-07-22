@@ -1,4 +1,4 @@
--- main 
+-- main 2015-07-21 
 -- moskva 
 -- reserv 
 -- valichek
@@ -393,3 +393,8 @@ END
 $$
 
 DELIMITER ;
+
+-- main 2015-07-09
+INSERT INTO attr_synonym(src_type, attr_val, synonym) VALUES(4, 23, '15x20_');
+INSERT INTO attr_synonym(src_type, attr_val, synonym) VALUES(4, 29, '15x20_');
+-- main

@@ -50,6 +50,10 @@ public class Order extends AbstractEntity {
     @Column(name="resume_load")
     private boolean resume_load;
     
+    /* add !!!
+    @Column(name="lock_owner")
+    private String lock_ownerr;
+    */
     
     /*
     @Column(name="is_new")

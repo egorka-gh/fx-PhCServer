@@ -886,14 +886,15 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	@Override
-	public SqlResult captureState(String orderId, int fromState, int toState){
+	public SqlResult captureState(String orderId, int fromState, int toState, String owner){
 		SqlResult result= new SqlResult();
-		String sql="UPDATE orders o SET o.state=?, o.state_date=? WHERE o.id=? AND o.state=?";
+		String sql="UPDATE orders o SET o.state=?, o.state_date=?, o.lock_owner=? WHERE o.id=? AND o.state=?";
 		Connection connection = null;
+		Date dt=new Date();
 		boolean updated=false;
 		try {
 			connection=ConnectionFactory.getConnection();
-			updated=OrmWriter.executeUpdate(connection, sql, toState, new Date(), orderId, fromState)>0;
+			updated=OrmWriter.executeUpdate(connection, sql, toState, dt, owner, orderId, fromState)>0;
 		} catch (SQLException e){
 			result.setComplete(false);
 			result.setErrCode(e.getErrorCode());
@@ -902,13 +903,21 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		}finally{
 			SqlClosureElf.quietClose(connection);
 		}
-		
+
+		if(!updated && owner!= null && !owner.isEmpty()){
+			sql="SELECT o.id FROM orders o WHERE o.id=? AND o.state=? AND o.lock_owner=?";
+			SelectResult<Order> res=runSelect(Order.class, sql, orderId, toState, owner);
+			if(res.isComplete() && !res.getData().isEmpty()) updated=true;
+		}
+
 		if(updated){
 			result.setResultCode(toState);
 		}else{
 			result.setResultCode(0);
 		}
-		
+		//log
+		sql="INSERT IGNORE INTO log_capture (log_date, lock_key, lock_owner, from_state, to_state, result) VALUES(?,?,?,?,?,?)";
+		runDML(sql, dt, orderId, owner, fromState, toState, result.getResultCode());
 		return result;
 	}
 
@@ -920,6 +929,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		SqlResult result=runCall(sql, key, owner);
 		hideTrace=false;
 		if(result.isComplete()) result.setResultCode(1);
+		sql="INSERT IGNORE INTO log_capture (log_date, lock_key, lock_owner, result) VALUES(?, ?, ?, ?)";
+		runDML(sql, new Date(), key, owner, result.getResultCode());
 		return result;
 	}
 
@@ -934,7 +945,10 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	public SqlResult clearLocks(){
 		//PROCEDURE lock_clear()
 		String sql= "{CALL lock_clear()}";
-		return runCall(sql);
+		SqlResult res=runCall(sql);
+		sql="DELETE FROM log_capture WHERE log_date < DATE_SUB(CURDATE(), INTERVAL 10 DAY)";
+		runDML(sql);
+		return res;
 	}
 
 }

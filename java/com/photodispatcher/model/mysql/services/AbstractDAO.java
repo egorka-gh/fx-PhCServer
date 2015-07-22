@@ -329,7 +329,7 @@ public abstract class AbstractDAO {
 					if(e.getErrorCode()==1213){
 						logger.severe("Deadlock error attempt:"+i+"; Code:"+e.getErrorCode()+"; Message:"+e.getMessage()+"; sql:"+sql);
 					}else{
-						logger.severe("SQLException Code:"+e.getErrorCode()+"; Message:"+e.getMessage()+"; sql:"+sql);
+						if(!hideTrace) logger.severe("SQLException Code:"+e.getErrorCode()+"; Message:"+e.getMessage()+"; sql:"+sql);
 					}
 					i = MAX_RETRY_ATTEMPTS;
 					if(!hideTrace) e.printStackTrace();
