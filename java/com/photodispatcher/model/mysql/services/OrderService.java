@@ -24,7 +24,6 @@ public interface OrderService {
 	public SelectResult<OrderExtraInfo> loadExtraIfo(String id, String subId);
 	public SelectResult<Order> loadOrder(String id);
 	public DmlResult<Order> addManual(Order order);
-	public SqlResult cleanUpOrder(String id);
 	public SelectResult<Order> loadOrderBySrcCode(String code, String id);
 	public SqlResult fillUpOrder(Order order);
 	public SelectResult<OrderExtraInfo> loadExtraIfoByPG(String pgId);
@@ -50,4 +49,5 @@ public interface OrderService {
 	SelectResult<Order> loadDownloadErrs();
 	SelectResult<Order> loadBuildErrs();
 	SqlResult captureState(String orderId, int fromState, int toState, String owner);
+	SqlResult cleanUpOrder(String id, int state);
 }

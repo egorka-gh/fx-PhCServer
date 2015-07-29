@@ -832,10 +832,10 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	@Override
-	public SqlResult cleanUpOrder(String id){
-		//PROCEDURE orderCleanUp(IN pId VARCHAR(50))
-		String sql= "{CALL orderCleanUp(?)}";
-		return runCall(sql, id); 
+	public SqlResult cleanUpOrder(String id, int state){
+		//PROCEDURE orderCleanUp(IN pId varchar(50), IN pState int)
+		String sql= "{CALL orderCleanUp(?,?)}";
+		return runCall(sql, id, state); 
 	}
 
 	@Override

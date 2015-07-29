@@ -1,9 +1,12 @@
 package com.photodispatcher.model.mysql.entities;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Table(name = "book_pg_template")
 public class BookPgTemplate extends AbstractEntity {
@@ -108,6 +111,10 @@ public class BookPgTemplate extends AbstractEntity {
     private String correction_name;
     @Column(name="cutting_name", updatable=false, insertable=false)
     private String cutting_name;
+    
+    @Transient
+    private List<BookPgAltPaper> altPaper;
+
 	public int getId() {
 		return id;
 	}
@@ -389,6 +396,12 @@ public class BookPgTemplate extends AbstractEntity {
 	}
 	public void setLab_type_name(String lab_type_name) {
 		this.lab_type_name = lab_type_name;
+	}
+	public List<BookPgAltPaper> getAltPaper() {
+		return altPaper;
+	}
+	public void setAltPaper(List<BookPgAltPaper> altPaper) {
+		this.altPaper = altPaper;
 	}
 
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.photodispatcher.model.mysql.entities.BookPgAltPaper;
 import com.photodispatcher.model.mysql.entities.BookPgTemplate;
 import com.photodispatcher.model.mysql.entities.BookSynonym;
 import com.photodispatcher.model.mysql.entities.SelectResult;
@@ -23,10 +24,13 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 		if (result.isComplete()){
 			//load childs
 			for (BookSynonym item : result.getData()){
+				/*
 				sql="SELECT t.*"+
 					" FROM book_pg_template t"+
 					" WHERE t.book=?";
 				SelectResult<BookPgTemplate> childs=runSelect(BookPgTemplate.class, sql, item.getId());
+				*/
+				SelectResult<BookPgTemplate> childs=loadTemplates(item.getId());
 				if(childs.isComplete()){
 					item.setTemplates(childs.getData());
 				}else{
@@ -77,7 +81,27 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 					" INNER JOIN src_type st1 ON st1.id=pg.lab_type "+
 					" WHERE pg.book=?";
 		result=runSelect(BookPgTemplate.class, sql, book);
+		if(result.isComplete()){
+			for (BookPgTemplate item : result.getData()){
+				SelectResult<BookPgAltPaper> subRes=loadAltPaper(item.getId());
+				if(subRes.isComplete()){
+					item.setAltPaper(subRes.getData());
+				}else{
+					result.cloneError(subRes);
+					break;
+				}
+			}
+		}
 		return result;
+	}
+
+	private SelectResult<BookPgAltPaper> loadAltPaper(int template){
+		String sql="SELECT *, av.value paper_name, l.name interlayer_name"+
+					 " FROM book_pg_alt_paper ap"+
+					   " INNER JOIN attr_value av ON ap.paper = av.id"+
+					   " LEFT OUTER JOIN layerset l ON ap.interlayer = l.id"+
+					 " WHERE ap.template = ? ORDER BY ap.sh_from";
+		return runSelect(BookPgAltPaper.class, sql, template);
 	}
 
 	@Override
@@ -103,6 +127,9 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 		List<BookSynonym> updateList=new ArrayList<BookSynonym>();
 		List<BookPgTemplate> insertChildList=new ArrayList<BookPgTemplate>();
 		List<BookPgTemplate> updateChildList=new ArrayList<BookPgTemplate>();
+		List<BookPgAltPaper> insertAltPaperList=new ArrayList<BookPgAltPaper>();
+		List<BookPgAltPaper> updateAltPaperList=new ArrayList<BookPgAltPaper>();
+		List<BookPgAltPaper> delAltPaperList=new ArrayList<BookPgAltPaper>();
 
 		for(BookSynonym item : items){
 			if(item.getPersistState()==0){
@@ -117,6 +144,22 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 						insertChildList.add(child);
 					}else if(child.getPersistState()==-1){
 						updateChildList.add(child);
+						if(child.getAltPaper()!=null){
+							//alt papers
+							for(BookPgAltPaper ap : child.getAltPaper()){
+								//to delete
+								if((ap.getSh_from()==0 && ap.getSh_to()==0) || (ap.getPaper()==0 && ap.getInterlayer()==0)){
+									delAltPaperList.add(ap);
+								}else{
+									//to save
+									if(ap.getPersistState()==0){
+										insertAltPaperList.add(ap);
+									}else{
+										updateAltPaperList.add(ap);
+									}
+								}
+							}
+						}
 					}
 				}
 			}
@@ -133,6 +176,16 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 		if(result.isComplete() && !updateChildList.isEmpty()){
 			result=runUpdateBatch(updateChildList);
 		}
+		if(result.isComplete() && !insertAltPaperList.isEmpty()){
+			result=runInsertBatch(insertAltPaperList);
+		}
+		if(result.isComplete() && !updateAltPaperList.isEmpty()){
+			result=runUpdateBatch(updateAltPaperList);
+		}
+		if(result.isComplete() && !delAltPaperList.isEmpty()){
+			result=runDeleteBatch(delAltPaperList);
+		}
+
 		return result;
 	}
 

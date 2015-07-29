@@ -25,6 +25,8 @@ public class PrintGroupFile extends AbstractEntity {
     private int page_num;
     @Column(name="caption")
     private String caption;
+    @Column(name="book_part")
+    private int book_part;
 
 	//ref props
     @Column(name="path", insertable=false, updatable=false)
@@ -39,6 +41,8 @@ public class PrintGroupFile extends AbstractEntity {
     private String tech_state_name;
     @Column(name="tech_date", insertable=false, updatable=false)
     private String tech_date;
+    @Column(name="book_part_name", insertable=false, updatable=false)
+    private String book_part_name;
     
 	public int getId() {
 		return id;
@@ -117,6 +121,18 @@ public class PrintGroupFile extends AbstractEntity {
 	}
 	public void setTech_date(String tech_date) {
 		this.tech_date = tech_date;
+	}
+	public String getBook_part_name() {
+		return book_part_name;
+	}
+	public void setBook_part_name(String book_part_name) {
+		this.book_part_name = book_part_name;
+	}
+	public int getBook_part() {
+		return book_part;
+	}
+	public void setBook_part(int book_part) {
+		this.book_part = book_part;
 	}
     
 
