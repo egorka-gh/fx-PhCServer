@@ -26,7 +26,7 @@ ENGINE = INNODB
 AUTO_INCREMENT = 1
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
-
+-- main
 CREATE TABLE book_pg_alt_paper (
   id int(11) NOT NULL AUTO_INCREMENT,
   template int(7) DEFAULT NULL,
@@ -44,11 +44,11 @@ ENGINE = INNODB
 AUTO_INCREMENT = 1
 CHARACTER SET utf8
 COLLATE utf8_general_ci;
-
+-- main
 INSERT INTO book_part(id, name) VALUES (5, 'БлокОбложка');
-
+-- main
 ALTER TABLE print_group_file ADD COLUMN book_part TINYINT(2) DEFAULT 0 AFTER caption;
-
+-- main
 DELIMITER $$
 DROP PROCEDURE IF EXISTS orderCleanUp$$
 CREATE 
@@ -76,9 +76,9 @@ $$
 DELIMITER ;
 
 DELIMITER $$
-
+-- main
 DROP PROCEDURE IF EXISTS printStateCancel$$
-
+-- main
 CREATE 
 PROCEDURE printStateCancel(IN pPgroupId varchar(50))
   MODIFIES SQL DATA

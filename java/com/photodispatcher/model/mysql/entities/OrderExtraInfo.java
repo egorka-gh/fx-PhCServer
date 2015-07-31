@@ -59,6 +59,8 @@ public class OrderExtraInfo extends AbstractEntity {
     //ref
     @Column(name="book_type", updatable=false, insertable=false)
     private int book_type;
+    @Column(name="book_part", updatable=false, insertable=false)
+    private int book_part;
    
     //childs
     @Transient
@@ -195,6 +197,12 @@ public class OrderExtraInfo extends AbstractEntity {
 	}
 	public void setMessagesLog(List<OrderExtraMessage> messagesLog) {
 		this.messagesLog = messagesLog;
+	}
+	public int getBook_part() {
+		return book_part;
+	}
+	public void setBook_part(int book_part) {
+		this.book_part = book_part;
 	}
     
 }

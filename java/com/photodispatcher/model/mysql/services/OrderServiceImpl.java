@@ -97,7 +97,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 					" FROM orders o"+
 					" INNER JOIN order_state os ON o.state = os.id"+
 					" INNER JOIN sources s ON o.source = s.id"+
-					" WHERE o.state IN(105,120) AND (o.state=120 OR o.state_date < (NOW() - INTERVAL 1 HOUR))"+
+					" WHERE o.state IN(105,120) AND (o.state=120 OR o.state_date < (NOW() - INTERVAL 30 MINUTE))"+
 					" ORDER BY o.state_date";
 		return runSelect(Order.class, sql);
 	}
@@ -109,7 +109,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 					" FROM orders o"+
 					" INNER JOIN order_state os ON o.state = os.id"+
 					" INNER JOIN sources s ON o.source = s.id"+
-					" WHERE o.state IN(157,170) AND (o.state=170 OR o.state_date < (NOW() - INTERVAL 1 HOUR))"+
+					" WHERE o.state IN(157,170) AND (o.state=170 OR o.state_date < (NOW() - INTERVAL 30 MINUTE))"+
 					" ORDER BY o.state_date";
 		return runSelect(Order.class, sql);
 	}
@@ -499,7 +499,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 
 	@Override
 	public SelectResult<OrderExtraInfo> loadExtraIfoByPG(String pgId){
-		String sql="SELECT ei.*, pg.book_type"+
+		String sql="SELECT ei.*, pg.book_type, pg.book_part"+
 					" FROM print_group pg"+
 					" INNER JOIN order_extra_info ei ON pg.order_id=ei.id AND pg.sub_id=ei.sub_id"+
 					" WHERE pg.id=?";
