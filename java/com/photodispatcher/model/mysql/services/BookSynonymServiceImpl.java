@@ -127,6 +127,7 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 		List<BookSynonym> updateList=new ArrayList<BookSynonym>();
 		List<BookPgTemplate> insertChildList=new ArrayList<BookPgTemplate>();
 		List<BookPgTemplate> updateChildList=new ArrayList<BookPgTemplate>();
+		List<BookPgTemplate> deleteChildList=new ArrayList<BookPgTemplate>();
 		List<BookPgAltPaper> insertAltPaperList=new ArrayList<BookPgAltPaper>();
 		List<BookPgAltPaper> updateAltPaperList=new ArrayList<BookPgAltPaper>();
 		List<BookPgAltPaper> delAltPaperList=new ArrayList<BookPgAltPaper>();
@@ -140,22 +141,26 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 			//childs
 			if(item.getPersistState()!=0 && item.getTemplates()!=null){
 				for(BookPgTemplate child : item.getTemplates()){
-					if(child.getPersistState()==0){
+					if(child.getPersistState()==0 && child.getPaper()!=0){
 						insertChildList.add(child);
 					}else if(child.getPersistState()==-1){
-						updateChildList.add(child);
-						if(child.getAltPaper()!=null){
-							//alt papers
-							for(BookPgAltPaper ap : child.getAltPaper()){
-								//to delete
-								if((ap.getSh_from()==0 && ap.getSh_to()==0) || (ap.getPaper()==0 && ap.getInterlayer()==0)){
-									delAltPaperList.add(ap);
-								}else{
-									//to save
-									if(ap.getPersistState()==0){
-										insertAltPaperList.add(ap);
+						if(child.getPaper()==0){
+							deleteChildList.add(child);
+						}else{
+							updateChildList.add(child);
+							if(child.getAltPaper()!=null){
+								//alt papers
+								for(BookPgAltPaper ap : child.getAltPaper()){
+									//to delete
+									if((ap.getSh_from()==0 && ap.getSh_to()==0) || (ap.getPaper()==0 && ap.getInterlayer()==0)){
+										delAltPaperList.add(ap);
 									}else{
-										updateAltPaperList.add(ap);
+										//to save
+										if(ap.getPersistState()==0){
+											insertAltPaperList.add(ap);
+										}else{
+											updateAltPaperList.add(ap);
+										}
 									}
 								}
 							}
@@ -175,6 +180,9 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 		}
 		if(result.isComplete() && !updateChildList.isEmpty()){
 			result=runUpdateBatch(updateChildList);
+		}
+		if(result.isComplete() && !deleteChildList.isEmpty()){
+			result=runDeleteBatch(deleteChildList);
 		}
 		if(result.isComplete() && !insertAltPaperList.isEmpty()){
 			result=runInsertBatch(insertAltPaperList);
