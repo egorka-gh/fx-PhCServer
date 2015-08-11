@@ -35,6 +35,8 @@ public class SubOrder extends AbstractEntity {
     private int proj_type;
     @Column(name="alias")
     private String alias;
+    @Column(name="color_corr")
+    private boolean color_corr;
     
 	//ref
     @Column(name="src_type_name", insertable=false, updatable=false)
@@ -151,6 +153,12 @@ public class SubOrder extends AbstractEntity {
 	}
 	public void setAlias(String alias) {
 		this.alias = alias;
+	}
+	public boolean isColor_corr() {
+		return color_corr;
+	}
+	public void setColor_corr(boolean color_corr) {
+		this.color_corr = color_corr;
 	}
 
 }
