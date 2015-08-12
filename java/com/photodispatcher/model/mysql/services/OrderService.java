@@ -50,4 +50,5 @@ public interface OrderService {
 	SelectResult<Order> loadBuildErrs();
 	SqlResult captureState(String orderId, int fromState, int toState, String owner);
 	SqlResult cleanUpOrder(String id, int state);
+	SqlResult setSuborderState(SubOrder suborder);
 }

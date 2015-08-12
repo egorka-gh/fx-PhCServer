@@ -881,6 +881,13 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	@Override
+	public SqlResult setSuborderState(SubOrder suborder){
+		//PROCEDURE forwardSubOrderState(IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int, IN pDate datetime)
+		String sql= "{CALL forwardSubOrderState( ?, ?, ?, ?)}";
+		return runCall(sql, suborder.getOrder_id(), suborder.getSub_id(), suborder.getState(), suborder.getState_date());
+	}
+
+	@Override
 	public SqlResult setStateBatch(List<Order> orders){
 		return runUpdateBatch(orders);
 	}
