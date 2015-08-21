@@ -16,10 +16,10 @@ public class LabStopLog extends AbstractEntity {
 	@Column(name="id")
 	private int id;
 	
-	@Id
+	@Column(name="lab")
+	private int lab;
 	@Column(name="lab_device")
 	private int lab_device;
-	@Id
 	@Column(name="lab_stop_type")
 	private int lab_stop_type;
 	
@@ -108,6 +108,12 @@ public class LabStopLog extends AbstractEntity {
 
 	public void setTime_updated(Date time_updated) {
 		this.time_updated = time_updated;
+	}
+	public int getLab() {
+		return lab;
+	}
+	public void setLab(int lab) {
+		this.lab = lab;
 	}
 	
 }

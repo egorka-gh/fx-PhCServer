@@ -312,6 +312,7 @@ public abstract class AbstractDAO {
 		for (int i = 0; i < MAX_RETRY_ATTEMPTS; i++) {
 			try {
 				connection=ConnectionFactory.getConnection();
+				connection.setAutoCommit(false);
 				OrmWriter.executeCall(connection, sql, args);
 				if(i>0) logger.info("Complite after deadlock, attempt:"+i);
 				i = MAX_RETRY_ATTEMPTS;
@@ -344,6 +345,9 @@ public abstract class AbstractDAO {
 					logger.warning("Restart after deadlock.");
 				}
 			}finally{
+				try {
+					if(connection!=null) connection.setAutoCommit(true);
+				} catch (SQLException e) {}
 				SqlClosureElf.quietClose(connection);
 			}
 		}

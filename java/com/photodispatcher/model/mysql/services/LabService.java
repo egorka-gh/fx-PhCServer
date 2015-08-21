@@ -8,6 +8,7 @@ import org.granite.messaging.service.annotations.RemoteDestination;
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.Lab;
 import com.photodispatcher.model.mysql.entities.LabDevice;
+import com.photodispatcher.model.mysql.entities.LabMeter;
 import com.photodispatcher.model.mysql.entities.LabPrintCode;
 import com.photodispatcher.model.mysql.entities.LabStopLog;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
@@ -26,7 +27,8 @@ public interface LabService {
 	public SelectResult<LabDevice> delDevice(int deviceId, int sourceId);
 	public SelectResult<PrintGroup> getLastPGroupByTPoint(int techPontId);
 	public SelectResult<Lab> loadList();
-	public DmlResult<LabStopLog> logLabStop(LabStopLog log);
-	public DmlResult<LabStopLog> updateLabStop(LabStopLog log);
-	public SelectResult<LabStopLog> getLabStops(Date timeGapStart, Date timeGapEnd);
+	SelectResult<LabMeter> loadLabMeters();
+	SqlResult forwardLabMeter(int lab, int state, String printgroup);
+	SqlResult fixStopMeter(LabMeter meter);
+	SelectResult<LabStopLog> loadLabStops(Date timeGapStart, Date timeGapEnd);
 }

@@ -37,7 +37,7 @@ public class TechServiceImpl extends AbstractDAO implements TechService {
 	
 	@Override
 	public SelectResult<TechLog> loadTechPulse(int techPointType){
-		
+		//TODO refactor & kill 
 		String sql = "SELECT tl.*  " +
 				"FROM tech_log tl " +
 				"INNER JOIN " +
@@ -53,6 +53,13 @@ public class TechServiceImpl extends AbstractDAO implements TechService {
 		
 		return false;
 		
+	}
+
+	@Override
+	public SqlResult forwardMeterByTechPoint(int techPoint, String printgroup){
+		//PROCEDURE lab_meter_forward_tp(IN ptechpoint int(7), IN pprintgroup varchar(50))
+		String sql= "{CALL lab_meter_forward_tp(?, ?)}";
+		return runCall(sql, techPoint, printgroup);
 	}
 
 }

@@ -10,6 +10,7 @@ import com.photodispatcher.mail.SendMailByGoogle;
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.Lab;
 import com.photodispatcher.model.mysql.entities.LabDevice;
+import com.photodispatcher.model.mysql.entities.LabMeter;
 import com.photodispatcher.model.mysql.entities.LabPrintCode;
 import com.photodispatcher.model.mysql.entities.LabProfile;
 import com.photodispatcher.model.mysql.entities.LabRoll;
@@ -311,6 +312,7 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 		return runSelect(PrintGroup.class, sql, techPontId, techPontId);
 	}
 	
+	/*
 	@Override
 	public DmlResult<LabStopLog> logLabStop(LabStopLog log) {
 		// нужно проверить time_from на максимум time_to, для того чтобы интервалы не пересекались
@@ -342,9 +344,7 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	
 	@Override
 	public DmlResult<LabStopLog> updateLabStop(LabStopLog log) {
-		
 		return runUpdate(log);
-		
 	}
 	
 	@Override
@@ -358,5 +358,60 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 						"(time_from < ? AND time_to > ?)";
 		return runSelect(LabStopLog.class, sql, timeGapStart, timeGapEnd, timeGapStart, timeGapEnd, timeGapStart, timeGapStart, timeGapEnd);
 	}
-	
+	*/
+
+	@Override
+	public SelectResult<LabStopLog> loadLabStops(Date timeGapStart, Date timeGapEnd){
+		String sql = "SELECT ls.id, ls.lab, ls.lab_device, ls.lab_stop_type, ls.time_from, ls.time_to, ls.log_comment, ls.time_created, ls.time_updated, st.name lab_stop_type_name"+
+					  " FROM lab_stop_log ls"+
+					   " LEFT OUTER JOIN lab_stop_type st ON st.id = ls.lab_stop_type"+
+					  " WHERE time_from <= ? AND ls.time_to >= ?"+
+					" UNION ALL"+
+					 " SELECT 0 id, lm.lab, lm.lab_device, lm.state, lm.start_time, NULL time_to, '' log_comment, NULL time_created, NULL time_updated, st.name lab_stop_type_name"+
+					 " FROM lab_meter lm"+
+					   " LEFT OUTER JOIN lab_stop_type st ON st.id = lm.state"+
+					  " WHERE lm.meter_type=10 AND lm.start_time BETWEEN ? AND ?";
+		return runSelect(LabStopLog.class, sql, timeGapEnd, timeGapStart,  timeGapStart, timeGapEnd);
+	}
+
+	@Override
+	public SelectResult<LabMeter> loadLabMeters(){
+		String sql = "SELECT NOW() server_time, lm.*"+
+					  " FROM lab l"+
+					   " INNER JOIN lab_device ld ON l.id = ld.lab"+
+					   " INNER JOIN lab_meter lm ON ld.id = lm.lab_device"+
+					  " WHERE l.is_active = 1";
+		return runSelect(LabMeter.class, sql);
+	}
+
+	@Override
+	public SqlResult forwardLabMeter(int lab, int state, String printgroup){
+		//PROCEDURE lab_meter_forward_lab(IN plab int(5), IN pstate int(5), IN pprintgroup varchar(50))
+		String sql= "{CALL lab_meter_forward_lab(?, ?, ?)}";
+		return runCall(sql, lab, state, printgroup);
+	}
+
+	@Override
+	public SqlResult fixStopMeter(LabMeter meter){
+		//PROCEDURE lab_meter_fix_stop(IN plab int(5), IN pdevice int(7), IN pstoptype int(7), IN ptime datetime)
+		String sql= "{CALL lab_meter_fix_stop(?, ?, ?, ?)}";
+		return runCall(sql, meter.getLab(), meter.getLab_device(), meter.getState(), meter.getStart_time());
+	}
+
+	/*
+	@Override
+	public SqlResult forwardMeter(int device, int state, String printgroup){
+		//PROCEDURE lab_meter_forward(IN pdevice int(7), IN pstate int(5), IN pprintgroup varchar(50))
+		String sql= "{CALL lab_meter_forward(?, ?, ?)}";
+		return runCall(sql, device, state, printgroup);
+	}
+
+	@Override
+	public SqlResult forwardMeterByTechPoint(int techPoint, String printgroup){
+		//PROCEDURE lab_meter_forward_tp(IN ptechpoint int(7), IN pprintgroup varchar(50))
+		String sql= "{CALL lab_meter_forward_tp(?, ?)}";
+		return runCall(sql, techPoint, printgroup);
+	}
+	*/
+
 }

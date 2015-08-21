@@ -15,4 +15,5 @@ public interface TechService {
 	DmlResult<TechLog> log(TechLog item);
 	SelectResult<TechLog> loadTechPulse(int techPointType);
 	boolean testMail();
+	SqlResult forwardMeterByTechPoint(int techPoint, String printgroup);
 }

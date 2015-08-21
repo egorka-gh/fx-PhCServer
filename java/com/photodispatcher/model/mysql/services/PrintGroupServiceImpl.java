@@ -136,10 +136,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 				" FROM print_group pg"+
 					" INNER JOIN orders o ON pg.order_id = o.id"+
 				" WHERE pg.state>=203 AND pg.state<=250 AND o.state<450 AND (?=0 OR pg.destination=?) AND pg.book_type !=0"+
-				" GROUP BY pg.id"+
 				" ORDER BY pg.destination, pg.state_date";
-		
-		
 		return runSelect(PrintGroup.class, sql, lab, lab);
 		
 	}
@@ -245,6 +242,10 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 				pg.setState(-300);
 				pg.setFiles(null);
 			}else{
+				//update lab meter
+				LabServiceImpl ls= new LabServiceImpl();
+				ls.forwardLabMeter(pg.getDestination(), pg.getState(),pg.getId());
+				
 				//reload print group
 				String sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder, IFNULL(s.alias,pg.path) alias"+
 							" FROM print_group pg"+
