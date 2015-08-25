@@ -31,4 +31,5 @@ public interface LabService {
 	SqlResult forwardLabMeter(int lab, int state, String printgroup);
 	SqlResult fixStopMeter(LabMeter meter);
 	SelectResult<LabStopLog> loadLabStops(Date timeGapStart, Date timeGapEnd);
+	SqlResult endStopMeter(LabMeter meter);
 }

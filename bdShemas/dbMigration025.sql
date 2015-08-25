@@ -1,4 +1,4 @@
--- main  
+-- main 2015-08-24  
 -- moskva 
 -- reserv 
 -- valichek
@@ -132,7 +132,7 @@ COLLATE utf8_general_ci;
 
 DELIMITER $$
 
-CREATE 
+CREATE
 PROCEDURE lab_meter_forward (IN plab int(5), IN pdevice int(7), IN pstate int(5), IN pprintgroup varchar(50))
 BEGIN
   -- forward meters
@@ -141,7 +141,7 @@ BEGIN
     -- print
     -- log if printgroup changed
     INSERT INTO lab_meter_log (lab, lab_device, start_time, end_time, state, print_group, amt)
-      SELECT lm.lab, lm.lab_device, lm.start_time, lm.last_time, 255, lm.print_group, lm.amt
+      SELECT lm.lab, lm.lab_device, lm.start_time, IFNULL(lm.last_time, NOW()), 255, lm.print_group, lm.amt
         FROM lab_meter lm
         WHERE lm.lab = plab
           AND lm.lab_device = pdevice
@@ -152,9 +152,9 @@ BEGIN
       VALUES (plab, pdevice, 1, NOW(), pprintgroup, 255, 1)
     ON DUPLICATE KEY UPDATE start_time = IF(pprintgroup = print_group, start_time, NOW()),
     last_time = IF(pprintgroup = print_group, NOW(), NULL),
+    amt = IF(pprintgroup = print_group, amt + 1, 1),
     print_group = pprintgroup,
-    state = 255,
-    amt = IF(pprintgroup = print_group, amt + 1, 1);
+    state = 255;
 
     -- log & reset all stops by device (or lab common vs devise==0)
     INSERT INTO lab_stop_log (lab, lab_device, lab_stop_type, time_from, time_to)
@@ -170,7 +170,7 @@ BEGIN
       AND meter_type = 10;
   ELSE
     -- post
-    -- log if print_group state forwarded
+    -- log if print_group state forwarded exclude capture state (203)
     INSERT INTO lab_meter_log (lab, lab_device, start_time, end_time, state, print_group)
       SELECT lm.lab, lm.lab_device, lm.start_time, NOW(), lm.state, lm.print_group
         FROM lab_meter lm
@@ -178,24 +178,22 @@ BEGIN
           AND lm.lab_device = pdevice
           AND lm.meter_type = 0
           AND lm.print_group = pprintgroup
+          AND lm.state > 203
           AND lm.state < pstate;
     -- update meter
     INSERT INTO lab_meter (lab, lab_device, meter_type, start_time, print_group, state)
       VALUES (plab, pdevice, 0, NOW(), pprintgroup, pstate)
     ON DUPLICATE KEY UPDATE start_time = NOW(), print_group = pprintgroup, state = pstate;
 
-    -- log & reset all stops vs NO_ORDER(1) & POST_WAITE(3) state
-    INSERT INTO lab_stop_log (lab, lab_device, lab_stop_type, time_from, time_to)
-      SELECT lm.lab, lm.lab_device, lm.state, lm.start_time, NOW()
-        FROM lab_meter lm
-        WHERE lm.lab = plab
-          AND lm.meter_type = 10
-          AND lm.state IN (1, 3);
-    DELETE
-      FROM lab_meter
-    WHERE lab = plab
-      AND meter_type = 10
-      AND state IN (1, 3);
+  /* only print resets stop
+  -- log & reset all stops vs NO_ORDER(1) & POST_WAITE(3) state
+  INSERT INTO lab_stop_log(lab, lab_device, lab_stop_type, time_from, time_to)
+    SELECT lm.lab, lm.lab_device, lm.state, lm.start_time, NOW() 
+      FROM lab_meter lm
+      WHERE lm.lab=plab AND lm.meter_type=10 AND lm.state IN (1,3);
+  DELETE FROM lab_meter 
+      WHERE lab=plab AND meter_type=10 AND state IN (1,3);
+  */
 
   END IF;
 END
@@ -267,7 +265,7 @@ BEGIN
         AND lm.lab_device = pdevice
         AND lm.meter_type = 10
         AND lm.state != pstoptype
-        AND lm.start_time<ptime;
+        AND lm.start_time < ptime;
   DELETE
     FROM lab_meter
   WHERE lab = plab
@@ -275,14 +273,14 @@ BEGIN
     AND meter_type = 10
     AND state != pstoptype;
 
-  -- check if has meters after stop time
+  -- check if has print meters after stop time
   SELECT 0
   INTO vadd
     FROM lab_meter lm
     WHERE lm.lab = plab
-      AND lm.lab_device IN (0, pdevice)
-      AND lm.meter_type IN (0, 1)
-      AND (lm.start_time > ptime OR lm.last_time > ptime)
+      AND lm.lab_device = pdevice
+      AND lm.meter_type = 1
+      AND IFNULL(lm.last_time, lm.start_time) > ptime
   LIMIT 1;
 
   -- fix stop
@@ -370,6 +368,35 @@ BEGIN
     END IF;
 
   END IF;
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE lab_meter_end_stop (IN plab int(5), IN pdevice int(7), IN ptime datetime)
+BEGIN
+  IF ptime IS NULL
+    OR ptime > NOW()
+  THEN
+    SET ptime = NOW();
+  END IF;
+
+  -- log & reset current
+  INSERT INTO lab_stop_log (lab, lab_device, lab_stop_type, time_from, time_to)
+    SELECT lm.lab, lm.lab_device, lm.state, lm.start_time, ptime
+      FROM lab_meter lm
+      WHERE lm.lab = plab
+        AND lm.lab_device = pdevice
+        AND lm.meter_type = 10;
+  DELETE
+    FROM lab_meter
+  WHERE lab = plab
+    AND lab_device = pdevice
+    AND meter_type = 10;
+
 END
 $$
 

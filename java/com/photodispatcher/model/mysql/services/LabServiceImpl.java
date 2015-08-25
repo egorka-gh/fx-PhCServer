@@ -378,8 +378,7 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	public SelectResult<LabMeter> loadLabMeters(){
 		String sql = "SELECT NOW() server_time, lm.*"+
 					  " FROM lab l"+
-					   " INNER JOIN lab_device ld ON l.id = ld.lab"+
-					   " INNER JOIN lab_meter lm ON ld.id = lm.lab_device"+
+					   " INNER JOIN lab_meter lm ON lm.lab = l.id"+
 					  " WHERE l.is_active = 1";
 		return runSelect(LabMeter.class, sql);
 	}
@@ -396,6 +395,13 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 		//PROCEDURE lab_meter_fix_stop(IN plab int(5), IN pdevice int(7), IN pstoptype int(7), IN ptime datetime)
 		String sql= "{CALL lab_meter_fix_stop(?, ?, ?, ?)}";
 		return runCall(sql, meter.getLab(), meter.getLab_device(), meter.getState(), meter.getStart_time());
+	}
+
+	@Override
+	public SqlResult endStopMeter(LabMeter meter){
+		//PROCEDURE lab_meter_end_stop(IN plab int(5), IN pdevice int(7), IN ptime datetime)
+		String sql= "{CALL lab_meter_end_stop(?, ?, ?)}";
+		return runCall(sql, meter.getLab(), meter.getLab_device(), meter.getLast_time());
 	}
 
 	/*
