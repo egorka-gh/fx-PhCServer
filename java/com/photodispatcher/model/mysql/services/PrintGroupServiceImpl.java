@@ -116,7 +116,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 	}
 
 	@Override
-	public SelectResult<PrintGroup> loadInPrint(int lab){
+	public SelectResult<PrintGroup> loadInPrintPost(int lab){
 		
 		/*
 		String sql="SELECT pg.*, "+
@@ -132,9 +132,12 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 				" ORDER BY pg.destination, pg.state_date";
 		*/
 		
-		String sql="SELECT pg.* "+
+		String sql="SELECT pg.*, l.name lab_name, av.value paper_name, os.name state_name"+
 				" FROM print_group pg"+
 					" INNER JOIN orders o ON pg.order_id = o.id"+
+					" INNER JOIN order_state os ON pg.state = os.id"+
+					" INNER JOIN lab l ON l.id = pg.destination"+
+					" INNER JOIN attr_value av ON pg.paper = av.id"+
 				" WHERE pg.state>=203 AND pg.state<=250 AND o.state<450 AND (?=0 OR pg.destination=?) AND pg.book_type !=0"+
 				" ORDER BY pg.destination, pg.state_date";
 		return runSelect(PrintGroup.class, sql, lab, lab);

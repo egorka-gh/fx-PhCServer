@@ -8,6 +8,8 @@ SET NAMES 'utf8';
 SET SESSION sql_mode='NO_AUTO_VALUE_ON_ZERO';
 
 INSERT INTO lab_stop_type(id, name) VALUES(3, 'Постановка на печать');
+INSERT INTO lab_stop_type(id, name) VALUES(4, 'Нет подходящего заказа');
+INSERT INTO lab_stop_type(id, name) VALUES(5, 'Не подходит рулон');
 
 CREATE TABLE lab_meter (
   lab int(5) NOT NULL,
@@ -15,7 +17,7 @@ CREATE TABLE lab_meter (
   meter_type tinyint(2) NOT NULL DEFAULT 0 COMMENT '0 - post; 1 - print; 10 - stop ',
   start_time datetime DEFAULT NULL,
   last_time datetime DEFAULT NULL,
-  print_group varchar(50) NOT NULL,
+  print_group varchar(50) DEFAULT NULL,
   state int(7) NOT NULL COMMENT 'state or lab stop type',
   amt int(7) DEFAULT 1,
   PRIMARY KEY (lab, lab_device, meter_type),
@@ -397,6 +399,217 @@ BEGIN
     AND lab_device = pdevice
     AND meter_type = 10;
 
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE packageSetOrderSpace (IN pOrderId varchar(50), IN pSpace int)
+BEGIN
+  DECLARE vSource int;
+  DECLARE vPackage int;
+  DECLARE vOrderWeight float DEFAULT (0);
+  DECLARE vResult int DEFAULT (0);
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND BEGIN
+    SET vPackage = NULL;
+    SET vResult = 0;
+  END;
+
+  -- get order data
+  SELECT o.source, o.group_id, IFNULL(oei.weight, 0)
+  INTO vSource, vPackage, vOrderWeight
+    FROM orders o
+      LEFT OUTER JOIN order_extra_info oei ON o.id = oei.id AND oei.sub_id = ''
+    WHERE o.id = pOrderId;
+
+  IF vPackage IS NOT NULL
+  THEN
+    -- check if space has different package
+    SELECT IFNULL(MIN(-1), 1)
+    INTO vResult
+      FROM rack_orders ro
+        INNER JOIN orders o ON ro.order_id = o.id
+      WHERE ro.space = pSpace
+        AND ro.order_id != pOrderId
+        AND o.source != vSource
+        AND o.group_id != vPackage;
+    IF vResult > 0
+    THEN
+      -- check wieght
+      SELECT IF(rs.weight < ROUND(((IFNULL(SUM(oei.weight), 0) + vOrderWeight) / 1000), 1), -2, 1)
+      INTO vResult
+        FROM rack_space rs
+          LEFT OUTER JOIN rack_orders ro ON rs.id = ro.space
+          LEFT OUTER JOIN order_extra_info oei ON ro.order_id = oei.id AND oei.sub_id = ''
+        WHERE rs.id = pSpace
+          AND ro.order_id != pOrderId;
+    END IF;
+    IF vResult > 0
+    THEN
+      -- set order space
+      INSERT IGNORE INTO rack_orders (order_id, space)
+        VALUES (pOrderId, pSpace);
+    END IF;
+  END IF;
+
+  -- return result ?
+  SELECT vResult AS value;
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP FUNCTION IF EXISTS printPg2Reprint$$
+
+CREATE
+FUNCTION printPg2Reprint (pPgroupId varchar(50))
+RETURNS varchar(50) charset utf8
+READS SQL DATA
+BEGIN
+  DECLARE vPgId varchar(50);
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET vPgId = pPgroupId;
+
+  -- get first reprint vs minimal prints (print state must be closed)
+  -- state between posted and printed 
+  SELECT pg1.id
+  INTO vPgId
+    FROM print_group pg
+      INNER JOIN print_group pg1 ON pg.order_id = pg1.order_id
+        AND pg.id = pg1.reprint_id
+        AND pg1.state >= 250 AND pg1.state < 300
+    WHERE pg.id = pPgroupId
+      AND pg.is_reprint = 0
+    ORDER BY pg1.prints
+  LIMIT 1;
+
+
+  RETURN vPgId;
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS techUnitCalc$$
+
+CREATE
+PROCEDURE techUnitCalc (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pPgroup varchar(50), IN pState int, IN pBooks int, IN pSheets int)
+MODIFIES SQL DATA
+BEGIN
+  DECLARE vDone int;
+  DECLARE vStart datetime;
+  DECLARE vEnd datetime;
+  DECLARE vCount int;
+  DECLARE vMinState int;
+  DECLARE vParentPg varchar(50);
+
+
+  IF pPgroup IS NULL
+  THEN
+    SET pPgroup = '';
+  END IF;
+  IF pSubOrder IS NULL
+  THEN
+    SET pSubOrder = '';
+  END IF;
+  -- calc prints
+  SELECT IFNULL(COUNT(DISTINCT tl.sheet), 0), IFNULL(MIN(tl.log_date), NOW()), IFNULL(MAX(tl.log_date), NOW())
+  INTO vDone, vStart, vEnd
+    FROM tech_log tl
+      INNER JOIN tech_point tp ON tl.src_id = tp.id
+    WHERE tl.order_id = pOrder
+      AND tl.sub_id = pSubOrder
+      AND tl.print_group = pPgroup
+      AND tp.tech_type = pState;
+
+  IF vDone = pBooks * pSheets
+    OR (pState = 320
+    AND vDone = pBooks * 2) -- 320 - TECH_FOLDING (log first & end sheet per book)
+    OR (pState = 360
+    AND vDone > 0) -- 360 - TECH_CUTTING (log first scan)
+    OR (pState = 380
+    AND vDone = pBooks) -- 380 - TECH_JOIN   (log books)
+  THEN
+    -- complited
+    IF pPgroup != ''
+    THEN
+      IF pState != 300
+      THEN
+        -- set pg state 
+        UPDATE print_group pg
+        SET pg.state = pState,
+            pg.state_date = vEnd
+        WHERE pg.id = pPgroup;
+      ELSE
+        -- print
+        -- get parent printgroup
+        SELECT IFNULL(pg.reprint_id, pg.id)
+        INTO vParentPg
+          FROM print_group pg
+          WHERE pg.id = pPgroup;
+        -- set pg state, if reprint set parent state and it's all open reprints
+        UPDATE print_group pg
+        SET pg.state = pState,
+            pg.state_date = vEnd
+        WHERE pg.order_id = pOrder
+        AND pg.state >= 250
+        AND pg.state < 300
+        AND vParentPg IN (pg.id, pg.reprint_id);
+      END IF;
+    END IF;
+    IF pState = 300
+    THEN
+      -- print state, check pringroups
+      SELECT IFNULL(MIN(pg.state), 0)
+      INTO vMinState
+        FROM print_group pg
+        WHERE pg.order_id = pOrder
+          AND pg.sub_id = pSubOrder;
+      IF vMinState >= 300
+      THEN
+        -- all pg printed end order/suborder
+        CALL extraStateSet(pOrder, pSubOrder, pState, vEnd);
+      ELSE
+        -- start
+        CALL extraStateStart(pOrder, pSubOrder, pState, vStart);
+      END IF;
+    ELSE
+      -- end order/suborder
+      CALL extraStateSet(pOrder, pSubOrder, pState, vEnd);
+    END IF;
+  ELSE
+    -- start
+    CALL extraStateStart(pOrder, pSubOrder, pState, vStart);
+  END IF;
+
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS printMarkInPrint$$
+
+CREATE
+PROCEDURE printMarkInPrint (IN pPgroupId varchar(50))
+MODIFIES SQL DATA
+BEGIN
+  DECLARE vPgId varchar(50);
+
+  SET vPgId = printPg2Reprint(pPgroupId);
+  UPDATE print_group pg
+  SET pg.state = 255,
+      pg.state_date = NOW()
+  WHERE pg.id = vPgId
+  AND pg.state < 255;
 END
 $$
 

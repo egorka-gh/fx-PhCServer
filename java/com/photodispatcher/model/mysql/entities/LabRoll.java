@@ -27,10 +27,14 @@ public class LabRoll extends AbstractEntity {
     private boolean is_online;
     
     //runtime
+    @Column(name="lab", updatable=false, insertable=false)
+    private int lab;
     @Column(name="is_used", updatable=false, insertable=false)
     private boolean is_used;
     @Column(name="paper_name", updatable=false, insertable=false)
     private String paper_name;
+    
+    
 	public int getLab_device() {
 		return lab_device;
 	}
@@ -78,6 +82,12 @@ public class LabRoll extends AbstractEntity {
 	}
 	public void setWidth(int width) {
 		this.width = width;
+	}
+	public int getLab() {
+		return lab;
+	}
+	public void setLab(int lab) {
+		this.lab = lab;
 	}
 
 }

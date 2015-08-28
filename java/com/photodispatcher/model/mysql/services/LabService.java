@@ -10,7 +10,9 @@ import com.photodispatcher.model.mysql.entities.Lab;
 import com.photodispatcher.model.mysql.entities.LabDevice;
 import com.photodispatcher.model.mysql.entities.LabMeter;
 import com.photodispatcher.model.mysql.entities.LabPrintCode;
+import com.photodispatcher.model.mysql.entities.LabRoll;
 import com.photodispatcher.model.mysql.entities.LabStopLog;
+import com.photodispatcher.model.mysql.entities.LabStopType;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
@@ -32,4 +34,6 @@ public interface LabService {
 	SqlResult fixStopMeter(LabMeter meter);
 	SelectResult<LabStopLog> loadLabStops(Date timeGapStart, Date timeGapEnd);
 	SqlResult endStopMeter(LabMeter meter);
+	SelectResult<LabRoll> loadLastRolls();
+	SelectResult<LabStopType> loadLabStopType();
 }

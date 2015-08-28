@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.photodispatcher.model.mysql.ConnectionFactory;
 import com.photodispatcher.model.mysql.entities.DeliveryType;
 import com.photodispatcher.model.mysql.entities.DeliveryTypeDictionary;
+import com.photodispatcher.model.mysql.entities.FieldValue;
 import com.photodispatcher.model.mysql.entities.MailPackage;
 import com.photodispatcher.model.mysql.entities.MailPackageBarcode;
 import com.photodispatcher.model.mysql.entities.MailPackageProperty;
@@ -399,8 +400,23 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 
 	@Override
 	public SqlResult setRackSpace(String orderId, int space){
+		/*
 		String sql="INSERT IGNORE INTO rack_orders (order_id, space) VALUES (?, ?)";
 		return runDML(sql, orderId, space);
+		*/
+		
+		//PROCEDURE packageSetOrderSpace(IN pOrderId varchar(50), IN pSpace int)
+		SqlResult res= new SqlResult(); 
+		String sql= "{CALL packageSetOrderSpace(?,?)}";
+		SelectResult<FieldValue> callRes=runCallSelect(FieldValue.class, sql, orderId, space);
+		if(!callRes.isComplete()){
+			res.cloneError(callRes);
+		}else{
+			if(callRes.getData()!=null && !callRes.getData().isEmpty()){
+				res.setResultCode(callRes.getData().get(0).getValue());
+			}
+		}
+		return res;
 	}
 
 	@Override

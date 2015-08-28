@@ -14,12 +14,12 @@ public interface PrintGroupService {
 
 	SelectResult<PrintGroup> loadByState(int stateFrom, int stateTo);
 	SelectResult<PrintGroup> loadByOrderState(int stateFrom, int stateTo);
-	SelectResult<PrintGroup> loadInPrint(int lab);
 	SelectResult<PrintGroup> loadPrinted(Date after);
 	SelectResult<PrintGroup> loadPrintPost(List<String> ids);
 	SelectResult<PrintGroup> capturePrintState(List<PrintGroup> printGroups, boolean loadFiles);
 	SelectResult<PrintGroup> loadPrintPostByDev(List<Integer> devices, int loadPhoto);
 	DmlResult<PrintGroup> fillCaptured(String id);
 	SelectResult<PrintGroup> loadReady4Print(int limit, boolean onlyBook);
+	SelectResult<PrintGroup> loadInPrintPost(int lab);
 	
 }

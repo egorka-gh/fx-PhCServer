@@ -15,6 +15,7 @@ import com.photodispatcher.model.mysql.entities.LabPrintCode;
 import com.photodispatcher.model.mysql.entities.LabProfile;
 import com.photodispatcher.model.mysql.entities.LabRoll;
 import com.photodispatcher.model.mysql.entities.LabStopLog;
+import com.photodispatcher.model.mysql.entities.LabStopType;
 import com.photodispatcher.model.mysql.entities.LabTimetable;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.SelectResult;
@@ -361,6 +362,12 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	*/
 
 	@Override
+	public SelectResult<LabStopType> loadLabStopType(){
+		String sql = "SELECT * FROM lab_stop_type";
+		return runSelect(LabStopType.class, sql);
+	}
+
+	@Override
 	public SelectResult<LabStopLog> loadLabStops(Date timeGapStart, Date timeGapEnd){
 		String sql = "SELECT ls.id, ls.lab, ls.lab_device, ls.lab_stop_type, ls.time_from, ls.time_to, ls.log_comment, ls.time_created, ls.time_updated, st.name lab_stop_type_name"+
 					  " FROM lab_stop_log ls"+
@@ -381,6 +388,15 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 					   " INNER JOIN lab_meter lm ON lm.lab = l.id"+
 					  " WHERE l.is_active = 1";
 		return runSelect(LabMeter.class, sql);
+	}
+	
+	@Override
+	public SelectResult<LabRoll> loadLastRolls(){
+		String sql = "SELECT lm.lab, lm.lab_device, pg.width, pg.paper"+
+					   " FROM lab_meter lm"+
+					   " INNER JOIN print_group pg ON pg.id=lm.print_group"+
+					 " WHERE lm.meter_type=1 ";
+		return runSelect(LabRoll.class, sql);
 	}
 
 	@Override
