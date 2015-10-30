@@ -97,8 +97,8 @@ public class BookPgTemplate extends AbstractEntity {
     private boolean is_tech_stair_bot=false;
     @Column(name="lab_type")
     private int lab_type;
-    @Column(name="lab_type_name", updatable=false, insertable=false)
-    private String lab_type_name;
+    @Column(name="revers")
+    private boolean revers=false;
 
     //ref name
     @Column(name="book_part_name", updatable=false, insertable=false)
@@ -111,6 +111,8 @@ public class BookPgTemplate extends AbstractEntity {
     private String correction_name;
     @Column(name="cutting_name", updatable=false, insertable=false)
     private String cutting_name;
+    @Column(name="lab_type_name", updatable=false, insertable=false)
+    private String lab_type_name;
     
     @Transient
     private List<BookPgAltPaper> altPaper;
@@ -402,6 +404,12 @@ public class BookPgTemplate extends AbstractEntity {
 	}
 	public void setAltPaper(List<BookPgAltPaper> altPaper) {
 		this.altPaper = altPaper;
+	}
+	public boolean isRevers() {
+		return revers;
+	}
+	public void setRevers(boolean revers) {
+		this.revers = revers;
 	}
 
 }

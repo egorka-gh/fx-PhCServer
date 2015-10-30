@@ -36,4 +36,7 @@ public interface LabService {
 	SqlResult endStopMeter(LabMeter meter);
 	SelectResult<LabRoll> loadLastRolls();
 	SelectResult<LabStopType> loadLabStopType();
+	SelectResult<LabRoll> loadOnlineRolls();
+	SelectResult<LabRoll> loadQueueByDevice(int device);
+	SqlResult setRollOnline(LabRoll labRoll, boolean isOn);
 }

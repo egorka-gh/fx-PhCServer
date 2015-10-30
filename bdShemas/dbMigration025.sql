@@ -725,3 +725,5 @@ END
 $$
 
 DELIMITER ;
+
+ALTER TABLE book_pg_template ADD COLUMN revers TINYINT(1) DEFAULT 0 AFTER lab_type;

@@ -113,7 +113,7 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 		}
 		return result;
 	}
-	
+
 	private SqlResult loadDevices(Lab lab, boolean forEdit){
 		String sql="SELECT s.*, tp.name tech_point_name"+
 					" FROM lab_device s" +
@@ -400,6 +400,12 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	}
 
 	@Override
+	public SelectResult<LabRoll> loadOnlineRolls(){
+		String sql = "SELECT * FROM lab_rolls lr WHERE lr.is_online=1";
+		return runSelect(LabRoll.class, sql);
+	}
+
+	@Override
 	public SqlResult forwardLabMeter(int lab, int state, String printgroup){
 		//PROCEDURE lab_meter_forward_lab(IN plab int(5), IN pstate int(5), IN pprintgroup varchar(50))
 		String sql= "{CALL lab_meter_forward_lab(?, ?, ?)}";
@@ -419,6 +425,21 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 		String sql= "{CALL lab_meter_end_stop(?, ?, ?)}";
 		return runCall(sql, meter.getLab(), meter.getLab_device(), meter.getLast_time());
 	}
+
+	@Override
+	public SelectResult<LabRoll> loadQueueByDevice(int device){
+		String sql= "{CALL printLoadQueueByDev(?)}";
+		return runCallSelect(LabRoll.class, sql, device);
+	}
+
+	@Override
+	public SqlResult setRollOnline(LabRoll labRoll, boolean isOn){
+		int on=0;
+		if(isOn) on=1;
+		String sql= "UPDATE lab_rolls SET is_online = ? WHERE lab_device = ? AND width = ? AND paper = ?";
+		return runDML(sql, on, labRoll.getLab_device(), labRoll.getWidth(), labRoll.getPaper());
+	}
+
 
 	/*
 	@Override
