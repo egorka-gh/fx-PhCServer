@@ -151,6 +151,14 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	}
 
 	@Override
+	public SelectResult<FieldValue> getStopTypeValueList(){
+		SelectResult<FieldValue> result;
+		String sql="SELECT id value, name label FROM lab_stop_type l ORDER BY l.name";
+		result=runSelect(FieldValue.class, sql);
+		return result;
+	}
+
+	@Override
 	public SelectResult<FieldValue> getLayerGroupValueList(boolean includeDefault){
 		SelectResult<FieldValue> result;
 		String sql="SELECT id value, name label FROM layer_group WHERE id!=2 ORDER BY 1";

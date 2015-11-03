@@ -40,6 +40,11 @@ public class LabStopLog extends AbstractEntity {
 	
 	@Column(name="lab_stop_type_name", insertable=false, updatable=false)
 	private String lab_stop_type_name;
+	@Column(name="device_name", insertable=false, updatable=false)
+	private String device_name;
+	@Column(name="lab_name", insertable=false, updatable=false)
+	private String lab_name;
+	
 	
 	public int getId() {
 		return id;
@@ -114,6 +119,18 @@ public class LabStopLog extends AbstractEntity {
 	}
 	public void setLab(int lab) {
 		this.lab = lab;
+	}
+	public String getDevice_name() {
+		return device_name;
+	}
+	public void setDevice_name(String device_name) {
+		this.device_name = device_name;
+	}
+	public String getLab_name() {
+		return lab_name;
+	}
+	public void setLab_name(String lab_name) {
+		this.lab_name = lab_name;
 	}
 	
 }

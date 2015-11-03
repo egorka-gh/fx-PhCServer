@@ -34,6 +34,15 @@ public class LabMeter extends AbstractEntity {
     //db drived
     @Column(name="server_time", updatable=false, insertable=false)
     private Date server_time;
+    @Column(name="lab_name", updatable=false, insertable=false)
+    private String lab_name;
+    @Column(name="device_name", updatable=false, insertable=false)
+    private String device_name;
+    @Column(name="type_name", updatable=false, insertable=false)
+    private String type_name;
+    @Column(name="state_name", updatable=false, insertable=false)
+    private String state_name;
+    
     
 	public int getLab_device() {
 		return lab_device;
@@ -88,5 +97,29 @@ public class LabMeter extends AbstractEntity {
 	}
 	public void setServer_time(Date server_time) {
 		this.server_time = server_time;
+	}
+	public String getLab_name() {
+		return lab_name;
+	}
+	public void setLab_name(String lab_name) {
+		this.lab_name = lab_name;
+	}
+	public String getDevice_name() {
+		return device_name;
+	}
+	public void setDevice_name(String device_name) {
+		this.device_name = device_name;
+	}
+	public String getState_name() {
+		return state_name;
+	}
+	public void setState_name(String state_name) {
+		this.state_name = state_name;
+	}
+	public String getType_name() {
+		return type_name;
+	}
+	public void setType_name(String type_name) {
+		this.type_name = type_name;
 	}
 }

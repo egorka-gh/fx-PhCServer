@@ -368,16 +368,48 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	}
 
 	@Override
-	public SelectResult<LabStopLog> loadLabStops(Date timeGapStart, Date timeGapEnd){
-		String sql = "SELECT ls.id, ls.lab, ls.lab_device, ls.lab_stop_type, ls.time_from, ls.time_to, ls.log_comment, ls.time_created, ls.time_updated, st.name lab_stop_type_name"+
+	public SelectResult<LabStopLog> loadLabStops(Date timeGapStart, Date timeGapEnd, List<Integer> labIds){
+		StringBuilder sb=new StringBuilder("");
+		String sIn="";
+		if(labIds!=null && !labIds.isEmpty()){
+			sb.append("IN(");
+			for(Integer id : labIds){
+				sb.append(id).append(",");
+			}
+			sb.deleteCharAt(sb.length() - 1);
+			sb.append(")");
+			sIn=sb.toString();
+		}
+		sb=new StringBuilder("");
+		sb.append("SELECT ls.id, ls.lab, ls.lab_device, ls.lab_stop_type, ls.time_from, ls.time_to, ls.log_comment, ls.time_created, ls.time_updated, st.name lab_stop_type_name, ld.name device_name, l.name lab_name");
+		sb.append(" FROM lab_stop_log ls");
+		sb.append(" INNER JOIN lab l ON l.id=ls.lab");
+		sb.append(" LEFT OUTER JOIN lab_stop_type st ON st.id = ls.lab_stop_type");
+		sb.append(" LEFT OUTER JOIN lab_device ld ON ld.id= ls.lab_device");
+		sb.append(" WHERE time_from <= ? AND ls.time_to >= ?");
+		if(!sIn.isEmpty()) sb.append(" AND ls.lab ").append(sIn);
+		sb.append(" UNION ALL");
+		sb.append(" SELECT 0 id, lm.lab, lm.lab_device, lm.state, lm.start_time, NULL time_to, '' log_comment, NULL time_created, NULL time_updated, st.name lab_stop_type_name, ld.name device_name, l.name lab_name");
+		sb.append(" FROM lab_meter lm");
+		sb.append(" INNER JOIN lab l ON l.id=lm.lab");
+		sb.append(" LEFT OUTER JOIN lab_stop_type st ON st.id = lm.state");
+		sb.append(" LEFT OUTER JOIN lab_device ld ON ld.id= lm.lab_device");
+		sb.append(" WHERE lm.meter_type=10 AND lm.start_time BETWEEN ? AND ?");
+		if(!sIn.isEmpty()) sb.append(" AND lm.lab ").append(sIn);
+		/*
+		String sql = "SELECT ls.id, ls.lab, ls.lab_device, ls.lab_stop_type, ls.time_from, ls.time_to, ls.log_comment, ls.time_created, ls.time_updated, st.name lab_stop_type_name, ld.name device_name"+
 					  " FROM lab_stop_log ls"+
 					   " LEFT OUTER JOIN lab_stop_type st ON st.id = ls.lab_stop_type"+
+					   " LEFT OUTER JOIN lab_device ld ON ld.id= ls.lab_device"+
 					  " WHERE time_from <= ? AND ls.time_to >= ?"+
 					" UNION ALL"+
-					 " SELECT 0 id, lm.lab, lm.lab_device, lm.state, lm.start_time, NULL time_to, '' log_comment, NULL time_created, NULL time_updated, st.name lab_stop_type_name"+
+					 " SELECT 0 id, lm.lab, lm.lab_device, lm.state, lm.start_time, NULL time_to, '' log_comment, NULL time_created, NULL time_updated, st.name lab_stop_type_name, ld.name device_name"+
 					 " FROM lab_meter lm"+
 					   " LEFT OUTER JOIN lab_stop_type st ON st.id = lm.state"+
+					   " LEFT OUTER JOIN lab_device ld ON ld.id= lm.lab_device"+
 					  " WHERE lm.meter_type=10 AND lm.start_time BETWEEN ? AND ?";
+					  */
+		String sql =sb.toString();
 		return runSelect(LabStopLog.class, sql, timeGapEnd, timeGapStart,  timeGapStart, timeGapEnd);
 	}
 
@@ -389,7 +421,20 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 					  " WHERE l.is_active = 1";
 		return runSelect(LabMeter.class, sql);
 	}
-	
+
+	@Override
+	public SelectResult<LabMeter> showLabMeters(){
+		String sql = "SELECT l.name lab_name, ld.name device_name, lmt.name type_name, IF(lm.meter_type=10,lst.name, os.name) state_name, NOW() server_time, lm.*"+
+					  " FROM lab_meter lm"+
+					  " INNER JOIN lab_meter_type lmt ON lm.meter_type=lmt.id"+
+					  " INNER JOIN lab l ON l.id=lm.lab"+
+					  " LEFT OUTER JOIN lab_device ld ON ld.id= lm.lab_device"+
+					  " LEFT OUTER JOIN order_state os ON lm.state=os.id"+
+					  " LEFT OUTER JOIN lab_stop_type lst ON lm.state= lst.id"+
+					  " ORDER BY lm.lab, lm.lab_device, lm.meter_type";
+		return runSelect(LabMeter.class, sql);
+	}
+
 	@Override
 	public SelectResult<LabRoll> loadLastRolls(){
 		String sql = "SELECT lm.lab, lm.lab_device, pg.width, pg.paper"+
@@ -430,6 +475,12 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	public SelectResult<LabRoll> loadQueueByDevice(int device){
 		String sql= "{CALL printLoadQueueByDev(?)}";
 		return runCallSelect(LabRoll.class, sql, device);
+	}
+
+	@Override
+	public SelectResult<LabRoll> loadQueueByLab(int lab){
+		String sql= "{CALL printLoadQueueByLab(?)}";
+		return runCallSelect(LabRoll.class, sql, lab);
 	}
 
 	@Override

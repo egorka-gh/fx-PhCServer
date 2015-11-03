@@ -32,11 +32,13 @@ public interface LabService {
 	SelectResult<LabMeter> loadLabMeters();
 	SqlResult forwardLabMeter(int lab, int state, String printgroup);
 	SqlResult fixStopMeter(LabMeter meter);
-	SelectResult<LabStopLog> loadLabStops(Date timeGapStart, Date timeGapEnd);
 	SqlResult endStopMeter(LabMeter meter);
 	SelectResult<LabRoll> loadLastRolls();
 	SelectResult<LabStopType> loadLabStopType();
 	SelectResult<LabRoll> loadOnlineRolls();
 	SelectResult<LabRoll> loadQueueByDevice(int device);
 	SqlResult setRollOnline(LabRoll labRoll, boolean isOn);
+	SelectResult<LabMeter> showLabMeters();
+	SelectResult<LabStopLog> loadLabStops(Date timeGapStart, Date timeGapEnd, List<Integer> labIds);
+	SelectResult<LabRoll> loadQueueByLab(int lab);
 }

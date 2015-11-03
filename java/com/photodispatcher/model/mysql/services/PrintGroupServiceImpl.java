@@ -116,32 +116,28 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 	}
 
 	@Override
-	public SelectResult<PrintGroup> loadInPrintPost(int lab){
-		
-		/*
-		String sql="SELECT pg.*, "+
-				" COUNT(DISTINCT tl.sheet) prints_done"+
-				" FROM print_group pg"+
-					" INNER JOIN orders o ON pg.order_id = o.id"+
-					" INNER JOIN sources s ON o.source = s.id"+
-					" INNER JOIN order_state os ON pg.state = os.id"+
-					" LEFT OUTER JOIN tech_log tl ON pg.id = tl.print_group AND tl.sheet!=0"+
-					" LEFT OUTER JOIN tech_point tp ON tl.src_id=tp.id AND tp.tech_type=300"+
-				" WHERE pg.state>=203 AND pg.state<=250 AND o.state<450 AND (?=0 OR pg.destination=?) AND pg.book_type !=0"+
-				" GROUP BY pg.id"+
-				" ORDER BY pg.destination, pg.state_date";
-		*/
-		
+	public SelectResult<PrintGroup> loadInPrintPost(List<Integer> labIds){
+		StringBuilder sb=new StringBuilder("");
+		String sIn="";
+		if(labIds!=null && !labIds.isEmpty()){
+			sb.append(" AND pg.destination IN(");
+			for(Integer id : labIds){
+				sb.append(id).append(",");
+			}
+			sb.deleteCharAt(sb.length() - 1);
+			sb.append(")");
+			sIn=sb.toString();
+		}
+
 		String sql="SELECT pg.*, l.name lab_name, av.value paper_name, os.name state_name"+
 				" FROM print_group pg"+
 					" INNER JOIN orders o ON pg.order_id = o.id"+
 					" INNER JOIN order_state os ON pg.state = os.id"+
 					" INNER JOIN lab l ON l.id = pg.destination"+
 					" INNER JOIN attr_value av ON pg.paper = av.id"+
-				" WHERE pg.state>=203 AND pg.state<=250 AND o.state<450 AND (?=0 OR pg.destination=?) AND pg.book_type !=0"+
+				" WHERE pg.state>=203 AND pg.state<=250 AND o.state<450 AND pg.book_type !=0"+ sIn+
 				" ORDER BY pg.destination, pg.state_date";
-		return runSelect(PrintGroup.class, sql, lab, lab);
-		
+		return runSelect(PrintGroup.class, sql);
 	}
 
 	@Override
