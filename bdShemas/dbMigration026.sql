@@ -14,7 +14,7 @@ CREATE
 PROCEDURE printLoadQueueByDev (IN p_dev int)
 BEGIN
   SELECT t.lab_device, t.lab, av.value paper_name, t.paper, t.width, SUM(t.height) print_queue_len
-    FROM (SELECT ld.id lab_device, ld.lab, pg.id, pg.paper, pg.width, pg.height
+    FROM (SELECT ld.id lab_device, ld.lab, pg.id, pg.paper, pg.width, pg.height*pg.prints height
         FROM lab_device ld
           INNER JOIN lab l ON ld.lab = l.id
           INNER JOIN lab_rolls lr ON ld.id = lr.lab_device
@@ -29,7 +29,7 @@ BEGIN
         WHERE ld.id = p_dev
           AND pg.state = 200
       UNION
-      SELECT ld.id lab_device, ld.lab, pg.id, pg.paper, pg.width, pg.height
+      SELECT ld.id lab_device, ld.lab, pg.id, pg.paper, pg.width, pg.height*pg.prints height
         FROM lab_device ld
           INNER JOIN lab l ON ld.lab = l.id AND l.src_type = 3 AND l.hot_nfs != ''
           INNER JOIN lab_rolls lr ON ld.id = lr.lab_device AND lr.paper IN (10, 11, 12, 13)
@@ -70,8 +70,8 @@ DELIMITER $$
 CREATE
 PROCEDURE printLoadQueueByLab (IN p_lab int)
 BEGIN
-  SELECT t.lab_name, t.lab, av.value paper_name, t.paper, t.width, SUM(t.height) print_queue_len
-    FROM (SELECT l.name lab_name, ld.lab, pg.id, pg.paper, pg.width, pg.height
+  SELECT t.lab_name, t.lab, av.value paper_name, t.paper, t.width, SUM(t.height)/1000 print_queue_len
+    FROM (SELECT l.name lab_name, ld.lab, pg.id, pg.paper, pg.width, pg.height*pg.prints height
         FROM lab l
           INNER JOIN lab_device ld ON ld.lab = l.id
           INNER JOIN lab_rolls lr ON ld.id = lr.lab_device
@@ -86,7 +86,7 @@ BEGIN
         WHERE l.id = p_lab
           AND pg.state = 200
       UNION
-      SELECT l.name lab_name, ld.lab, pg.id, pg.paper, pg.width, pg.height
+      SELECT l.name lab_name, ld.lab, pg.id, pg.paper, pg.width, pg.height*pg.prints height
         FROM lab l
           INNER JOIN lab_device ld ON ld.lab = l.id
           INNER JOIN lab_rolls lr ON ld.id = lr.lab_device AND lr.paper IN (10, 11, 12, 13)

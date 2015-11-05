@@ -35,7 +35,7 @@ public class LabRoll extends AbstractEntity {
     private String paper_name;
 
     @Column(name="print_queue_len", updatable=false, insertable=false)
-    private int printQueueLen;
+    private float printQueueLen;
     
     @Column(name="print_queue_time", updatable=false, insertable=false)
     private int printQueueTime;
@@ -95,17 +95,17 @@ public class LabRoll extends AbstractEntity {
 	public void setLab(int lab) {
 		this.lab = lab;
 	}
-	public int getPrintQueueLen() {
-		return printQueueLen;
-	}
-	public void setPrintQueueLen(int printQueueLen) {
-		this.printQueueLen = printQueueLen;
-	}
 	public int getPrintQueueTime() {
 		return printQueueTime;
 	}
 	public void setPrintQueueTime(int printQueueTime) {
 		this.printQueueTime = printQueueTime;
+	}
+	public float getPrintQueueLen() {
+		return printQueueLen;
+	}
+	public void setPrintQueueLen(float printQueueLen) {
+		this.printQueueLen = printQueueLen;
 	}
 
 }
