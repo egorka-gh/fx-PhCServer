@@ -41,4 +41,5 @@ public interface LabService {
 	SelectResult<LabMeter> showLabMeters();
 	SelectResult<LabStopLog> loadLabStops(Date timeGapStart, Date timeGapEnd, List<Integer> labIds);
 	SelectResult<LabRoll> loadQueueByLab(int lab);
+	SelectResult<LabRoll> loadInPrintQueueByLab(int lab);
 }

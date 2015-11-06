@@ -107,3 +107,47 @@ END
 $$
 
 DELIMITER ;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE printLoadInPrintQueueByLab (IN p_lab int)
+BEGIN
+  SELECT t.lab_name, t.lab, av.value paper_name, t.paper, t.width, SUM(t.height) / 1000 print_queue_len
+    FROM (SELECT l.name lab_name, ld.lab, pg.id, pg.paper, pg.width, pg.height * pg.prints height
+        FROM lab l
+          INNER JOIN lab_device ld ON ld.lab = l.id
+          INNER JOIN lab_rolls lr ON ld.id = lr.lab_device
+          INNER JOIN lab_print_code lpc ON l.src_type = lpc.src_type AND lpc.width = lr.width AND lpc.paper = lr.paper
+          INNER JOIN print_group pg ON pg.destination = l.id
+            AND lpc.width = pg.width AND lpc.height >= pg.height
+            AND lpc.paper = pg.paper
+            AND lpc.frame IN (-1, pg.frame)
+            AND lpc.correction IN (-1, pg.correction)
+            AND lpc.cutting IN (-1, pg.cutting)
+            AND lpc.is_duplex IN (-1, pg.is_duplex)
+            AND lpc.is_pdf = pg.is_pdf
+        WHERE l.id = p_lab
+          AND pg.state IN (250, 255)
+      UNION
+      SELECT l.name lab_name, ld.lab, pg.id, pg.paper, pg.width, pg.height * pg.prints height
+        FROM lab l
+          INNER JOIN lab_device ld ON ld.lab = l.id
+          INNER JOIN lab_rolls lr ON ld.id = lr.lab_device AND lr.paper IN (10, 11, 12, 13)
+          INNER JOIN lab_print_code lpc ON lpc.src_type = 8 AND lpc.width = lr.width
+          INNER JOIN print_group pg ON pg.destination = l.id
+            AND lpc.width = pg.width
+            AND lpc.height >= pg.height
+            AND lr.paper = pg.paper
+            AND lpc.is_pdf = pg.is_pdf
+        WHERE l.id = p_lab
+          AND l.src_type = 3
+          AND l.hot_nfs != ''
+          AND pg.state IN (250, 255)) t
+      INNER JOIN attr_value av ON av.id = t.paper AND av.attr_tp = 2
+    GROUP BY t.lab_name, t.lab, av.value, t.paper, t.width
+    ORDER BY SUM(t.height) DESC;
+END
+$$
+
+DELIMITER ;
