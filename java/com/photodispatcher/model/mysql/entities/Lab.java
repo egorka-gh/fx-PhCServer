@@ -32,7 +32,7 @@ public class Lab extends AbstractEntity {
     private boolean is_managed;
     
     @Column(name="soft_speed")
-    private int soft_speed;
+    private float soft_speed;
     
   //db drived
     @Column(name="src_type_name", updatable=false, insertable=false)
@@ -94,14 +94,6 @@ public class Lab extends AbstractEntity {
 	public void setQueue_limit(int queue_limit) {
 		this.queue_limit = queue_limit;
 	}
-	
-	public int getSoft_speed() {
-		return soft_speed;
-	}
-
-	public void setSoft_speed(int soft_speed) {
-		this.soft_speed = soft_speed;
-	}
 
 	public boolean isIs_active() {
 		return is_active;
@@ -149,6 +141,14 @@ public class Lab extends AbstractEntity {
 
 	public void setProfiles(List<LabProfile> profiles) {
 		this.profiles = profiles;
+	}
+
+	public float getSoft_speed() {
+		return soft_speed;
+	}
+
+	public void setSoft_speed(float soft_speed) {
+		this.soft_speed = soft_speed;
 	}
 
 }

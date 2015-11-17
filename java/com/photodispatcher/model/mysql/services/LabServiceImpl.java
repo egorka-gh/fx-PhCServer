@@ -206,6 +206,20 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	}
 
 	@Override
+	public SelectResult<Lab> loadLabsSpeed(){
+		//lab speed mm/sek from lab meter log
+		//gets speed from last 3 month and last day
+		//returns greatest speed by labs
+		String sql="SELECT lml.lab id, GREATEST(SUM((lml.amt - 1) * pg.height) / SUM(TIMESTAMPDIFF(SECOND, lml.start_time, lml.end_time)), IFNULL(SUM(IF(lml.start_time > DATE_ADD(NOW(), INTERVAL -1 DAY), (lml.amt - 1) * pg.height, NULL)) / SUM(IF(lml.start_time > DATE_ADD(NOW(), INTERVAL -1 DAY), TIMESTAMPDIFF(SECOND, lml.start_time, lml.end_time), NULL)), 0)) soft_speed"+
+					 " FROM lab_meter_log lml"+
+					   " INNER JOIN print_group pg ON lml.print_group = pg.id"+
+					 " WHERE lml.state = 255 AND lml.amt > 1 AND lml.end_time IS NOT NULL"+
+					   " AND lml.start_time > DATE_ADD(CURDATE(), INTERVAL -3 MONTH)"+
+					 " GROUP BY lml.lab";
+		return runSelect(Lab.class, sql);
+	}
+	
+	@Override
 	public DmlResult<Lab> persistLab(Lab lab){
 		DmlResult<Lab> result=new DmlResult<Lab>();
 		SqlResult subResult= new SqlResult();
