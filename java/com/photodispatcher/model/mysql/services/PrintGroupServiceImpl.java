@@ -86,7 +86,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 				" INNER JOIN book_type bt ON pg.book_type = bt.id"+
 				" INNER JOIN book_part bp ON pg.book_part = bp.id"+
 				" INNER JOIN lab lab ON pg.destination = lab.id"+
-				" WHERE pg.state IN ( 250, 255) "+ sIn+
+				" WHERE pg.state IN ( 250, 255) AND o.state<450 "+ sIn+
 				" ORDER BY pg.destination, pg.state_date";
 
 		return runSelect(PrintGroup.class, sql);
@@ -170,8 +170,9 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 					" INNER JOIN order_state os ON pg.state = os.id"+
 					" INNER JOIN lab l ON l.id = pg.destination"+
 					" INNER JOIN attr_value av ON pg.paper = av.id"+
-				" WHERE pg.state>=203 AND pg.state<=250 AND o.state<450 AND pg.book_type !=0"+ sIn+
+				" WHERE pg.state>=203 AND pg.state<=250 AND o.state<450 AND pg.book_type IN (1, 2, 3)"+ sIn+
 				" ORDER BY pg.destination, pg.state_date";
+		
 		return runSelect(PrintGroup.class, sql);
 	}
 

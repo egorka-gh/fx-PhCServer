@@ -486,15 +486,15 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 	}
 
 	@Override
-	public SelectResult<LabRoll> loadQueueByDevice(int device){
-		String sql= "{CALL printLoadQueueByDev(?)}";
-		return runCallSelect(LabRoll.class, sql, device);
+	public SelectResult<LabRoll> loadQueueByDevice(int device, int onlyBooks){
+		String sql= "{CALL printLoadQueueByDev(?,?)}";
+		return runCallSelect(LabRoll.class, sql, device, onlyBooks);
 	}
 
 	@Override
-	public SelectResult<LabRoll> loadQueueByLab(int lab){
-		String sql= "{CALL printLoadQueueByLab(?)}";
-		return runCallSelect(LabRoll.class, sql, lab);
+	public SelectResult<LabRoll> loadQueueByLab(int lab, int onlyBooks){
+		String sql= "{CALL printLoadQueueByLab(?,?)}";
+		return runCallSelect(LabRoll.class, sql, lab, onlyBooks);
 	}
 
 	@Override

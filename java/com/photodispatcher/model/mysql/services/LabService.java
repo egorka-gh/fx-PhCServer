@@ -36,11 +36,11 @@ public interface LabService {
 	SelectResult<LabRoll> loadLastRolls();
 	SelectResult<LabStopType> loadLabStopType();
 	SelectResult<LabRoll> loadOnlineRolls();
-	SelectResult<LabRoll> loadQueueByDevice(int device);
 	SqlResult setRollOnline(LabRoll labRoll, boolean isOn);
 	SelectResult<LabMeter> showLabMeters();
 	SelectResult<LabStopLog> loadLabStops(Date timeGapStart, Date timeGapEnd, List<Integer> labIds);
-	SelectResult<LabRoll> loadQueueByLab(int lab);
 	SelectResult<LabRoll> loadInPrintQueueByLab(int lab);
 	SelectResult<Lab> loadLabsSpeed();
+	SelectResult<LabRoll> loadQueueByDevice(int device, int onlyBooks);
+	SelectResult<LabRoll> loadQueueByLab(int lab, int onlyBooks);
 }
