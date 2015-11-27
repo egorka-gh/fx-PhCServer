@@ -101,7 +101,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 					   " LEFT OUTER JOIN suborders s ON s.order_id = pg.order_id AND s.sub_id = pg.sub_id"+
 					  " WHERE pg.state = 200";
 		if(onlyBook){
-			sql+=" AND pg.book_type!=0";
+			sql+=" AND pg.book_type IN (1,2,3)";
 		}
 		sql+=" ORDER BY pg.state_date";
 					//LIMIT 20";

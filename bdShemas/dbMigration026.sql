@@ -69,13 +69,16 @@ BEGIN
     ORDER BY SUM(t.height) DESC;
   */
   SELECT t.lab_name, t.lab, av.value paper_name, t.paper, t.width, SUM(t.height) / 1000 print_queue_len
-    FROM (SELECT l.name lab_name, l.id lab, pg.id, pg.paper, pg.width, pg.height * pg.prints height
+    FROM 
+      (SELECT l.name lab_name, l.id lab, pg.id, pg.paper, pg.width, 
+        (pg.height-IFNULL(COUNT(DISTINCT tl.sheet), 0)) * pg.prints height
         FROM lab l
           INNER JOIN print_group pg ON pg.destination = l.id
           INNER JOIN orders o ON pg.order_id = o.id
-        WHERE l.id = p_lab
-          AND pg.state IN (250, 255)
-          AND o.state < 450) t
+          LEFT OUTER JOIN tech_log tl ON tl.print_group = pg.id 
+            AND tl.src_id IN (SELECT tp.id FROM tech_point tp WHERE tp.tech_type = 300)
+        WHERE l.id = p_lab AND pg.state IN (250, 255) AND o.state < 450
+        GROUP BY l.name, l.id, pg.id) t
       INNER JOIN attr_value av ON av.id = t.paper AND av.attr_tp = 2
     GROUP BY t.lab_name, t.lab, av.value, t.paper, t.width
     ORDER BY SUM(t.height) DESC;
