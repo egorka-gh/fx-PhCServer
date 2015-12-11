@@ -268,3 +268,105 @@ END
 $$
 
 DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS extraStateSetOTK$$
+
+CREATE
+PROCEDURE extraStateSetOTK (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pDate datetime)
+MODIFIES SQL DATA
+BEGIN
+  DECLARE vMinSubState int;
+  DECLARE vMinPhotoState int;
+
+  IF pDate IS NULL
+  THEN
+    SET pDate = NOW();
+  END IF;
+
+  IF pSubOrder != ''
+  THEN
+    -- fix suborder
+    -- forvard suborder pgs state
+    UPDATE print_group pg
+    SET pg.state = 450,
+        pg.state_date = pDate
+    WHERE pg.order_id = pOrder
+    AND pg.sub_id = pSubOrder
+    AND pg.state < 450
+    ORDER BY pg.id;
+
+    -- set suborder state
+    UPDATE suborders s
+    SET s.state = 450,
+        s.state_date = pDate
+    WHERE s.order_id = pOrder
+    AND s.sub_id = pSubOrder
+    AND s.state < 450;
+
+    -- fix suborder extra state
+    INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date)
+      VALUES (pOrder, pSubOrder, 450, pDate, pDate)
+    ON DUPLICATE KEY UPDATE state_date = pDate;
+
+  END IF;
+
+  -- calc min state by photo pgs 
+  SELECT MIN(pg.state)
+  INTO vMinPhotoState
+    FROM print_group pg
+    WHERE pg.order_id = pOrder
+      AND pg.is_reprint = 0
+      AND pg.book_type = 0;
+
+  -- calc min state by suborders
+  SELECT MIN(so.state)
+  INTO vMinSubState
+    FROM suborders so
+    WHERE so.order_id = pOrder;
+
+  -- attempt to forvard order state
+  IF (vMinPhotoState IS NULL
+    OR vMinPhotoState >= 450)
+    AND (vMinSubState IS NULL
+    OR vMinSubState >= 450)
+  THEN
+    -- no photo or photo pgs pass OTK and no suborders or all suborders pass otk
+
+    -- forvard pgs state
+    UPDATE print_group pg
+    SET pg.state = 450,
+        pg.state_date = pDate
+    WHERE pg.order_id = pOrder
+    AND pg.sub_id = ''
+    AND pg.state < 450
+    ORDER BY pg.id;
+
+    -- set order state
+    UPDATE orders o
+    SET o.state = 450,
+        o.state_date = pDate
+    WHERE o.id = pOrder
+    AND o.state < 450;
+
+    -- fix order extra state
+    INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date)
+      VALUES (pOrder, '', 450, pDate, pDate)
+    ON DUPLICATE KEY UPDATE state_date = pDate;
+
+    -- stop all started order extra states
+    UPDATE order_extra_state es
+    SET es.state_date = pDate
+    WHERE es.id = pOrder
+    -- AND es.sub_id = ''
+    AND es.state < 450
+    AND es.state_date IS NULL
+    ORDER BY es.sub_id, es.state;
+
+  END IF;
+
+END
+$$
+
+DELIMITER ;
