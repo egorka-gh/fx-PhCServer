@@ -8,8 +8,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
-import java.sql.Date;
-import java.text.DateFormat;
 
 import com.reporter.data.XLSCellValue;
 import com.reporter.data.XLSConnectionBrokenException;
@@ -48,6 +46,8 @@ public class DynamicRecordSource extends GenericRecordSource {
      * result set
      */
     private ResultSet resultSet;
+    
+    private PreparedStatement statement;
 
     /**
      * current value of group field
@@ -214,20 +214,20 @@ public class DynamicRecordSource extends GenericRecordSource {
         isAfterLast = false;
         //open result set
         if ((connection != null) && (!connection.isClosed())){
-            PreparedStatement st= connection.prepareStatement(sqlElement.getSql(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        	statement= connection.prepareStatement(sqlElement.getSql(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             if (parametrs != null){
                 int i =1;
                 for (SqlParametr param : parametrs){
                     if (!param.isExternalValue()){
-                        st.setObject(i, param.getParamValue());
+                    	statement.setObject(i, param.getParamValue());
                     } else {
-                        st.setString(i, (String) param.getParamValue());   
+                    	statement.setString(i, (String) param.getParamValue());   
                     }
                     i++;
                 }
             }
            // try {
-                resultSet  = st.executeQuery();
+                resultSet  = statement.executeQuery();
            /*
            } catch (SQLException e) {
                 // TODO Auto-generated catch block
@@ -267,9 +267,11 @@ public class DynamicRecordSource extends GenericRecordSource {
         try {
             this.resultSet.close();
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
-           // e.printStackTrace();
         }
+        try {
+			statement.close();
+		} catch (SQLException e) {
+		}
     }
 
 }
