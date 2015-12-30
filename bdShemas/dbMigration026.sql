@@ -370,3 +370,6 @@ END
 $$
 
 DELIMITER ;
+
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(220, 'Автопечать', 1, 0, 0, 0);
+INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES(7, 16, 'is_preload');

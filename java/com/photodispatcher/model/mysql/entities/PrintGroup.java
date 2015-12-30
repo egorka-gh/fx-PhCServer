@@ -59,10 +59,15 @@ public class PrintGroup extends AbstractEntity {
     private int prints;
     @Column(name="reprint_id")
     private String reprint_id;
+    @Column(name="butt")
+    private int butt;
     
-	//runtime
-    @Column(name="prints_done", insertable=false, updatable=false)
+    @Column(name="prints_done")
     private int prints_done;
+
+    @Column(name="prn_queue")
+    private int prn_queue;
+    
     /*
     @Transient
     private BookPgTemplate bookTemplate;
@@ -392,6 +397,22 @@ public class PrintGroup extends AbstractEntity {
 
 	public void setAlias(String alias) {
 		this.alias = alias;
+	}
+
+	public int getButt() {
+		return butt;
+	}
+
+	public void setButt(int butt) {
+		this.butt = butt;
+	}
+
+	public int getPrn_queue() {
+		return prn_queue;
+	}
+
+	public void setPrn_queue(int prn_queue) {
+		this.prn_queue = prn_queue;
 	}
     
 }
