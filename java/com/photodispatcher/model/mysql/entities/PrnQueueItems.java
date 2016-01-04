@@ -40,5 +40,4 @@ public class PrnQueueItems extends AbstractEntity {
 		this.sub_queue = sub_queue;
 	}
 
-    
 }

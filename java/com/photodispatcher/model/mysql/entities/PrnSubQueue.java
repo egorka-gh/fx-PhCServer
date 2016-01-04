@@ -15,9 +15,6 @@ public class PrnSubQueue extends AbstractEntity {
     @Column(name="sub_queue")
     private int sub_queue;
 
-    @Column(name="is_active")
-    private boolean is_active;
-
     @Column(name="started")
     private Date started;
 
@@ -26,6 +23,10 @@ public class PrnSubQueue extends AbstractEntity {
 
     @Column(name="lab")
     private int lab;
+
+    
+    @Column(name="is_active", updatable=false, insertable=false)
+    private boolean is_active;
 
 	public int getPrn_queue() {
 		return prn_queue;

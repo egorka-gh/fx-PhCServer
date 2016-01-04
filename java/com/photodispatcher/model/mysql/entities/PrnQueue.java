@@ -1,11 +1,13 @@
 package com.photodispatcher.model.mysql.entities;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Table(name = "prn_queue")
 public class PrnQueue extends AbstractEntity {
@@ -42,6 +44,13 @@ public class PrnQueue extends AbstractEntity {
     
     
     //db drived
+    
+    @Column(name="priority", updatable=false, insertable=false)
+    private int priority;
+
+    @Column(name="sub_queue", updatable=false, insertable=false)
+    private int sub_queue;
+
     @Column(name="strategy_type", updatable=false, insertable=false)
     private int strategy_type;
 
@@ -51,6 +60,11 @@ public class PrnQueue extends AbstractEntity {
     @Column(name="strategy_name", updatable=false, insertable=false)
     private String strategy_name;
 
+    //childs
+    @Transient
+    private List<PrintGroup> printGroups;
+
+    
 	public int getId() {
 		return id;
 	}
@@ -145,6 +159,30 @@ public class PrnQueue extends AbstractEntity {
 
 	public void setStrategy_name(String strategy_name) {
 		this.strategy_name = strategy_name;
+	}
+
+	public int getSub_queue() {
+		return sub_queue;
+	}
+
+	public void setSub_queue(int sub_queue) {
+		this.sub_queue = sub_queue;
+	}
+
+	public List<PrintGroup> getPrintGroups() {
+		return printGroups;
+	}
+
+	public void setPrintGroups(List<PrintGroup> printGroups) {
+		this.printGroups = printGroups;
+	}
+
+	public int getPriority() {
+		return priority;
+	}
+
+	public void setPriority(int priority) {
+		this.priority = priority;
 	}
     
 }

@@ -18,7 +18,7 @@ DELIMITER $$
 
 DROP PROCEDURE IF EXISTS techUnitCalc$$
 
-CREATE 
+CREATE
 PROCEDURE techUnitCalc (IN pOrder varchar(50), IN pSubOrder varchar(50), IN pPgroup varchar(50), IN pState int, IN pBooks int, IN pSheets int)
 MODIFIES SQL DATA
 BEGIN
@@ -47,15 +47,6 @@ BEGIN
       AND tl.sub_id = pSubOrder
       AND tl.print_group = pPgroup
       AND tp.tech_type = pState;
-
-  -- update prints
-  IF pState = 300
-    AND pPgroup != ''
-  THEN
-    UPDATE print_group pg
-    SET pg.prints_done = LEAST(pg.prints, vDone)
-    WHERE pg.id = pPgroup;
-  END IF;
 
   -- check complited
   IF vDone = pBooks * pSheets
@@ -115,7 +106,15 @@ BEGIN
       CALL extraStateSet(pOrder, pSubOrder, pState, vEnd);
     END IF;
   ELSE
-    -- start
+    -- update prints
+    IF pState = 300
+      AND pPgroup != ''
+    THEN
+      UPDATE print_group pg
+      SET pg.prints_done = LEAST(pg.prints, vDone)
+      WHERE pg.id = pPgroup;
+    END IF;
+    -- start extraState
     CALL extraStateStart(pOrder, pSubOrder, pState, vStart);
   END IF;
 
