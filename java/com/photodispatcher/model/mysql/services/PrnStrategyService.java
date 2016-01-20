@@ -20,4 +20,8 @@ public interface PrnStrategyService {
 
 	SelectResult<PrnQueue> loadQueues();
 
+	SqlResult checkQueue2();
+
+	SqlResult startQueue(int queue, int subQueue, int lab);
+
 }

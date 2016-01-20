@@ -57,8 +57,8 @@ public class PrnQueue extends AbstractEntity {
     @Column(name="strategy_type_name", updatable=false, insertable=false)
     private String strategy_type_name;
 
-    @Column(name="strategy_name", updatable=false, insertable=false)
-    private String strategy_name;
+    @Column(name="lab_name", updatable=false, insertable=false)
+    private String lab_name;
 
     //childs
     @Transient
@@ -153,14 +153,6 @@ public class PrnQueue extends AbstractEntity {
 		this.strategy_type_name = strategy_type_name;
 	}
 
-	public String getStrategy_name() {
-		return strategy_name;
-	}
-
-	public void setStrategy_name(String strategy_name) {
-		this.strategy_name = strategy_name;
-	}
-
 	public int getSub_queue() {
 		return sub_queue;
 	}
@@ -183,6 +175,14 @@ public class PrnQueue extends AbstractEntity {
 
 	public void setPriority(int priority) {
 		this.priority = priority;
+	}
+
+	public String getLab_name() {
+		return lab_name;
+	}
+
+	public void setLab_name(String lab_name) {
+		this.lab_name = lab_name;
 	}
     
 }

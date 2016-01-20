@@ -60,12 +60,35 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 	}
 
 	@Override
+	public SqlResult checkQueue2(){
+		//PROCEDURE prn_queue2_check()
+		String sql= "{CALL prn_queue2_check()}";
+		return runCall(sql);
+	}
+
+	@Override
+	public SqlResult startQueue(int queue, int subQueue, int lab){
+		//PROCEDURE prn_queue_start(IN p_queue int, IN p_subqueue int, IN p_lab int)
+		String sql= "{CALL prn_queue_start(?, ?, ?)}";
+		return runCall(sql, queue, subQueue, lab);
+	}
+
+	@Override
 	public SelectResult<PrnQueue> loadQueues(){
-		SelectResult<PrnQueue> result= new SelectResult<PrnQueue>(); 
-		String sql="SELECT IFNULL(psq.lab, pq.lab) lab, ps.priority, pq.created, pq.id, IFNULL(psq.sub_queue, 0) sub_queue, pq.strategy, pq.is_active, IFNULL(psq.started, pq.started) started, pq.label"+
+		SelectResult<PrnQueue> result= new SelectResult<PrnQueue>();
+		SqlResult suRes=checkQueue2();
+		if(!suRes.isComplete()){
+			result.cloneError(suRes);
+			return result;
+		}
+		String sql="SELECT IFNULL(psq.lab, pq.lab) lab, ps.priority, pq.created, pq.id, IFNULL(psq.sub_queue, 0) sub_queue,"+
+							" pq.strategy, pq.is_active, IFNULL(psq.started, pq.started) started, pq.label,"+
+							" lab.name lab_name, pst.name strategy_type_name"+
 					 " FROM prn_queue pq"+
 					   " INNER JOIN prn_strategy ps ON pq.strategy=ps.id"+
+					   " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
 					   " LEFT OUTER JOIN prn_sub_queue psq ON pq.id = psq.prn_queue AND psq.complited IS NULL"+
+					   " LEFT OUTER JOIN lab ON IFNULL(psq.lab, pq.lab) = lab.id"+
 					 " WHERE pq.is_active = 1 AND pq.complited IS NULL"+
 					 " ORDER BY 1 DESC, 2 DESC, 3, 4, 5";
 		result=runSelect(PrnQueue.class, sql);
@@ -73,12 +96,14 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 			// fill vs print groups
 			for(PrnQueue item : result.getData()){
 				//reload print group
-				sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder, IFNULL(s.alias, pg.path) alias"+
+				sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder, IFNULL(s.alias, pg.path) alias, os.name state_name, av.value paper_name"+
 						 " FROM prn_queue_items pqi"+
 						   " INNER JOIN print_group pg ON pg.id = pqi.print_group"+
 						   " INNER JOIN orders o ON pg.order_id = o.id"+
+						   " INNER JOIN order_state os ON pg.state = os.id"+
+						   " INNER JOIN attr_value av ON pg.paper = av.id"+
 						   " LEFT OUTER JOIN suborders s ON pg.order_id = s.order_id AND pg.sub_id = s.sub_id"+
-						  " WHERE pqi.prn_queue = ? AND pqi.sub_queue = ?";
+						  " WHERE pqi.prn_queue = ? AND pqi.sub_queue = ? AND o.state<450";
 				SelectResult<PrintGroup> selRes=runSelect(PrintGroup.class, sql, item.getId(), item.getSub_queue());
 				if(selRes.isComplete()){
 					item.setPrintGroups(selRes.getData());
