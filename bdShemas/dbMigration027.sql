@@ -1,4 +1,5 @@
 -- main    
+-- new main (virt)    
 -- moskva 
 -- ua 
 -- reserv 
@@ -122,6 +123,19 @@ END
 $$
 
 DELIMITER ;
+
+INSERT INTO attr_value(id, attr_tp, value, locked) VALUES(40, 11, '254', 1);
+INSERT INTO attr_value(id, attr_tp, value, locked) VALUES(41, 12, '200', 1);
+INSERT INTO lab_resize(id, width, pixels) VALUES(13, 254, 3000);
+INSERT INTO lab_resize(id, width, pixels) VALUES(14, 200, 2362);
+
+INSERT INTO attr_synonym(id, src_type, attr_val, synonym) VALUES(92, 1, 40, '20_25_');
+INSERT INTO attr_synonym(id, src_type, attr_val, synonym) VALUES(93, 1, 41, '20_25_');
+INSERT INTO attr_synonym(id, src_type, attr_val, synonym) VALUES(94, 4, 40, '20x25_');
+INSERT INTO attr_synonym(id, src_type, attr_val, synonym) VALUES(95, 4, 41, '20x25_');
+INSERT INTO attr_synonym(id, src_type, attr_val, synonym) VALUES(96, 7, 40, '20_25_');
+INSERT INTO attr_synonym(id, src_type, attr_val, synonym) VALUES(97, 7, 41, '20_25_');
+
 -- main 30.12.2015  
 
 CREATE TABLE prn_limit_type (
@@ -154,6 +168,17 @@ INSERT INTO prn_strategy_type(id, name, default_priority) VALUES(0, 'Пихал�
 INSERT INTO prn_strategy_type(id, name, default_priority) VALUES(1, 'Выбор рулона', 10);
 INSERT INTO prn_strategy_type(id, name, default_priority) VALUES(2, 'Партия pdf', 100);
 
+CREATE TABLE prn_order_type (
+  id int(5) NOT NULL DEFAULT 0,
+  name varchar(50) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 16384
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+INSERT INTO prn_order_type(id, name) VALUES(0, '-');
 
 CREATE TABLE prn_strategy (
   id int(11) NOT NULL AUTO_INCREMENT,
@@ -207,18 +232,6 @@ END
 $$
 
 DELIMITER ;
-
-INSERT INTO attr_value(id, attr_tp, value, locked) VALUES(40, 11, '254', 1);
-INSERT INTO attr_value(id, attr_tp, value, locked) VALUES(41, 12, '200', 1);
-INSERT INTO lab_resize(id, width, pixels) VALUES(13, 254, 3000);
-INSERT INTO lab_resize(id, width, pixels) VALUES(14, 200, 2362);
-
-INSERT INTO attr_synonym(id, src_type, attr_val, synonym) VALUES(92, 1, 40, '20_25_');
-INSERT INTO attr_synonym(id, src_type, attr_val, synonym) VALUES(93, 1, 41, '20_25_');
-INSERT INTO attr_synonym(id, src_type, attr_val, synonym) VALUES(94, 4, 40, '20x25_');
-INSERT INTO attr_synonym(id, src_type, attr_val, synonym) VALUES(95, 4, 41, '20x25_');
-INSERT INTO attr_synonym(id, src_type, attr_val, synonym) VALUES(96, 7, 40, '20_25_');
-INSERT INTO attr_synonym(id, src_type, attr_val, synonym) VALUES(97, 7, 41, '20_25_');
 
 CREATE TABLE prn_queue (
   id int(11) NOT NULL AUTO_INCREMENT,
@@ -352,6 +365,11 @@ BEGIN
 wet:
   LOOP
     FETCH vCur INTO vQueueId;
+    IF vIsEnd
+    THEN
+      LEAVE wet;
+    END IF;
+
     -- check sub Queues
     -- cover
     SET vCoverComplited = prn_queue_complited(vQueueId, 1);
@@ -411,11 +429,13 @@ BEGIN
       AND pg.is_pdf = 1
       AND pg.book_type > 0
       AND pg.book_part = 2
+      AND pg.prn_queue = 0
       AND pg1.state = 200
       AND pg1.is_pdf = 1
       AND pg1.book_type > 0
       AND pg1.book_part = 1
       AND pg1.is_reprint = 0
+      AND pg1.prn_queue = 0
     GROUP BY oei.format, oei.sheets
     ORDER BY SUM(pg.prints) DESC;
 
@@ -431,12 +451,12 @@ wet:
     END IF;
     -- create queue
     INSERT INTO prn_queue (strategy, is_active, created, label, has_sub)
-      VALUES (p_strategy, 1, NOW(), CONCAT_WS('x', vFormat, vSheets), 1);
+      VALUES (p_strategy, 1, NOW(), CONCAT_WS('; разворотов:', vFormat, vSheets), 1);
     SET vQueueId = LAST_INSERT_ID();
 
     -- create covers sub queue
-    INSERT INTO prn_sub_queue (prn_queue, sub_queue, is_active)
-      VALUES (vQueueId, 1, 1);
+    INSERT INTO prn_sub_queue (prn_queue, sub_queue)
+      VALUES (vQueueId, 1);
     -- fill covers sub queue
     INSERT INTO prn_queue_items (prn_queue, sub_queue, print_group)
       SELECT vQueueId, 1, pg.id
@@ -449,17 +469,19 @@ wet:
           AND pg.is_pdf = 1
           AND pg.book_type > 0
           AND pg.book_part = 1
+          AND pg.prn_queue = 0
           AND pg1.state = 200
           AND pg1.is_pdf = 1
           AND pg1.book_type > 0
           AND pg1.book_part = 2
           AND pg1.is_reprint = 0
+          AND pg1.prn_queue = 0
           AND oei.format = vFormat
           AND oei.sheets = vSheets;
 
     -- create block sub queue
-    INSERT INTO prn_sub_queue (prn_queue, sub_queue, is_active)
-      VALUES (vQueueId, 2, 1);
+    INSERT INTO prn_sub_queue (prn_queue, sub_queue)
+      VALUES (vQueueId, 2);
     -- fill block sub queue
     INSERT INTO prn_queue_items (prn_queue, sub_queue, print_group)
       SELECT vQueueId, 2, pg.id
@@ -472,11 +494,13 @@ wet:
           AND pg.is_pdf = 1
           AND pg.book_type > 0
           AND pg.book_part = 2
+          AND pg.prn_queue = 0
           AND pg1.state = 200
           AND pg1.is_pdf = 1
           AND pg1.book_type > 0
           AND pg1.book_part = 1
           AND pg1.is_reprint = 0
+          AND pg1.prn_queue = 0
           AND oei.format = vFormat
           AND oei.sheets = vSheets;
 
@@ -494,3 +518,5 @@ END
 $$
 
 DELIMITER ;
+
+-- new main (virt) 2016-01-21
