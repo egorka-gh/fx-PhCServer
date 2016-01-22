@@ -1,5 +1,6 @@
 package com.photodispatcher.model.mysql.services;
 
+import java.util.Date;
 import java.util.List;
 
 import org.granite.messaging.service.annotations.RemoteDestination;
@@ -23,5 +24,7 @@ public interface PrnStrategyService {
 	SqlResult checkQueue2();
 
 	SqlResult startQueue(int queue, int subQueue, int lab);
+
+	SelectResult<PrnQueue> loadComplitedQueues(Date date);
 
 }

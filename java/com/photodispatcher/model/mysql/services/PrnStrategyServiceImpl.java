@@ -1,6 +1,7 @@
 package com.photodispatcher.model.mysql.services;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -95,16 +96,8 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 		if(result.isComplete()){
 			// fill vs print groups
 			for(PrnQueue item : result.getData()){
-				//reload print group
-				sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder, IFNULL(s.alias, pg.path) alias, os.name state_name, av.value paper_name"+
-						 " FROM prn_queue_items pqi"+
-						   " INNER JOIN print_group pg ON pg.id = pqi.print_group"+
-						   " INNER JOIN orders o ON pg.order_id = o.id"+
-						   " INNER JOIN order_state os ON pg.state = os.id"+
-						   " INNER JOIN attr_value av ON pg.paper = av.id"+
-						   " LEFT OUTER JOIN suborders s ON pg.order_id = s.order_id AND pg.sub_id = s.sub_id"+
-						  " WHERE pqi.prn_queue = ? AND pqi.sub_queue = ? AND o.state<450";
-				SelectResult<PrintGroup> selRes=runSelect(PrintGroup.class, sql, item.getId(), item.getSub_queue());
+				//load print group
+				SelectResult<PrintGroup> selRes=loadQueueItems(item.getId(), item.getSub_queue(), false);
 				if(selRes.isComplete()){
 					item.setPrintGroups(selRes.getData());
 				}else{
@@ -114,6 +107,54 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public SelectResult<PrnQueue> loadComplitedQueues(Date date){
+		SelectResult<PrnQueue> result= new SelectResult<PrnQueue>();
+		String sql="SELECT psq.lab , ps.priority, pq.created, psq.complited, pq.id, psq.sub_queue, pq.strategy, pq.is_active, psq.started, pq.label, lab.name lab_name, pst.name strategy_type_name"+
+					 " FROM prn_sub_queue psq"+
+					   " INNER JOIN prn_queue pq ON pq.id = psq.prn_queue"+
+					   " INNER JOIN prn_strategy ps ON pq.strategy = ps.id"+
+					   " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
+					    " LEFT OUTER JOIN lab ON psq.lab = lab.id"+
+					  " WHERE psq.complited > DATE(?) AND psq.complited < DATE_ADD(DATE(?), INTERVAL 1 DAY)"+
+					" UNION ALL"+
+					" SELECT pq.lab, ps.priority, pq.created, pq.complited, pq.id, 0 sub_queue, pq.strategy, pq.is_active, pq.started, pq.label, lab.name lab_name, pst.name strategy_type_name"+
+					  " FROM prn_queue pq"+
+					    " INNER JOIN prn_strategy ps ON pq.strategy = ps.id"+
+					    " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
+					    " LEFT OUTER JOIN lab ON pq.lab = lab.id"+
+					  " WHERE pq.complited > DATE(?) AND pq.complited < DATE_ADD(DATE(?), INTERVAL 1 DAY) AND pq.has_sub = 0"+
+				  " ORDER BY complited";
+		result=runSelect(PrnQueue.class, sql,date,date,date,date);
+		if(result.isComplete()){
+			// fill vs print groups
+			for(PrnQueue item : result.getData()){
+				//load print group
+				SelectResult<PrintGroup> selRes=loadQueueItems(item.getId(), item.getSub_queue(),true);
+				if(selRes.isComplete()){
+					item.setPrintGroups(selRes.getData());
+				}else{
+					result.cloneError(selRes);
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
+	private SelectResult<PrintGroup> loadQueueItems(int queue, int subQueue, boolean all){
+		String sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder, IFNULL(s.alias, pg.path) alias, os.name state_name, av.value paper_name"+
+					 " FROM prn_queue_items pqi"+
+					   " INNER JOIN print_group pg ON pg.id = pqi.print_group"+
+					   " INNER JOIN orders o ON pg.order_id = o.id"+
+					   " INNER JOIN order_state os ON pg.state = os.id"+
+					   " INNER JOIN attr_value av ON pg.paper = av.id"+
+					   " LEFT OUTER JOIN suborders s ON pg.order_id = s.order_id AND pg.sub_id = s.sub_id"+
+					  " WHERE pqi.prn_queue = ? AND pqi.sub_queue = ?";
+		if(!all) sql=sql +" AND o.state<450";
+		return runSelect(PrintGroup.class, sql, queue, subQueue);
 	}
 
 }
