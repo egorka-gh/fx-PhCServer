@@ -17,6 +17,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.sansorm.OrmElf;
@@ -31,6 +32,7 @@ import com.photodispatcher.model.mysql.entities.DeliveryTypePrintForm;
 import com.photodispatcher.model.mysql.entities.PrintFormFieldItem;
 import com.photodispatcher.model.mysql.entities.PrintFormParametr;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SqlResult;
 import com.photodispatcher.model.mysql.entities.report.Parameter;
 import com.photodispatcher.model.mysql.entities.report.Report;
 import com.photodispatcher.model.mysql.entities.report.ReportGroup;
@@ -136,7 +138,28 @@ public class XReportServiceImpl extends AbstractDAO implements XReportService {
 		}.execute();		
 	}
 
-	
+
+	@Override
+	public SqlResult releaseReport(final ReportResult report){
+		SqlResult result= new SqlResult();
+		if(report==null || report.getMessageId()==null || report.getMessageId().isEmpty()){
+			return result;
+		}
+		HttpGraniteContext ctx = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+		String outPath=(String)ctx.getServletContext().getInitParameter(Constants.OUT_FOLDER_INIT_PARAMETER);
+		outPath=outPath+"/"+report.getMessageId()+"/";
+		//create dir
+		File outDir=new File(outPath);
+		if(!outDir.exists()) return result;
+		try {  
+            FileUtils.deleteDirectory(outDir);  
+		} catch (Exception e) {
+			result.setErrMesage(e.getMessage());
+			result.setComplete(false);
+		}  
+		return result;
+	}
+
 	@Override
 	public ReportResult buildReport(final Report report, String source) {
 		ReportResult result= new ReportResult();
@@ -147,13 +170,28 @@ public class XReportServiceImpl extends AbstractDAO implements XReportService {
 		result.setId(report.getId());
 		
 		HttpGraniteContext ctx = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+
+		result.setMessageId(ctx.getAMFContext().getRequest().getMessageId());
 		
-		String outPath=(String)ctx.getServletContext().getAttribute(Constants.OUT_FOLDER_SESSION_ATTRIBUTE);
+		if(result.getMessageId()==null || result.getMessageId().isEmpty()){
+			result.assignError("Empty MessageId");
+            return result;
+		}
 		
-		String rootPath = ctx.getServletContext().getRealPath("/");
-		rootPath+="/"+Constants.REPORTS_FOLDER+"/";
+		//String outPath=(String)ctx.getServletContext().getAttribute(Constants.OUT_FOLDER_SESSION_ATTRIBUTE);
+		String outPath=(String)ctx.getServletContext().getInitParameter(Constants.OUT_FOLDER_INIT_PARAMETER);
+		outPath=outPath+"/"+result.getMessageId()+"/";
+		//create dir
+		File outDir=new File(outPath);
+		try {
+			outDir.mkdirs();
+		} catch (Exception e) {
+			result.assignError("Can't create: "+outPath+"; err:"+e.getMessage());
+            return result;
+		}
 		
-		String outputUrl = (String)ctx.getServletContext().getAttribute(Constants.SESSION_ID_ATTRIBUTE);
+		//String outputUrl = (String)ctx.getServletContext().getAttribute(Constants.SESSION_ID_ATTRIBUTE);
+		String outputUrl = result.getMessageId();
 		outputUrl=Constants.URL_REPORT_BASE_URL+"/"+outputUrl+"/"+report.getId()+ Constants.REPORT_EXT;
 		Date dts= new Date();
 		outputUrl+="?"+dts.getTime();
@@ -167,8 +205,11 @@ public class XReportServiceImpl extends AbstractDAO implements XReportService {
 			outputStream = new FileOutputStream(outFile);
 		} catch (FileNotFoundException e) {
 			result.assignError("Can't open: "+outFile);
+            return result;
 		}
 		
+		String rootPath = ctx.getServletContext().getRealPath("/");
+		rootPath+="/"+Constants.REPORTS_FOLDER+"/";
         String templateName=rootPath+report.getId()+ Constants.REPORT_EXT;
         String templateXml=rootPath+report.getId()+ Constants.XML_EXT;
 		

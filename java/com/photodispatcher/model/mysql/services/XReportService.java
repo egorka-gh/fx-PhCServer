@@ -8,6 +8,7 @@ import com.photodispatcher.model.mysql.entities.DeliveryTypePrintForm;
 import com.photodispatcher.model.mysql.entities.PrintFormFieldItem;
 import com.photodispatcher.model.mysql.entities.PrintFormParametr;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SqlResult;
 import com.photodispatcher.model.mysql.entities.report.Parameter;
 import com.photodispatcher.model.mysql.entities.report.Report;
 import com.photodispatcher.model.mysql.entities.report.ReportGroup;
@@ -29,5 +30,6 @@ public interface XReportService {
 	SelectResult<PrintFormFieldItem> getPrintFormFieldItems();
 	SelectResult<DeliveryTypePrintForm> getPrintForms();
 	SelectResult<PrintFormParametr> getPrintFormParameters();
+	SqlResult releaseReport(ReportResult report);
 	
 }

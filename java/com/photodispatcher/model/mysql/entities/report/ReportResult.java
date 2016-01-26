@@ -9,6 +9,7 @@ public class ReportResult extends AbstractEntity {
     private boolean hasError;
     private String url;
     private String error;
+    private String messageId;
     
 	public String getId() {
 		return id;
@@ -38,6 +39,12 @@ public class ReportResult extends AbstractEntity {
 	public void assignError(String error) {
 		hasError=true;
 		this.error = error;
+	}
+	public String getMessageId() {
+		return messageId;
+	}
+	public void setMessageId(String messageId) {
+		this.messageId = messageId;
 	}
 
 }
