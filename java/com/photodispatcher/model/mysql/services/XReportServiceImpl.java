@@ -162,6 +162,7 @@ public class XReportServiceImpl extends AbstractDAO implements XReportService {
 
 	@Override
 	public ReportResult buildReport(final Report report, String source) {
+		//TODO clear report folders (getMessageId) older then current date
 		ReportResult result= new ReportResult();
 		if(report == null){
 			result.assignError("null report");
@@ -203,8 +204,8 @@ public class XReportServiceImpl extends AbstractDAO implements XReportService {
 		OutputStream outputStream=null;
 		try {
 			outputStream = new FileOutputStream(outFile);
-		} catch (FileNotFoundException e) {
-			result.assignError("Can't open: "+outFile);
+		} catch (Exception e) {
+			result.assignError("Can't open: "+outFile+"; err"+e.getMessage());
             return result;
 		}
 		

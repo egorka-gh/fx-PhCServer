@@ -6,7 +6,8 @@
 	xmlns="*"
 	controlBarVisible="{identity.loggedIn}"
 	preinitialize="Spring.getInstance().initApplication()"
-	creationComplete="init()">
+	creationComplete="init()"
+	>
 	
 	<fx:Script>
 		<![CDATA[
@@ -27,6 +28,8 @@
 			[Bindable] [Inject]
 			public var identity:Identity;
 			
+			private var runer:ReportRuner;
+			
 			private function init():void {
 				// Define service endpoint resolver
 				Tide.getInstance().getContext().serviceInitializer = new DefaultServiceInitializer('/PhCServer');
@@ -44,7 +47,7 @@
 				*/
 				
 				//ping tomcat and add body !!!
-				var runer:ReportRuner= new ReportRuner();
+				runer= new ReportRuner();
 				runer.reportViewer= new ReportViewerWeb();
 				addElement(runer);
 			}
