@@ -523,3 +523,4 @@ ALTER TABLE prn_sub_queue ADD INDEX IDX_prn_sub_queue_complited (complited);
 ALTER TABLE prn_queue ADD INDEX IDX_prn_queue_complited (complited);
 
 -- new main (virt) 2016-01-21
+-- main (virt) 2016-01-26
