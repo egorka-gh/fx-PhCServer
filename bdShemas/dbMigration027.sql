@@ -523,4 +523,29 @@ ALTER TABLE prn_sub_queue ADD INDEX IDX_prn_sub_queue_complited (complited);
 ALTER TABLE prn_queue ADD INDEX IDX_prn_queue_complited (complited);
 
 -- new main (virt) 2016-01-21
--- main (virt) 2016-01-26
+
+
+INSERT INTO src_type(id, loc_type, name, state, book_part) VALUES(24, 2, 'Konika_Long', 0, 0);
+
+-- main (virt) 2016-02-04
+
+DROP TABLE tech_unit;
+
+CREATE TABLE tech_unit (
+  id int(5) NOT NULL,
+  name varchar(50) DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AVG_ROW_LENGTH = 3276
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+INSERT INTO tech_unit(id, name) VALUES (0, 'Лист');
+INSERT INTO tech_unit(id, name) VALUES (1, 'Книга обложка');
+INSERT INTO tech_unit(id, name) VALUES (2, 'Книга блок');
+INSERT INTO tech_unit(id, name) VALUES (3, 'Книга целиком');
+INSERT INTO tech_unit(id, name) VALUES (90, 'Часть заказа');
+
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(145, 'Ожидает перепечатки', 0, 0, 0, 0);
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(146, 'Захвачен на перепечатку', 0, 0, 0, 0);
