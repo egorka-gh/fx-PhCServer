@@ -36,5 +36,7 @@ public interface DictionaryService {
 	SelectResult<FieldValue> getInterlayerValueList();
 	SelectResult<FieldValue> getStopTypeValueList();
 	SelectResult<FieldValue> getPrnStrategyValueList();
+	SelectResult<FieldValue> getRejectUnitValueList();
+	SelectResult<FieldValue> getTechUnitValueList();
 
 }

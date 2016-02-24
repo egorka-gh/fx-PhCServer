@@ -33,6 +33,9 @@ public class Lab extends AbstractEntity {
     
     @Column(name="soft_speed")
     private float soft_speed;
+
+    @Column(name="post_delay")
+    private float post_delay;
     
   //db drived
     @Column(name="src_type_name", updatable=false, insertable=false)
@@ -149,6 +152,14 @@ public class Lab extends AbstractEntity {
 
 	public void setSoft_speed(float soft_speed) {
 		this.soft_speed = soft_speed;
+	}
+
+	public float getPost_delay() {
+		return post_delay;
+	}
+
+	public void setPost_delay(float post_delay) {
+		this.post_delay = post_delay;
 	}
 
 }

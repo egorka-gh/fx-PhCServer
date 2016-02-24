@@ -526,8 +526,11 @@ ALTER TABLE prn_queue ADD INDEX IDX_prn_queue_complited (complited);
 
 
 INSERT INTO src_type(id, loc_type, name, state, book_part) VALUES(24, 2, 'Konika_Long', 0, 0);
-
 -- main (virt) 2016-02-04
+
+ALTER TABLE lab ADD COLUMN post_delay INT(5) DEFAULT 0 AFTER soft_speed;
+-- main (virt) 2016-02-18
+-- main 2016-02-22
 
 DROP TABLE tech_unit;
 
@@ -549,3 +552,6 @@ INSERT INTO tech_unit(id, name) VALUES (90, 'Часть заказа');
 
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(145, 'Ожидает перепечатки', 0, 0, 0, 0);
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(146, 'Захвачен на перепечатку', 0, 0, 0, 0);
+
+UPDATE order_state SET tech = 1 WHERE id = 251;
+
