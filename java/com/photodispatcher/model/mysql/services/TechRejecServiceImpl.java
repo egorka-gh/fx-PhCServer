@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.photodispatcher.model.mysql.ConnectionFactory;
 import com.photodispatcher.model.mysql.entities.DmlResult;
+import com.photodispatcher.model.mysql.entities.Order;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 import com.photodispatcher.model.mysql.entities.StaffActivity;
@@ -43,11 +44,28 @@ public class TechRejecServiceImpl extends AbstractDAO implements TechRejecServic
 	}
 	
 	@Override
-	public SelectResult<TechReject> loadReprintWaite(){
-		String sql="SELECT * FROM tech_reject tr WHERE tr.state = 145 ORDER BY tr.order_id";
-		return runSelect(TechReject.class, sql);
+	public SelectResult<Order> loadReprintWaiteAsOrder(){
+		String sql="SELECT o.id, tr.state, MIN(tr.state_date) state_date, s.name source_name, os.name state_name, o.ftp_folder, o.group_id, o.src_date, 'reject' tag"+
+				  " FROM tech_reject tr"+
+				    " INNER JOIN orders o ON tr.order_id = o.id"+
+				    " INNER JOIN order_state os ON tr.state = os.id"+
+				    " INNER JOIN sources s ON o.source = s.id"+
+				  " WHERE tr.state = 145"+
+				  " GROUP BY tr.order_id";
+		return runSelect(Order.class, sql);
 	}
-	
+
+	@Override
+	public SelectResult<TechReject> loadByOrder(String orderId, int state){
+		String sql="SELECT * FROM tech_reject tr WHERE tr.order_id= ? AND ? IN (tr.state,0)";
+		return runSelect(TechReject.class, sql, orderId, state);
+	}
+
+	@Override
+	public DmlResult<TechReject> updateReject(TechReject item){
+		return runUpdate(item);
+	}
+
 	@Override
 	public SelectResult<TechReject> captureState(List<TechReject> rejects){
 		SelectResult<TechReject> result= new SelectResult<TechReject>();
@@ -106,4 +124,5 @@ public class TechRejecServiceImpl extends AbstractDAO implements TechRejecServic
 		String sql="SELECT * FROM tech_reject_items tri WHERE tri.tech_reject=?";
 		return runSelect(TechRejectItems.class,sql,rejectId);
 	}
+	
 }

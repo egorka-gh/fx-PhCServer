@@ -71,6 +71,10 @@ public class Order extends AbstractEntity {
     private String state_name;
     @Column(name="production_name", updatable=false, insertable=false)
     private String production_name;
+
+    @Column(name="tag", updatable=false, insertable=false)
+    private String tag;
+
     /*
     @Column(name="book_type", updatable=false, insertable=false)
     private int book_type;
@@ -267,6 +271,12 @@ public class Order extends AbstractEntity {
 	}
 	public void setResume_load(boolean resume_load) {
 		this.resume_load = resume_load;
+	}
+	public String getTag() {
+		return tag;
+	}
+	public void setTag(String tag) {
+		this.tag = tag;
 	}
     
 

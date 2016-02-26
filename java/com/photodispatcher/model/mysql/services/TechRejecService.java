@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.granite.messaging.service.annotations.RemoteDestination;
 
+import com.photodispatcher.model.mysql.entities.DmlResult;
+import com.photodispatcher.model.mysql.entities.Order;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 import com.photodispatcher.model.mysql.entities.TechReject;
@@ -12,6 +14,8 @@ import com.photodispatcher.model.mysql.entities.TechReject;
 public interface TechRejecService {
 
 	SqlResult create(TechReject reject);
-	SelectResult<TechReject> loadReprintWaite();
 	SelectResult<TechReject> captureState(List<TechReject> rejects);
+	DmlResult<TechReject> updateReject(TechReject item);
+	SelectResult<TechReject> loadByOrder(String orderId, int state);
+	SelectResult<Order> loadReprintWaiteAsOrder();
 }
