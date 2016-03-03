@@ -552,6 +552,11 @@ INSERT INTO tech_unit(id, name) VALUES (90, 'Часть заказа');
 
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(145, 'Ожидает перепечатки', 0, 0, 0, 0);
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(146, 'Захвачен на перепечатку', 0, 0, 0, 0);
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(-323, 'Ошибка перепечатки', 1, 0, 0, 0);  
 
 UPDATE order_state SET tech = 1 WHERE id = 251;
 
+ALTER TABLE app_config
+  ADD COLUMN print_rotate TINYINT(2) DEFAULT 0 AFTER pdf_quality,
+  ADD COLUMN print_revers TINYINT(2) DEFAULT 0 AFTER print_rotate;
+  

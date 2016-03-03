@@ -28,6 +28,10 @@ public class AppConfig extends AbstractEntity {
     private int clean_nr_days;
     @Column(name="pdf_quality")
     private int pdf_quality;
+    @Column(name="print_rotate")
+    private boolean print_rotate;
+    @Column(name="print_revers")
+    private boolean print_revers;
 
     //ref name
     @Column(name="production_name", updatable=false, insertable=false)
@@ -112,6 +116,22 @@ public class AppConfig extends AbstractEntity {
 
 	public void setPdf_quality(int pdf_quality) {
 		this.pdf_quality = pdf_quality;
+	}
+
+	public boolean isPrint_rotate() {
+		return print_rotate;
+	}
+
+	public void setPrint_rotate(boolean print_rotate) {
+		this.print_rotate = print_rotate;
+	}
+
+	public boolean isPrint_revers() {
+		return print_revers;
+	}
+
+	public void setPrint_revers(boolean print_revers) {
+		this.print_revers = print_revers;
 	}
 
 }

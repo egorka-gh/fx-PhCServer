@@ -6,7 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table(name = "tech_reject_items")
-public class TechRejectItems extends AbstractEntity {
+public class TechRejectItem extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 
     @Id

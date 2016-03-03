@@ -16,7 +16,7 @@ import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 import com.photodispatcher.model.mysql.entities.StaffActivity;
 import com.photodispatcher.model.mysql.entities.TechReject;
-import com.photodispatcher.model.mysql.entities.TechRejectItems;
+import com.photodispatcher.model.mysql.entities.TechRejectItem;
 
 @Service("techRejecService")
 public class TechRejecServiceImpl extends AbstractDAO implements TechRejecService{
@@ -34,7 +34,7 @@ public class TechRejecServiceImpl extends AbstractDAO implements TechRejecServic
 		}
 		DmlResult<TechReject> dres= runInsert(reject);
 		if(dres.isComplete()){
-			for(TechRejectItems item : reject.getItems()) item.setTech_reject(reject.getId());
+			for(TechRejectItem item : reject.getItems()) item.setTech_reject(reject.getId());
 			SqlResult subRes=runInsertBatch(reject.getItems());
 			if(!subRes.isComplete()) result.cloneError(subRes);
 		}else{
@@ -56,6 +56,30 @@ public class TechRejecServiceImpl extends AbstractDAO implements TechRejecServic
 	}
 
 	@Override
+	public SelectResult<TechReject> loadByState(int stateFrom, int stateTo){
+		String sql="SELECT tr.*, sa.remark sa_remark, s.name staff_name, sat.name sa_type_name, os.name state_name"+
+					 " FROM tech_reject tr"+
+					   " INNER JOIN order_state os ON os.id=tr.state"+
+					   " LEFT OUTER JOIN staff_activity sa ON tr.activity = sa.id"+
+					   " LEFT OUTER JOIN staff s ON sa.staff = s.id"+
+					   " LEFT OUTER JOIN staff_activity_type sat ON sa.sa_type = sat.id"+
+					  " WHERE tr.state BETWEEN ? AND ?";
+		SelectResult<TechReject> result= runSelect(TechReject.class, sql, stateFrom, stateTo);
+		if(!result.isComplete() || result.getData()==null) return result;
+		
+		for(TechReject reject : result.getData()){
+			SelectResult<TechRejectItem> itemsRes=loadItems(reject.getId());
+			if(!itemsRes.isComplete()){
+				result.cloneError(itemsRes);
+				break;
+			}else{
+				reject.setItems(itemsRes.getData());
+			}
+		}
+		return result;
+	}
+
+	@Override
 	public SelectResult<TechReject> loadByOrder(String orderId, int state){
 		String sql="SELECT * FROM tech_reject tr WHERE tr.order_id= ? AND ? IN (tr.state,0)";
 		return runSelect(TechReject.class, sql, orderId, state);
@@ -64,6 +88,17 @@ public class TechRejecServiceImpl extends AbstractDAO implements TechRejecServic
 	@Override
 	public DmlResult<TechReject> updateReject(TechReject item){
 		return runUpdate(item);
+	}
+
+	@Override
+	public SqlResult updateRejectBatch(List<TechReject> items){
+		return runUpdateBatch(items);
+	}
+
+	@Override
+	public SqlResult cancelReject(String itemId){
+		String sql="DELETE FROM tech_reject WHERE id=? AND state=145";
+		return runDML(sql, itemId);
 	}
 
 	@Override
@@ -105,7 +140,7 @@ public class TechRejecServiceImpl extends AbstractDAO implements TechRejecServic
 					}else{
 						reject=tr;
 						//load items
-						SelectResult<TechRejectItems> itemsRes=loadItems(reject.getId());
+						SelectResult<TechRejectItem> itemsRes=loadItems(reject.getId());
 						if(!itemsRes.isComplete()){
 							updated=false;
 							reject.setState(-309);
@@ -120,9 +155,12 @@ public class TechRejecServiceImpl extends AbstractDAO implements TechRejecServic
 		return result;
 	}
 	
-	private SelectResult<TechRejectItems> loadItems(int rejectId){
-		String sql="SELECT * FROM tech_reject_items tri WHERE tri.tech_reject=?";
-		return runSelect(TechRejectItems.class,sql,rejectId);
+	private SelectResult<TechRejectItem> loadItems(int rejectId){
+		String sql="SELECT *, tu.name thech_unit_name"+
+					 " FROM tech_reject_items tri"+
+					   " LEFT OUTER JOIN tech_unit tu ON tu.id = tri.thech_unit"+
+					 " WHERE tri.tech_reject = ?";
+		return runSelect(TechRejectItem.class,sql,rejectId);
 	}
 	
 }

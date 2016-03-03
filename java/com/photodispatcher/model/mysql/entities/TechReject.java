@@ -40,13 +40,19 @@ public class TechReject extends AbstractEntity {
     private String reject_unit_name;
     @Column(name="state_name", updatable=false, insertable=false)
     private String state_name;
+    @Column(name="sa_type_name", updatable=false, insertable=false)
+    private String sa_type_name;
+    @Column(name="staff_name", updatable=false, insertable=false)
+    private String staff_name;
+    @Column(name="sa_remark", updatable=false, insertable=false)
+    private String sa_remark;
 
 
     //childs
     @Transient
-    private List<TechRejectItems> items;
+    private List<TechRejectItem> items;
     @Transient
-    private List<TechRejectItems> pgroups;
+    private List<TechRejectItem> pgroups;
     @Transient
     private StaffActivity activityObj;
 
@@ -116,16 +122,16 @@ public class TechReject extends AbstractEntity {
 	public void setState_name(String state_name) {
 		this.state_name = state_name;
 	}
-	public List<TechRejectItems> getItems() {
+	public List<TechRejectItem> getItems() {
 		return items;
 	}
-	public void setItems(List<TechRejectItems> items) {
+	public void setItems(List<TechRejectItem> items) {
 		this.items = items;
 	}
-	public List<TechRejectItems> getPgroups() {
+	public List<TechRejectItem> getPgroups() {
 		return pgroups;
 	}
-	public void setPgroups(List<TechRejectItems> pgroups) {
+	public void setPgroups(List<TechRejectItem> pgroups) {
 		this.pgroups = pgroups;
 	}
 	public StaffActivity getActivityObj() {
@@ -133,5 +139,23 @@ public class TechReject extends AbstractEntity {
 	}
 	public void setActivityObj(StaffActivity activityObj) {
 		this.activityObj = activityObj;
+	}
+	public String getSa_type_name() {
+		return sa_type_name;
+	}
+	public void setSa_type_name(String sa_type_name) {
+		this.sa_type_name = sa_type_name;
+	}
+	public String getStaff_name() {
+		return staff_name;
+	}
+	public void setStaff_name(String staff_name) {
+		this.staff_name = staff_name;
+	}
+	public String getSa_remark() {
+		return sa_remark;
+	}
+	public void setSa_remark(String sa_remark) {
+		this.sa_remark = sa_remark;
 	}
 }
