@@ -32,6 +32,8 @@ public class AppConfig extends AbstractEntity {
     private boolean print_rotate;
     @Column(name="print_revers")
     private boolean print_revers;
+    @Column(name="cfg_pwd")
+    private String cfg_pwd;
 
     //ref name
     @Column(name="production_name", updatable=false, insertable=false)
@@ -132,6 +134,14 @@ public class AppConfig extends AbstractEntity {
 
 	public void setPrint_revers(boolean print_revers) {
 		this.print_revers = print_revers;
+	}
+
+	public String getCfg_pwd() {
+		return cfg_pwd;
+	}
+
+	public void setCfg_pwd(String cfg_pwd) {
+		this.cfg_pwd = cfg_pwd;
 	}
 
 }

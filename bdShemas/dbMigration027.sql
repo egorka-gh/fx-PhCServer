@@ -558,5 +558,60 @@ UPDATE order_state SET tech = 1 WHERE id = 251;
 
 ALTER TABLE app_config
   ADD COLUMN print_rotate TINYINT(2) DEFAULT 0 AFTER pdf_quality,
-  ADD COLUMN print_revers TINYINT(2) DEFAULT 0 AFTER print_rotate;
+  ADD COLUMN print_revers TINYINT(2) DEFAULT 0 AFTER print_rotate,
+  ADD COLUMN cfg_pwd VARCHAR(50) DEFAULT NULL AFTER print_revers;
   
+CREATE TABLE tech_reject (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  created datetime DEFAULT NULL,
+  order_id varchar(50) NOT NULL,
+  sub_id varchar(50) DEFAULT '',
+  reject_unit int(5) DEFAULT 0,
+  book int(5) DEFAULT 0,
+  activity int(10) DEFAULT NULL,
+  state int(5) DEFAULT 145,
+  state_date datetime DEFAULT NULL,
+  PRIMARY KEY (id),
+  INDEX IDX_tech_reject_state (state),
+  CONSTRAINT FK_tech_reject_orders_id FOREIGN KEY (order_id)
+  REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 2
+AVG_ROW_LENGTH = 16384
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE tech_reject_items (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  tech_reject int(11) NOT NULL,
+  pg_src varchar(50) NOT NULL,
+  thech_unit int(5) DEFAULT 0,
+  book int(5) DEFAULT 0,
+  sheet int(11) DEFAULT 0,
+  qty tinyint(4) DEFAULT 1,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_tech_reject_items_tech_reject_id FOREIGN KEY (tech_reject)
+  REFERENCES tech_reject (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 4
+AVG_ROW_LENGTH = 5461
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+CREATE TABLE tech_reject_pg (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  tech_reject int(11) NOT NULL,
+  pg_src varchar(50) DEFAULT NULL,
+  pg_dst varchar(50) DEFAULT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT FK_tech_reject_pg_tech_reject_id FOREIGN KEY (tech_reject)
+  REFERENCES tech_reject (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 1
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+-- main 2016-03-04

@@ -19,6 +19,7 @@ public interface TechRejecService {
 	SelectResult<TechReject> loadByOrder(String orderId, int state);
 	SelectResult<Order> loadReprintWaiteAsOrder();
 	SqlResult updateRejectBatch(List<TechReject> items);
-	SqlResult cancelReject(String itemId);
 	SelectResult<TechReject> loadByState(int stateFrom, int stateTo);
+	SqlResult cancelReject(int itemId);
+	SqlResult cancelRejectByOrder(String orderId);
 }

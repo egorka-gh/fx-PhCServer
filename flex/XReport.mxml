@@ -45,7 +45,6 @@
 				// Check current authentication state
 				identity.isLoggedIn(autoLogin);
 				*/
-				
 				//ping tomcat and add body !!!
 				runer= new ReportRuner();
 				runer.reportViewer= new ReportViewerWeb();

@@ -96,9 +96,15 @@ public class TechRejecServiceImpl extends AbstractDAO implements TechRejecServic
 	}
 
 	@Override
-	public SqlResult cancelReject(String itemId){
+	public SqlResult cancelReject(int itemId){
 		String sql="DELETE FROM tech_reject WHERE id=? AND state=145";
 		return runDML(sql, itemId);
+	}
+
+	@Override
+	public SqlResult cancelRejectByOrder(String orderId){
+		String sql="DELETE FROM tech_reject WHERE order_id=? AND state=145";
+		return runDML(sql, orderId);
 	}
 
 	@Override
