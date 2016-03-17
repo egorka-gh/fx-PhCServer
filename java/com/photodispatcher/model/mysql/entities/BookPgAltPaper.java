@@ -24,7 +24,9 @@ public class BookPgAltPaper extends AbstractEntity {
     private int paper;
     @Column(name="interlayer")
     private int interlayer;
-    
+    @Column(name="revers")
+    private boolean revers=false;
+
     
     //ref name
     @Column(name="paper_name", updatable=false, insertable=false)
@@ -80,5 +82,11 @@ public class BookPgAltPaper extends AbstractEntity {
 	}
 	public void setInterlayer_name(String interlayer_name) {
 		this.interlayer_name = interlayer_name;
+	}
+	public boolean isRevers() {
+		return revers;
+	}
+	public void setRevers(boolean revers) {
+		this.revers = revers;
 	}
 }

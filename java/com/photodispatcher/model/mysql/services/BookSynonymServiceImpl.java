@@ -96,7 +96,7 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 	}
 
 	private SelectResult<BookPgAltPaper> loadAltPaper(int template){
-		String sql="SELECT *, av.value paper_name, l.name interlayer_name"+
+		String sql="SELECT ap.*, av.value paper_name, l.name interlayer_name"+
 					 " FROM book_pg_alt_paper ap"+
 					   " INNER JOIN attr_value av ON ap.paper = av.id"+
 					   " LEFT OUTER JOIN layerset l ON ap.interlayer = l.id"+

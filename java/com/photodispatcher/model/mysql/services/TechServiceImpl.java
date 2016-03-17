@@ -17,12 +17,19 @@ public class TechServiceImpl extends AbstractDAO implements TechService {
 	}
 	
 	@Override
-	public SqlResult logByPg(TechLog item){
-		//PROCEDURE techLogPg(IN pPgroup VARCHAR(50), IN pSheet INT, IN pTechPoint INT, IN pDate DATETIME)
-		String sql= "{CALL techLogPg(?,?,?,?)}";
-		return runCall(sql, item.getPrint_group(), item.getSheet(), item.getSrc_id(), item.getLog_date());
+	public SqlResult logByPg(TechLog item, int calc){
+		//PROCEDURE techLogPg(IN pPgroup varchar(50), IN pSheet int, IN pTechPoint int, IN pDate datetime, IN pCalc int)
+		String sql= "{CALL techLogPg(?,?,?,?,?)}";
+		return runCall(sql, item.getPrint_group(), item.getSheet(), item.getSrc_id(), item.getLog_date(), calc);
 	}
-	
+
+	@Override
+	public SqlResult calcByPg(String pgId, int techPointId){
+		//PROCEDURE techCalcPg(IN pPgroup varchar(50), IN pTechPoint int)
+		String sql= "{CALL techCalcPg(?,?)}";
+		return runCall(sql, pgId, techPointId);
+	}
+
 	@Override
 	public SelectResult<TechLog> loadBooks4Otk(String id, String sub_id){
 		if(sub_id==null) sub_id="";
