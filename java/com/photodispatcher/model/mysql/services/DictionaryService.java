@@ -38,5 +38,6 @@ public interface DictionaryService {
 	SelectResult<FieldValue> getPrnStrategyValueList();
 	SelectResult<FieldValue> getRejectUnitValueList();
 	SelectResult<FieldValue> getTechUnitValueList();
+	SelectResult<FieldValue> getGlueCmdValueList();
 
 }

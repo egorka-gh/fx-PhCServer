@@ -67,7 +67,10 @@ public class PrintGroup extends AbstractEntity {
 
     @Column(name="prn_queue")
     private int prn_queue;
-    
+
+    @Column(name="alias")
+    private String alias;
+
     /*
     @Transient
     private BookPgTemplate bookTemplate;
@@ -96,8 +99,6 @@ public class PrintGroup extends AbstractEntity {
     private String book_type_name;
     @Column(name="book_part_name", insertable=false, updatable=false)
     private String book_part_name;
-    @Column(name="alias", insertable=false, updatable=false)
-    private String alias;
 
     //childs
     @Transient

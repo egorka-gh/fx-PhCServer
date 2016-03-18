@@ -44,6 +44,9 @@ public class BookSynonym extends AbstractEntity {
     @Transient
     private List<BookPgTemplate> templates;
 
+    @Transient
+    private List<BookSynonymGlue> glueCommands;
+
 	public int getId() {
 		return id;
 	}
@@ -138,6 +141,14 @@ public class BookSynonym extends AbstractEntity {
 
 	public void setHas_backprint(boolean has_backprint) {
 		this.has_backprint = has_backprint;
+	}
+
+	public List<BookSynonymGlue> getGlueCommands() {
+		return glueCommands;
+	}
+
+	public void setGlueCommands(List<BookSynonymGlue> glueCommands) {
+		this.glueCommands = glueCommands;
 	}
 	
 }

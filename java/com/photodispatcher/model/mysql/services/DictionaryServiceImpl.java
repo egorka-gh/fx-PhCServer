@@ -201,6 +201,14 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	}
 
 	@Override
+	public SelectResult<FieldValue> getGlueCmdValueList(){
+		SelectResult<FieldValue> result;
+		String sql="SELECT id value, cmd label FROM glue_cmd ORDER BY cmd";
+		result=runSelect(FieldValue.class, sql);
+		return result;
+	}
+
+	@Override
 	public SelectResult<FieldValue> getFieldValueSynonims(){
 		SelectResult<FieldValue> result;
 		String sql="SELECT a.src_type, a.synonym, at.field, CAST((CASE at.list WHEN 1 THEN a.attr_val ELSE av.value END) AS SIGNED) value"+

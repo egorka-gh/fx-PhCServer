@@ -913,3 +913,14 @@ DELIMITER ;
 
 -- main 2016-03-16
   
+ALTER TABLE print_group
+  ADD COLUMN alias VARCHAR(100) DEFAULT NULL AFTER path;
+  
+UPDATE print_group pg
+  SET alias=pg.path
+  WHERE pg.book_type!=0 AND pg.sub_id='' AND pg.state < 465;
+  
+UPDATE print_group pg
+  SET alias=(SELECT s.alias FROM suborders s WHERE s.order_id = pg.order_id AND s.sub_id=pg.sub_id)
+  WHERE pg.book_type!=0 AND pg.sub_id!='' AND pg.state < 465;
+  

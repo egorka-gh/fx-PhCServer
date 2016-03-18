@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import com.photodispatcher.model.mysql.entities.BookPgAltPaper;
 import com.photodispatcher.model.mysql.entities.BookPgTemplate;
 import com.photodispatcher.model.mysql.entities.BookSynonym;
+import com.photodispatcher.model.mysql.entities.BookSynonymGlue;
+import com.photodispatcher.model.mysql.entities.GlueCommand;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 
@@ -35,6 +37,15 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 					item.setTemplates(childs.getData());
 				}else{
 					result.cloneError(childs);
+					break;
+				}
+
+				//load glues
+				SelectResult<BookSynonymGlue> glues=loadGlue(item.getId());
+				if(glues.isComplete()){
+					item.setGlueCommands(glues.getData());
+				}else{
+					result.cloneError(glues);
 					break;
 				}
 			}
@@ -102,6 +113,73 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 					   " LEFT OUTER JOIN layerset l ON ap.interlayer = l.id"+
 					 " WHERE ap.template = ? ORDER BY ap.sh_from";
 		return runSelect(BookPgAltPaper.class, sql, template);
+	}
+
+	private SelectResult<BookSynonymGlue> loadGlue(int book){
+		String sql="SELECT bg.*, av.value paper_name, l.name interlayer_name, gc.cmd"+
+					 " FROM book_synonym_glue bg"+
+					   " INNER JOIN attr_value av ON av.id = bg.paper"+
+					   " INNER JOIN layerset l ON bg.interlayer = l.id"+
+					   " INNER JOIN glue_cmd gc ON bg.glue_cmd = gc.id"+
+					  " WHERE bg.book_synonym = ?";
+		return runSelect(BookSynonymGlue.class, sql, book);
+	}
+
+	@Override
+	public SelectResult<BookSynonymGlue> loadBookGlueEdit(int book){
+		String sql="SELECT bg.id, tp.book book_synonym, tp.paper, l.id interlayer, IFNULL(bg.glue_cmd,0) glue_cmd, gc.cmd, l.name interlayer_name, av.value paper_name"+
+				  " FROM (SELECT bpt.book, bpt.paper"+
+				          " FROM book_pg_template bpt"+
+				          " WHERE bpt.book = ? AND bpt.book_part IN (2, 5)"+
+				        " UNION"+
+				        " SELECT DISTINCT bpt.book, bpap.paper"+
+				         " FROM book_pg_template bpt"+
+				           " INNER JOIN book_pg_alt_paper bpap ON bpt.id = bpap.template"+
+				          " WHERE bpt.book = ? AND bpt.book_part IN (2, 5)) tp"+
+				  " INNER JOIN layerset l ON l.subset_type=1"+
+				  " INNER JOIN attr_value av ON av.id=tp.paper"+
+				  " LEFT OUTER JOIN book_synonym_glue bg ON bg.book_synonym=tp.book AND bg.paper= tp.paper AND bg.interlayer=l.id"+
+				  " LEFT OUTER JOIN glue_cmd gc ON gc.id=bg.glue_cmd"+
+				  " ORDER BY av.value, l.name";
+		return runSelect(BookSynonymGlue.class, sql, book, book);
+	}
+
+	@Override
+	public SqlResult persistBookGlue(List<BookSynonymGlue> items){
+		List<BookSynonymGlue> insertList=new ArrayList<BookSynonymGlue>();
+		List<BookSynonymGlue> updateList=new ArrayList<BookSynonymGlue>();
+		List<BookSynonymGlue> delList=new ArrayList<BookSynonymGlue>();
+		
+		for(BookSynonymGlue item : items){
+			if(item.getGlue_cmd()!=0){
+				if(item.getId()==0){
+					insertList.add(item);
+				}else{
+					updateList.add(item);
+				}
+			}else{
+				if(item.getId()!=0) delList.add(item);
+			}
+		}
+
+		SqlResult dmlResult=new SqlResult();
+		if(!delList.isEmpty()){
+			dmlResult=runDeleteBatch(delList);
+			if(!dmlResult.isComplete()){
+				return dmlResult;
+			}
+		}
+
+		if(!insertList.isEmpty()){
+			dmlResult=runInsertBatch(insertList);
+			if(!dmlResult.isComplete()){
+				return dmlResult;
+			}
+		}
+		if(!updateList.isEmpty()){
+			dmlResult=runUpdateBatch(updateList);
+		}
+		return dmlResult;
 	}
 
 	@Override
@@ -195,6 +273,46 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 		}
 
 		return result;
+	}
+
+	@Override
+	public SelectResult<GlueCommand> loadGlueCommandAll(){
+		String sql="SELECT * FROM glue_cmd gc ORDER BY gc.cmd";
+		return runSelect(GlueCommand.class, sql);
+	}
+
+	@Override
+	public SelectResult<GlueCommand> persistGlueCommandBatch(List<GlueCommand> items){
+		SqlResult dmlResult=new SqlResult();
+		SelectResult<GlueCommand> result= new SelectResult<GlueCommand>();
+		List<GlueCommand> batchList=new ArrayList<GlueCommand>();
+		List<GlueCommand> delList=new ArrayList<GlueCommand>();
+		for(GlueCommand item : items){
+			if(item.getPersistState()==0 || item.getPersistState()==-1){
+				if(item.getCmd()!=null && !item.getCmd().isEmpty()){
+					batchList.add(item);
+				}else{
+					if(item.getId()!=0) delList.add(item);
+				}
+			}
+		}
+		
+		if(!delList.isEmpty()){
+			dmlResult=runDeleteBatch(delList);
+			if(!dmlResult.isComplete()){
+				result.cloneError(dmlResult);
+				return result;
+			}
+		}
+		if(!batchList.isEmpty()){
+			dmlResult=runInesrtUpdateBatch(batchList);
+			if(!dmlResult.isComplete()){
+				result.cloneError(dmlResult);
+				return result;
+			}
+		}
+		
+		return loadGlueCommandAll();
 	}
 
 }
