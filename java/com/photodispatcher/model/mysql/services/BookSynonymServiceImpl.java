@@ -127,7 +127,7 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 
 	@Override
 	public SelectResult<BookSynonymGlue> loadBookGlueEdit(int book){
-		String sql="SELECT bg.id, tp.book book_synonym, tp.paper, l.id interlayer, IFNULL(bg.glue_cmd,0) glue_cmd, gc.cmd, l.name interlayer_name, av.value paper_name"+
+		String sql="SELECT bg.id, tp.book book_synonym, tp.paper, l.id interlayer, IFNULL(bg.glue_cmd,0) glue_cmd, gc.cmd glue_cmd_name, l.name interlayer_name, av.value paper_name"+
 				  " FROM (SELECT bpt.book, bpt.paper"+
 				          " FROM book_pg_template bpt"+
 				          " WHERE bpt.book = ? AND bpt.book_part IN (2, 5)"+
@@ -277,7 +277,7 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 
 	@Override
 	public SelectResult<GlueCommand> loadGlueCommandAll(){
-		String sql="SELECT * FROM glue_cmd gc ORDER BY gc.cmd";
+		String sql="SELECT * FROM glue_cmd gc WHERE id!=0 ORDER BY gc.cmd";
 		return runSelect(GlueCommand.class, sql);
 	}
 
@@ -285,12 +285,17 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 	public SelectResult<GlueCommand> persistGlueCommandBatch(List<GlueCommand> items){
 		SqlResult dmlResult=new SqlResult();
 		SelectResult<GlueCommand> result= new SelectResult<GlueCommand>();
-		List<GlueCommand> batchList=new ArrayList<GlueCommand>();
+		List<GlueCommand> insertList=new ArrayList<GlueCommand>();
+		List<GlueCommand> updateList=new ArrayList<GlueCommand>();
 		List<GlueCommand> delList=new ArrayList<GlueCommand>();
 		for(GlueCommand item : items){
 			if(item.getPersistState()==0 || item.getPersistState()==-1){
 				if(item.getCmd()!=null && !item.getCmd().isEmpty()){
-					batchList.add(item);
+					if(item.getPersistState()==0 ){
+						insertList.add(item);
+					}else{
+						updateList.add(item);
+					}
 				}else{
 					if(item.getId()!=0) delList.add(item);
 				}
@@ -304,8 +309,15 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 				return result;
 			}
 		}
-		if(!batchList.isEmpty()){
-			dmlResult=runInesrtUpdateBatch(batchList);
+		if(!insertList.isEmpty()){
+			dmlResult=runInsertBatch(insertList);
+			if(!dmlResult.isComplete()){
+				result.cloneError(dmlResult);
+				return result;
+			}
+		}
+		if(!updateList.isEmpty()){
+			dmlResult=runUpdateBatch(updateList);
 			if(!dmlResult.isComplete()){
 				result.cloneError(dmlResult);
 				return result;

@@ -28,8 +28,8 @@ public class BookSynonymGlue extends AbstractEntity {
     private String paper_name;
     @Column(name="interlayer_name", insertable=false, updatable=false)
     private String interlayer_name;
-    @Column(name="cmd", insertable=false, updatable=false)
-    private String cmd;
+    @Column(name="glue_cmd_name", insertable=false, updatable=false)
+    private String glue_cmd_name;
     
 	public int getId() {
 		return id;
@@ -73,11 +73,11 @@ public class BookSynonymGlue extends AbstractEntity {
 	public void setInterlayer_name(String interlayer_name) {
 		this.interlayer_name = interlayer_name;
 	}
-	public String getCmd() {
-		return cmd;
+	public String getGlue_cmd_name() {
+		return glue_cmd_name;
 	}
-	public void setCmd(String cmd) {
-		this.cmd = cmd;
+	public void setGlue_cmd_name(String glue_cmd_name) {
+		this.glue_cmd_name = glue_cmd_name;
 	}
 
 

@@ -22,5 +22,6 @@ public interface PrintGroupService {
 	SelectResult<PrintGroup> loadReady4Print(int limit, boolean onlyBook);
 	SelectResult<PrintGroup> loadInPrintPost(List<Integer> labIds);
 	SelectResult<PrintGroup> loadInPrint(List<Integer> labIds);
+	SelectResult<PrintGroup> loadById(String id);
 	
 }

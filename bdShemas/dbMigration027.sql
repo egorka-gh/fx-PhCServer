@@ -924,3 +924,281 @@ UPDATE print_group pg
   SET alias=(SELECT s.alias FROM suborders s WHERE s.order_id = pg.order_id AND s.sub_id=pg.sub_id)
   WHERE pg.book_type!=0 AND pg.sub_id!='' AND pg.state < 465;
   
+CREATE TABLE glue_cmd (
+  id int(5) NOT NULL AUTO_INCREMENT,
+  cmd varchar(50) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE INDEX UK_glue_cmd_command (cmd)
+)
+ENGINE = INNODB
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+
+INSERT INTO glue_cmd(id, cmd) VALUES(0, '');
+
+CREATE TABLE book_synonym_glue (
+  id int(7) NOT NULL AUTO_INCREMENT,
+  book_synonym int(7) NOT NULL,
+  paper int(5) NOT NULL,
+  interlayer int(5) NOT NULL,
+  glue_cmd int(5) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE INDEX UK_book_synonym_glue (book_synonym, paper, interlayer, glue_cmd),
+  CONSTRAINT FK_book_synonym_glue_attr_value_id FOREIGN KEY (paper)
+  REFERENCES attr_value (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT FK_book_synonym_glue_book_synonym_id FOREIGN KEY (book_synonym)
+  REFERENCES book_synonym (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT FK_book_synonym_glue_glue_cmd_id FOREIGN KEY (glue_cmd)
+  REFERENCES glue_cmd (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT FK_book_synonym_glue_layerset_id FOREIGN KEY (interlayer)
+  REFERENCES layerset (id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+ENGINE = INNODB
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
+  
+---
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS techUnitCalc$$
+
+CREATE
+PROCEDURE techUnitCalc(IN pOrder varchar(50), IN pSubOrder varchar(50), IN pPgroup varchar(50), IN pState int, IN pBooks int, IN pPrints int)
+  MODIFIES SQL DATA
+BEGIN
+  DECLARE vDone int;
+  DECLARE vStart datetime;
+  DECLARE vEnd datetime;
+  DECLARE vCount int;
+  DECLARE vMinState int;
+  DECLARE vParentPg varchar(50);
+
+  IF pPgroup IS NULL
+  THEN
+    SET pPgroup = '';
+  END IF;
+  IF pSubOrder IS NULL
+  THEN
+    SET pSubOrder = '';
+  END IF;
+  -- calc prints
+  SELECT IFNULL(COUNT(DISTINCT tl.sheet), 0), IFNULL(MIN(tl.log_date), NOW()), IFNULL(MAX(tl.log_date), NOW())
+  INTO vDone, vStart, vEnd
+    FROM tech_log tl
+      INNER JOIN tech_point tp ON tl.src_id = tp.id
+    WHERE tl.order_id = pOrder
+      AND tl.sub_id = pSubOrder
+      AND tl.print_group = pPgroup
+      AND tp.tech_type = pState;
+
+  -- check complited
+  IF vDone = pPrints
+    OR (pState = 320 AND vDone = pBooks * 2) -- 320 - TECH_FOLDING (log first & end sheet per book)
+    OR (pState = 360 AND vDone > 0) -- 360 - TECH_CUTTING (log first scan)
+    OR (pState = 380 AND vDone = pBooks) -- 380 - TECH_JOIN   (log books)
+  THEN
+    -- complited
+    IF pPgroup != ''
+    THEN
+      IF pState != 300
+      THEN
+        -- set pg state 
+        UPDATE print_group pg
+        SET pg.state = pState,
+            pg.state_date = vEnd
+        WHERE pg.id = pPgroup;
+      ELSE
+        -- print
+        -- get parent printgroup
+        SELECT IFNULL(pg.reprint_id, pg.id)
+        INTO vParentPg
+          FROM print_group pg
+          WHERE pg.id = pPgroup;
+        -- set pg state, if reprint set parent state and it's all open reprints
+        UPDATE print_group pg
+        SET pg.state = pState,
+            pg.state_date = vEnd,
+            pg.prints_done = LEAST(pg.prints, vDone)
+        WHERE pg.order_id = pOrder
+        AND pg.state >= 250
+        AND pg.state < 300
+        AND vParentPg IN (pg.id, pg.reprint_id);
+      END IF;
+    END IF;
+    IF pState = 300
+    THEN
+      -- print state, check pringroups
+      SELECT IFNULL(MIN(pg.state), 0)
+      INTO vMinState
+        FROM print_group pg
+        WHERE pg.order_id = pOrder
+          AND pg.sub_id = pSubOrder;
+      IF vMinState >= 300
+      THEN
+        -- all pg printed end order/suborder
+        CALL extraStateSet(pOrder, pSubOrder, pState, vEnd);
+      ELSE
+        -- start
+        CALL extraStateStart(pOrder, pSubOrder, pState, vStart);
+      END IF;
+    ELSE
+      -- end order/suborder
+      CALL extraStateSet(pOrder, pSubOrder, pState, vEnd);
+    END IF;
+  ELSE
+    -- update prints
+    IF pState = 300 AND pPgroup != ''
+    THEN
+      UPDATE print_group pg
+      SET pg.prints_done = LEAST(pg.prints, vDone)
+      WHERE pg.id = pPgroup;
+    END IF;
+    -- start extraState
+    CALL extraStateStart(pOrder, pSubOrder, pState, vStart);
+  END IF;
+
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS techLogPg$$
+
+CREATE
+PROCEDURE techLogPg(IN pPgroup varchar(50), IN pSheet int, IN pTechPoint int, IN pDate datetime, IN pCalc int)
+  MODIFIES SQL DATA
+BEGIN
+  DECLARE vOrderId varchar(50);
+  DECLARE vSubId varchar(50);
+  DECLARE vrepgroup varchar(50);
+  DECLARE vState int;
+  DECLARE vBooks int;
+  DECLARE vPrints int;
+
+  -- used for paper count
+  DECLARE vWidth int;
+  DECLARE vHeight int;
+  DECLARE vPaper int;
+  -- 
+
+  BEGIN
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET vOrderId = NULL;
+
+    SELECT pg.order_id, pg.sub_id, pg.book_num, pg.prints, pg.width, pg.height, pg.paper
+    INTO vOrderId, vSubId, vBooks, vPrints, vWidth, vHeight, vPaper
+      FROM print_group pg
+      WHERE pg.id = pPgroup;
+
+    SELECT tp.tech_type
+    INTO vState
+      FROM tech_point tp
+      WHERE tp.id = pTechPoint;
+  END;
+
+  IF vOrderId IS NOT NULL
+  THEN
+    /* bug due to restart in java after dead lock
+    IF vState = 300 THEN
+      -- count paper after printing
+      UPDATE lab_rolls lr SET lr.len=lr.len-vHeight 
+        WHERE lr.lab_device IN (SELECT lb.id FROM lab_device lb WHERE lb.tech_point=pTechPoint) AND lr.width=vWidth AND lr.paper=vPaper AND lr.len>0;
+    END IF;
+   */
+    
+    IF vState <= 300
+    THEN
+      -- may be reprint
+      BEGIN
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET vrepgroup = NULL;
+        SET vrepgroup = printPg2Reprint(pPgroup);
+      END;
+
+      IF vrepgroup IS NOT NULL AND pPgroup!=vrepgroup THEN
+        SET pPgroup=vrepgroup;
+        SELECT pg.prints
+          INTO vPrints
+          FROM print_group pg
+          WHERE pg.id = pPgroup;
+      END IF; 
+
+    END IF;
+
+    -- log
+    INSERT INTO tech_log (order_id, sub_id, print_group, sheet, src_id, log_date)
+      VALUES (vOrderId, vSubId, pPgroup, pSheet, pTechPoint, pDate);
+
+    -- recalc
+    IF pCalc>0 THEN
+      -- check TODO incorparate into code (do not need sub call)
+      CALL techUnitCalc(vOrderId, vSubId, pPgroup, vState, vBooks, vPrints);
+    END IF;
+  END IF;
+
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS techCalcPg$$
+
+CREATE
+PROCEDURE techCalcPg(IN pPgroup varchar(50), IN pTechPoint int)
+  MODIFIES SQL DATA
+BEGIN
+  DECLARE vOrderId varchar(50);
+  DECLARE vSubId varchar(50);
+  DECLARE vrepgroup varchar(50);
+  DECLARE vState int;
+  DECLARE vBooks int;
+  DECLARE vPrints int;
+
+
+  BEGIN
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET vOrderId = NULL;
+
+    SELECT pg.order_id, pg.sub_id, pg.book_num, pg.prints
+    INTO vOrderId, vSubId, vBooks, vPrints
+      FROM print_group pg
+      WHERE pg.id = pPgroup;
+
+    SELECT tp.tech_type
+    INTO vState
+      FROM tech_point tp
+      WHERE tp.id = pTechPoint;
+  END;
+
+  IF vOrderId IS NOT NULL
+  THEN
+
+    IF vState <= 300
+    THEN
+      -- may be reprint
+      BEGIN
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET vrepgroup = NULL;
+        SET vrepgroup = printPg2Reprint(pPgroup);
+      END;
+
+      IF vrepgroup IS NOT NULL AND pPgroup!=vrepgroup THEN
+        SET pPgroup=vrepgroup;
+        SELECT pg.prints
+          INTO vPrints
+          FROM print_group pg
+          WHERE pg.id = pPgroup;
+      END IF; 
+    END IF;
+
+    -- check TODO incorparate into code (do not need sub call)
+    CALL techUnitCalc(vOrderId, vSubId, pPgroup, vState, vBooks, vPrints);
+  END IF;
+
+END
+$$
+
+DELIMITER ;
+
+-- main 2016-03-25
