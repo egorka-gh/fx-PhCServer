@@ -116,7 +116,7 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 	}
 
 	private SelectResult<BookSynonymGlue> loadGlue(int book){
-		String sql="SELECT bg.*, av.value paper_name, l.name interlayer_name, gc.cmd"+
+		String sql="SELECT bg.*, av.value paper_name, l.name interlayer_name, gc.cmd glue_cmd_name"+
 					 " FROM book_synonym_glue bg"+
 					   " INNER JOIN attr_value av ON av.id = bg.paper"+
 					   " INNER JOIN layerset l ON bg.interlayer = l.id"+
