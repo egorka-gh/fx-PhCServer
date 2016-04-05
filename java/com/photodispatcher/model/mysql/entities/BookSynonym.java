@@ -29,6 +29,8 @@ public class BookSynonym extends AbstractEntity {
     private int synonym_type;
     @Column(name="has_backprint")
     private boolean has_backprint;
+    @Column(name="order_program")
+    private int order_program;
 
     //ref name
     @Column(name="src_type_name", updatable=false, insertable=false)
@@ -37,6 +39,8 @@ public class BookSynonym extends AbstractEntity {
     private String book_type_name;
     @Column(name="synonym_type_name", updatable=false, insertable=false)
     private String synonym_type_name;
+    @Column(name="order_program_name", updatable=false, insertable=false)
+    private String order_program_name;
 	//content filter mark
     @Column(name="is_allow", updatable=false, insertable=false)
     private boolean is_allow;
@@ -150,5 +154,22 @@ public class BookSynonym extends AbstractEntity {
 	public void setGlueCommands(List<BookSynonymGlue> glueCommands) {
 		this.glueCommands = glueCommands;
 	}
+
+	public int getOrder_program() {
+		return order_program;
+	}
+
+	public void setOrder_program(int order_program) {
+		this.order_program = order_program;
+	}
+
+	public String getOrder_program_name() {
+		return order_program_name;
+	}
+
+	public void setOrder_program_name(String order_program_name) {
+		this.order_program_name = order_program_name;
+	}
+
 	
 }

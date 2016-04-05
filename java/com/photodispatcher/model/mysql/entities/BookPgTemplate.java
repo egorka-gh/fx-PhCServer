@@ -99,6 +99,10 @@ public class BookPgTemplate extends AbstractEntity {
     private int lab_type;
     @Column(name="revers")
     private boolean revers=false;
+    @Column(name="mark_size")
+    private int mark_size=0;
+    @Column(name="mark_offset")
+    private String mark_offset="+0+0";
 
     //ref name
     @Column(name="book_part_name", updatable=false, insertable=false)
@@ -410,6 +414,18 @@ public class BookPgTemplate extends AbstractEntity {
 	}
 	public void setRevers(boolean revers) {
 		this.revers = revers;
+	}
+	public int getMark_size() {
+		return mark_size;
+	}
+	public void setMark_size(int mark_size) {
+		this.mark_size = mark_size;
+	}
+	public String getMark_offset() {
+		return mark_offset;
+	}
+	public void setMark_offset(String mark_offset) {
+		this.mark_offset = mark_offset;
 	}
 
 }

@@ -58,19 +58,21 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 		SelectResult<BookSynonym> result;
 		String sql;
 		if(contentFilter==0){
-			sql="SELECT l.*, st.name src_type_name, bt.name book_type_name, 1 is_allow, bst.name synonym_type_name"+
+			sql="SELECT l.*, st.name src_type_name, bt.name book_type_name, 1 is_allow, bst.name synonym_type_name, op.name order_program_name"+
 				" FROM book_synonym l"+
 				" INNER JOIN src_type st ON l.src_type = st.id " +
 				" INNER JOIN book_type bt ON l.book_type = bt.id"+
 				" INNER JOIN book_synonym_type bst ON l.synonym_type = bst.id"+
+				" INNER JOIN order_program op ON l.order_program=op.id"+
 				" WHERE l.src_type = ?"+
 				" ORDER BY l.synonym";
 			result=runSelect(BookSynonym.class, sql, src_type);
 		}else{
-			sql="SELECT l.*, st.name src_type_name, bt.name book_type_name, ifnull(fa.alias,0) is_allow"+
+			sql="SELECT l.*, st.name src_type_name, bt.name book_type_name, ifnull(fa.alias,0) is_allow, op.name order_program_name"+
 				" FROM book_synonym l" +
 				" INNER JOIN src_type st ON l.src_type = st.id"+
 				" INNER JOIN book_type bt ON l.book_type = bt.id"+
+				" INNER JOIN order_program op ON l.order_program=op.id"+
 				" LEFT OUTER JOIN content_filter_alias fa ON fa.filter= ? AND l.id=fa.alias"+
 				" WHERE l.src_type = ?"+
 				" ORDER BY l.synonym";
