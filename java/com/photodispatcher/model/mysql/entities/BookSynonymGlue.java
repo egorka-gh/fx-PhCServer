@@ -22,6 +22,8 @@ public class BookSynonymGlue extends AbstractEntity {
     private int interlayer;
     @Column(name="glue_cmd")
     private int glue_cmd;
+    @Column(name="add_layers")
+    private int add_layers;
     
 	//ref
     @Column(name="paper_name", insertable=false, updatable=false)
@@ -78,6 +80,12 @@ public class BookSynonymGlue extends AbstractEntity {
 	}
 	public void setGlue_cmd_name(String glue_cmd_name) {
 		this.glue_cmd_name = glue_cmd_name;
+	}
+	public int getAdd_layers() {
+		return add_layers;
+	}
+	public void setAdd_layers(int add_layers) {
+		this.add_layers = add_layers;
 	}
 
 

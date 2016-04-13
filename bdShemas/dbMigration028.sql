@@ -36,3 +36,9 @@ ALTER TABLE book_pg_template
   ADD COLUMN mark_offset VARCHAR(10) DEFAULT '+0+0' AFTER mark_size;    
 
   -- main 2016.04.06
+
+ALTER TABLE book_synonym_glue
+  ADD COLUMN add_layers INT(5) DEFAULT 0 AFTER glue_cmd;
+  
+ -- main 2016.04.13
+  

@@ -129,7 +129,7 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 
 	@Override
 	public SelectResult<BookSynonymGlue> loadBookGlueEdit(int book){
-		String sql="SELECT bg.id, tp.book book_synonym, tp.paper, l.id interlayer, IFNULL(bg.glue_cmd,0) glue_cmd, gc.cmd glue_cmd_name, l.name interlayer_name, av.value paper_name"+
+		String sql="SELECT bg.id, bg.add_layers, tp.book book_synonym, tp.paper, l.id interlayer, IFNULL(bg.glue_cmd,0) glue_cmd, gc.cmd glue_cmd_name, l.name interlayer_name, av.value paper_name"+
 				  " FROM (SELECT bpt.book, bpt.paper"+
 				          " FROM book_pg_template bpt"+
 				          " WHERE bpt.book = ? AND bpt.book_part IN (2, 5)"+
