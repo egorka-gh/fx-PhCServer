@@ -133,7 +133,11 @@ public class TechRejecServiceImpl extends AbstractDAO implements TechRejecServic
 				reject.setState(-300);
 			}else{
 				//reload reject
-				String sql="SELECT * FROM tech_reject tr WHERE tr.id=?";
+				String sql="SELECT tr.*, sat.name sa_type_name, sa.remark sa_remark"+
+							 " FROM tech_reject tr"+ 
+							 " LEFT OUTER JOIN staff_activity sa ON tr.activity=sa.id"+
+							 " LEFT OUTER JOIN staff_activity_type sat ON sa.sa_type = sat.id"+
+							 " WHERE tr.id=?";
 				SelectResult<TechReject> selRes=runSelect(TechReject.class,sql,reject.getId());
 				if(!selRes.isComplete() || selRes.getData()==null || selRes.getData().isEmpty()){
 					updated=false;

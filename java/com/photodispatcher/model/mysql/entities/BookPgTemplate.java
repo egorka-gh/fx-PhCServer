@@ -103,6 +103,10 @@ public class BookPgTemplate extends AbstractEntity {
     private int mark_size=0;
     @Column(name="mark_offset")
     private String mark_offset="+0+0";
+    @Column(name="reprint_size")
+    private int reprint_size=0;
+    @Column(name="reprint_offset")
+    private String reprint_offset="+0+0";
 
     //ref name
     @Column(name="book_part_name", updatable=false, insertable=false)
@@ -426,6 +430,18 @@ public class BookPgTemplate extends AbstractEntity {
 	}
 	public void setMark_offset(String mark_offset) {
 		this.mark_offset = mark_offset;
+	}
+	public int getReprint_size() {
+		return reprint_size;
+	}
+	public void setReprint_size(int reprint_size) {
+		this.reprint_size = reprint_size;
+	}
+	public String getReprint_offset() {
+		return reprint_offset;
+	}
+	public void setReprint_offset(String reprint_offset) {
+		this.reprint_offset = reprint_offset;
 	}
 
 }

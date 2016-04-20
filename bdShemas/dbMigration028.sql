@@ -42,3 +42,10 @@ ALTER TABLE book_synonym_glue
   
  -- main 2016.04.13
   
+ALTER TABLE book_pg_template
+  ADD COLUMN reprint_size INT(5) DEFAULT 0 AFTER mark_offset,
+  ADD COLUMN reprint_offset VARCHAR(10) DEFAULT '+0+0' AFTER reprint_size;
+
+INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES(7, 37, 'id');
+INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES(7, 45, 'member_id');  
+-- main 2016.04.20  
