@@ -49,6 +49,8 @@ public class MailPackage extends AbstractEntity {
     @Column(name="state_name", updatable=false, insertable=false)
     private String state_name;
     
+    @Column(name="src_date")
+    private Date src_date;
     @Column(name="min_ord_state", updatable=false, insertable=false)
     private int min_ord_state;
     @Column(name="min_ord_state_name", updatable=false, insertable=false)
@@ -196,6 +198,12 @@ public class MailPackage extends AbstractEntity {
 	}
 	public void setMessages(List<MailPackageMessage> messages) {
 		this.messages = messages;
+	}
+	public Date getSrc_date() {
+		return src_date;
+	}
+	public void setSrc_date(Date src_date) {
+		this.src_date = src_date;
 	}
 
 

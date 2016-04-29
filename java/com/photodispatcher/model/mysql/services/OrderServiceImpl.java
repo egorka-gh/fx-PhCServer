@@ -925,12 +925,12 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 
 		if(updated){
 			result.setResultCode(toState);
+			//log
+			sql="INSERT IGNORE INTO log_capture (log_date, lock_key, lock_owner, from_state, to_state, result) VALUES(?,?,?,?,?,?)";
+			runDML(sql, dt, orderId, owner, fromState, toState, result.getResultCode());
 		}else{
 			result.setResultCode(0);
 		}
-		//log
-		sql="INSERT IGNORE INTO log_capture (log_date, lock_key, lock_owner, from_state, to_state, result) VALUES(?,?,?,?,?,?)";
-		runDML(sql, dt, orderId, owner, fromState, toState, result.getResultCode());
 		return result;
 	}
 
@@ -938,12 +938,38 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	public SqlResult getLock(String key, String owner){
 		//PROCEDURE lock_get (IN pkey varchar(100), IN powner varchar(50))
 		String sql= "{CALL lock_get( ?, ?)}";
+		/*
 		hideTrace=true;
 		SqlResult result=runCall(sql, key, owner);
 		hideTrace=false;
 		if(result.isComplete()) result.setResultCode(1);
-		sql="INSERT IGNORE INTO log_capture (log_date, lock_key, lock_owner, result) VALUES(?, ?, ?, ?)";
-		runDML(sql, new Date(), key, owner, result.getResultCode());
+		*/
+		
+		Connection connection = null;
+		boolean complited=false;
+		SqlResult result= new SqlResult();
+		try {
+			connection=ConnectionFactory.getConnection();
+			OrmWriter.executeCall(connection, sql, key, owner);
+			complited=true;
+		} catch (SQLException e){
+			result.setComplete(false);
+			result.setErrCode(e.getErrorCode());
+			result.setErrMesage(e.getMessage());
+			complited=false;
+		}finally{
+			SqlClosureElf.quietClose(connection);
+		}
+
+		if(complited){
+			result.setResultCode(1);
+			// log
+			sql="INSERT IGNORE INTO log_capture (log_date, lock_key, lock_owner, result) VALUES(?, ?, ?, ?)";
+			runDML(sql, new Date(), key, owner, result.getResultCode());
+		}else{
+			result.setResultCode(0);
+		}
+		
 		return result;
 	}
 

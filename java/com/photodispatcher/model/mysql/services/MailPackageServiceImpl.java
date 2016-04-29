@@ -169,8 +169,9 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 
 	@Override
 	public SelectResult<MailPackage> loadByClient(int source, int client){
-		String sql="SELECT t.source, t.group_id id, t.client_id, t.state, t.state_date, t.min_ord_state, os.name state_name, os1.name min_ord_state_name, s.name source_name, s.code source_code, t.orders_num"+
-				  " FROM (SELECT o.source, o.group_id, o.client_id, MAX(o.state) state, MAX(o.state_date) state_date, MIN(o.state) min_ord_state, COUNT(*) orders_num"+
+		
+		String sql="SELECT t.source, t.group_id id, t.client_id, t.state, t.state_date, t.src_date, t.min_ord_state, os.name state_name, os1.name min_ord_state_name, s.name source_name, s.code source_code, t.orders_num"+
+				  " FROM (SELECT o.source, o.group_id, o.client_id, MAX(o.state) state, MAX(o.state_date) state_date, MIN(o.src_date) src_date, MIN(o.state) min_ord_state, COUNT(*) orders_num"+
 				  		" FROM orders o"+
 				        " WHERE o.source = ? AND o.client_id = ? AND o.state BETWEEN 100 AND 450"+
 				        " GROUP BY o.source, o.group_id, o.client_id) t"+
