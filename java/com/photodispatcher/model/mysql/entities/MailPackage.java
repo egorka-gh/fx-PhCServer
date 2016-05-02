@@ -49,7 +49,7 @@ public class MailPackage extends AbstractEntity {
     @Column(name="state_name", updatable=false, insertable=false)
     private String state_name;
     
-    @Column(name="src_date")
+    @Column(name="src_date", updatable=false, insertable=false)
     private Date src_date;
     @Column(name="min_ord_state", updatable=false, insertable=false)
     private int min_ord_state;
