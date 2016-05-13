@@ -2,7 +2,7 @@
   <element name="rpbody">
     <sql>
       <![CDATA[
-      SELECT :pbarcode barcode, :pbarcode_hm barcode_hm, :pgroup_hm group_hm
+      SELECT :pbarcode barcode, :pbarcode_hm barcode_hm, :pgroup_hm group_hm, :pprovider_id provider_id
 
 	  ]]>
     </sql>
