@@ -10,6 +10,7 @@ public class CycleMessage extends AbstractEntity{
     private CycleStation sender;
     private String recipient;
     private int command;
+    private int result;
     private String message;
     private PrintGroup pgroup_info;
 
@@ -48,5 +49,11 @@ public class CycleMessage extends AbstractEntity{
 	}
 	public void setTopic(String topic) {
 		this.topic = topic;
+	}
+	public int getResult() {
+		return result;
+	}
+	public void setResult(int result) {
+		this.result = result;
 	}
 }
