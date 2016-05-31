@@ -39,8 +39,7 @@ public class LabRoll extends AbstractEntity {
     
     @Column(name="print_queue_time", updatable=false, insertable=false)
     private float printQueueTime;
-    
-    
+
 	public int getLab_device() {
 		return lab_device;
 	}
