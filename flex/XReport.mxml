@@ -20,7 +20,7 @@
 			import org.granite.tide.data.DataObserver;
 			import org.granite.tide.events.TideFaultEvent;
 			import org.granite.tide.events.TideResultEvent;
-			import org.granite.tide.service.DefaultServiceInitializer;
+			import org.granite.tide.service.SimpleServerApp;
 			import org.granite.tide.spring.Identity;
 			import org.granite.tide.spring.Spring;
 			
@@ -32,7 +32,11 @@
 			
 			private function init():void {
 				// Define service endpoint resolver
-				Tide.getInstance().getContext().serviceInitializer = new DefaultServiceInitializer('/PhCServer');
+				//Tide.getInstance().getContext().serviceInitializer = new DefaultServiceInitializer('/PhCServer');
+				var spring:Spring = Spring.getInstance();
+				spring.initApplication(true);
+				Spring.getInstance().mainServerSession.serverApp = new SimpleServerApp("/PhCServer");
+
 				
 				/*
 				// Configuration for data push observer subscribed upon login/logout
