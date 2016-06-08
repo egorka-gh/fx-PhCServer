@@ -35,7 +35,7 @@
 				//Tide.getInstance().getContext().serviceInitializer = new DefaultServiceInitializer('/PhCServer');
 				var spring:Spring = Spring.getInstance();
 				spring.initApplication(true);
-				Spring.getInstance().mainServerSession.serverApp = new SimpleServerApp("/PhCServer");
+				//Spring.getInstance().mainServerSession.serverApp = new SimpleServerApp("/PhCServer");
 
 				
 				/*

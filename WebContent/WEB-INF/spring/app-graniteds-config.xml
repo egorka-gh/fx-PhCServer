@@ -16,7 +16,7 @@
 	    <graniteds:server-filter url-pattern="/*" tide="true"/>
     
     <!-- Simple messaging destination for data push -->
-    <graniteds:messaging-destination id="cycle" no-local="true" session-selector="true"/>
+    <graniteds:messaging-destination id="cycle" no-local="false" session-selector="true"/>
   	
     <!-- Configuration for Tide/Spring authorization -->
 <!--   	<graniteds:tide-identity/> -->
