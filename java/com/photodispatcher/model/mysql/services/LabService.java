@@ -42,5 +42,5 @@ public interface LabService {
 	SelectResult<LabRoll> loadInPrintQueueByLab(int lab);
 	SelectResult<Lab> loadLabsSpeed();
 	SelectResult<LabRoll> loadQueueByDevice(int device, int onlyBooks);
-	SelectResult<LabRoll> loadQueueByLab(int lab, int onlyBooks);
+	SelectResult<PrintGroup> loadQueueByLab(int lab, int group, int onlyBooks, int noqueued);
 }
