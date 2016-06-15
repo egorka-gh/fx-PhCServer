@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.granite.messaging.service.annotations.RemoteDestination;
 
+import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.PrnQueue;
 import com.photodispatcher.model.mysql.entities.PrnStrategy;
 import com.photodispatcher.model.mysql.entities.SelectResult;
@@ -26,5 +27,11 @@ public interface PrnStrategyService {
 	SqlResult startQueue(int queue, int subQueue, int lab);
 
 	SelectResult<PrnQueue> loadComplitedQueues(Date date);
+
+	SqlResult createQueue(int strategy, int lab, PrintGroup params);
+
+	SqlResult checkQueues();
+
+	SqlResult deleteQueue(int queue);
 
 }

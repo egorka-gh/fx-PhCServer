@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.photodispatcher.model.mysql.entities.FieldValue;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.PrnQueue;
 import com.photodispatcher.model.mysql.entities.PrnStrategy;
@@ -61,9 +62,56 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 	}
 
 	@Override
+	public SqlResult createQueue(int strategy, int lab, PrintGroup params){
+		String sql;
+		SqlResult result= new SqlResult();
+		result.setResultCode(0);
+		SelectResult<FieldValue> val;
+		int reprint=0;
+		if(params.isIs_reprint()) reprint=1;
+		/* strategy
+		 * 1 prn_queue1_create(IN p_lab int, IN p_reprint int, IN p_paper int, IN p_width int, IN p_booksonly int)
+		 * 3 prn_queue3_create(IN p_lab int, IN p_reprint int, IN p_alias int, IN p_book_part int, IN p_sheet_num int, IN p_booksonly int)
+		 */
+		switch (strategy) {
+		case 1:
+			sql= "{CALL prn_queue1_create(?, ?, ?, ?, ?)}";
+			val=runCallSelect(FieldValue.class, sql, lab, reprint, params.getPaper(), params.getWidth(), params.getBook_type());
+			if(val.getData()!=null && !val.getData().isEmpty() && val.getData().get(0).getValue()!=0) result.setResultCode(1);
+			break;
+		case 3:
+			sql= "{CALL prn_queue3_create(?, ?, ?, ?, ?, ?)}";
+			val=runCallSelect(FieldValue.class, sql, lab, reprint, params.getAlias(), params.getBook_part(), params.getSheet_num(), 1);
+			if(val.getData()!=null && !val.getData().isEmpty() && val.getData().get(0).getValue()!=0) result.setResultCode(1);
+			break;
+		default:
+			break;
+		}
+		return result;
+	}
+
+	@Override
+	public SqlResult deleteQueue(int queue){
+		//prn_queue_delete(IN p_queue int)
+		SqlResult result= new SqlResult();
+		result.setResultCode(0);
+		String sql= "{CALL prn_queue_delete(?)}";
+		SelectResult<FieldValue> val=runCallSelect(FieldValue.class, sql, queue);
+		if(val.getData()!=null && !val.getData().isEmpty() && val.getData().get(0).getValue()!=0) result.setResultCode(1);
+		return result;
+	}
+
+	@Override
 	public SqlResult checkQueue2(){
 		//PROCEDURE prn_queue2_check()
 		String sql= "{CALL prn_queue2_check()}";
+		return runCall(sql);
+	}
+
+	@Override
+	public SqlResult checkQueues(){
+		//PROCEDURE prn_queue_check()
+		String sql= "{CALL prn_queue_check()}";
 		return runCall(sql);
 	}
 
@@ -82,12 +130,18 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 			result.cloneError(suRes);
 			return result;
 		}
-		String sql="SELECT IFNULL(psq.lab, pq.lab) lab, ps.priority, pq.created, pq.id, IFNULL(psq.sub_queue, 0) sub_queue,"+
+		suRes=checkQueues();
+		if(!suRes.isComplete()){
+			result.cloneError(suRes);
+			return result;
+		}
+		String sql="SELECT IFNULL(psq.lab, pq.lab) lab, pst.default_priority priority, pq.created, pq.id, IFNULL(psq.sub_queue, 0) sub_queue,"+
 							" pq.strategy, pq.is_active, IFNULL(psq.started, pq.started) started, pq.label,"+
-							" lab.name lab_name, ps.strategy_type, pst.name strategy_type_name"+
+							" lab.name lab_name, pq.strategy strategy_type, pst.name strategy_type_name"+
 					 " FROM prn_queue pq"+
-					   " INNER JOIN prn_strategy ps ON pq.strategy=ps.id"+
-					   " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
+					 //  " INNER JOIN prn_strategy ps ON pq.strategy=ps.id"+
+					 //  " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
+					   " INNER JOIN prn_strategy_type pst ON pq.strategy = pst.id"+
 					   " LEFT OUTER JOIN prn_sub_queue psq ON pq.id = psq.prn_queue AND psq.complited IS NULL"+
 					   " LEFT OUTER JOIN lab ON IFNULL(psq.lab, pq.lab) = lab.id"+
 					 " WHERE pq.is_active = 1 AND pq.complited IS NULL"+
@@ -112,18 +166,20 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 	@Override
 	public SelectResult<PrnQueue> loadComplitedQueues(Date date){
 		SelectResult<PrnQueue> result= new SelectResult<PrnQueue>();
-		String sql="SELECT psq.lab , ps.priority, ps.strategy_type, pq.created, psq.complited, pq.id, psq.sub_queue, pq.strategy, pq.is_active, psq.started, pq.label, lab.name lab_name, pst.name strategy_type_name"+
+		String sql="SELECT psq.lab , pst.default_priority priority, pq.strategy strategy_type, pq.created, psq.complited, pq.id, psq.sub_queue, pq.strategy, pq.is_active, psq.started, pq.label, lab.name lab_name, pst.name strategy_type_name"+
 					 " FROM prn_sub_queue psq"+
 					   " INNER JOIN prn_queue pq ON pq.id = psq.prn_queue"+
-					   " INNER JOIN prn_strategy ps ON pq.strategy = ps.id"+
-					   " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
+					  // " INNER JOIN prn_strategy ps ON pq.strategy = ps.id"+
+					  // " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
+					   " INNER JOIN prn_strategy_type pst ON pq.strategy = pst.id"+
 					    " LEFT OUTER JOIN lab ON psq.lab = lab.id"+
 					  " WHERE psq.complited > DATE(?) AND psq.complited < DATE_ADD(DATE(?), INTERVAL 1 DAY)"+
 					" UNION ALL"+
-					" SELECT pq.lab, ps.priority, ps.strategy_type, pq.created, pq.complited, pq.id, 0 sub_queue, pq.strategy, pq.is_active, pq.started, pq.label, lab.name lab_name, pst.name strategy_type_name"+
+					" SELECT pq.lab, pst.default_priority priority, pq.strategy strategy_type, pq.created, pq.complited, pq.id, 0 sub_queue, pq.strategy, pq.is_active, pq.started, pq.label, lab.name lab_name, pst.name strategy_type_name"+
 					  " FROM prn_queue pq"+
-					    " INNER JOIN prn_strategy ps ON pq.strategy = ps.id"+
-					    " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
+					   // " INNER JOIN prn_strategy ps ON pq.strategy = ps.id"+
+					   // " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
+					   " INNER JOIN prn_strategy_type pst ON pq.strategy = pst.id"+
 					    " LEFT OUTER JOIN lab ON pq.lab = lab.id"+
 					  " WHERE pq.complited > DATE(?) AND pq.complited < DATE_ADD(DATE(?), INTERVAL 1 DAY) AND pq.has_sub = 0"+
 				  " ORDER BY complited";
