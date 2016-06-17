@@ -41,6 +41,9 @@ public class PrnQueue extends AbstractEntity {
 
     @Column(name="lab")
     private int lab;
+
+    @Column(name="is_reprint")
+    private boolean is_reprint;
     
     
     //db drived
@@ -183,6 +186,14 @@ public class PrnQueue extends AbstractEntity {
 
 	public void setLab_name(String lab_name) {
 		this.lab_name = lab_name;
+	}
+
+	public boolean isIs_reprint() {
+		return is_reprint;
+	}
+
+	public void setIs_reprint(boolean is_reprint) {
+		this.is_reprint = is_reprint;
 	}
     
 }

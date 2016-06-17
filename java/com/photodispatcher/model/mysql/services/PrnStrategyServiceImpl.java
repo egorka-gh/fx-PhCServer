@@ -137,7 +137,7 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 		}
 		String sql="SELECT IFNULL(psq.lab, pq.lab) lab, pst.default_priority priority, pq.created, pq.id, IFNULL(psq.sub_queue, 0) sub_queue,"+
 							" pq.strategy, pq.is_active, IFNULL(psq.started, pq.started) started, pq.label,"+
-							" lab.name lab_name, pq.strategy strategy_type, pst.name strategy_type_name"+
+							" lab.name lab_name, pq.strategy strategy_type, pst.name strategy_type_name, pq.is_reprint"+
 					 " FROM prn_queue pq"+
 					 //  " INNER JOIN prn_strategy ps ON pq.strategy=ps.id"+
 					 //  " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
@@ -166,7 +166,7 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 	@Override
 	public SelectResult<PrnQueue> loadComplitedQueues(Date date){
 		SelectResult<PrnQueue> result= new SelectResult<PrnQueue>();
-		String sql="SELECT psq.lab , pst.default_priority priority, pq.strategy strategy_type, pq.created, psq.complited, pq.id, psq.sub_queue, pq.strategy, pq.is_active, psq.started, pq.label, lab.name lab_name, pst.name strategy_type_name"+
+		String sql="SELECT psq.lab , pst.default_priority priority, pq.strategy strategy_type, pq.created, psq.complited, pq.id, psq.sub_queue, pq.strategy, pq.is_active, psq.started, pq.label, lab.name lab_name, pst.name strategy_type_name, pq.is_reprint"+
 					 " FROM prn_sub_queue psq"+
 					   " INNER JOIN prn_queue pq ON pq.id = psq.prn_queue"+
 					  // " INNER JOIN prn_strategy ps ON pq.strategy = ps.id"+
@@ -175,7 +175,7 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 					    " LEFT OUTER JOIN lab ON psq.lab = lab.id"+
 					  " WHERE psq.complited > DATE(?) AND psq.complited < DATE_ADD(DATE(?), INTERVAL 1 DAY)"+
 					" UNION ALL"+
-					" SELECT pq.lab, pst.default_priority priority, pq.strategy strategy_type, pq.created, pq.complited, pq.id, 0 sub_queue, pq.strategy, pq.is_active, pq.started, pq.label, lab.name lab_name, pst.name strategy_type_name"+
+					" SELECT pq.lab, pst.default_priority priority, pq.strategy strategy_type, pq.created, pq.complited, pq.id, 0 sub_queue, pq.strategy, pq.is_active, pq.started, pq.label, lab.name lab_name, pst.name strategy_type_name, pq.is_reprint"+
 					  " FROM prn_queue pq"+
 					   // " INNER JOIN prn_strategy ps ON pq.strategy = ps.id"+
 					   // " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
