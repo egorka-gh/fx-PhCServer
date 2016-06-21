@@ -71,6 +71,14 @@ public class PrintGroup extends AbstractEntity {
     @Column(name="alias")
     private String alias;
 
+    @Column(name="is_finalizeprint")
+    private boolean is_finalizeprint;
+    @Column(name="sheets_per_file")
+    private int sheets_per_file;
+    @Column(name="is_revers")
+    private boolean is_revers;
+
+    
     /*
     @Transient
     private BookPgTemplate bookTemplate;
@@ -414,6 +422,30 @@ public class PrintGroup extends AbstractEntity {
 
 	public void setPrn_queue(int prn_queue) {
 		this.prn_queue = prn_queue;
+	}
+
+	public boolean isIs_finalizeprint() {
+		return is_finalizeprint;
+	}
+
+	public void setIs_finalizeprint(boolean is_finalizeprint) {
+		this.is_finalizeprint = is_finalizeprint;
+	}
+
+	public int getSheets_per_file() {
+		return sheets_per_file;
+	}
+
+	public void setSheets_per_file(int sheets_per_file) {
+		this.sheets_per_file = sheets_per_file;
+	}
+
+	public boolean isIs_revers() {
+		return is_revers;
+	}
+
+	public void setIs_revers(boolean is_revers) {
+		this.is_revers = is_revers;
 	}
     
 }
