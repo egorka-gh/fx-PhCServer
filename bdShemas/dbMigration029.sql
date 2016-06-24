@@ -389,7 +389,14 @@ $$
 DELIMITER ;
 
 ALTER TABLE print_group
-  ADD COLUMN is_finalizeprint TINYINT(1) DEFAULT 0 AFTER butt,
-  ADD COLUMN sheets_per_file INT(5) DEFAULT 1 AFTER is_finalizeprint,
+  ADD COLUMN sheets_per_file INT(5) DEFAULT 1 AFTER butt,
   ADD COLUMN is_revers TINYINT(1) DEFAULT 0 AFTER sheets_per_file;
+
+ALTER TABLE print_group_file
+  ADD COLUMN printed TINYINT(1) DEFAULT 0 AFTER book_part,
+  ADD COLUMN print_forvard TINYINT(1) DEFAULT 0 AFTER printed;
   
+ALTER TABLE prn_queue_items
+  ADD COLUMN seq INT(11) AUTO_INCREMENT UNIQUE DEFAULT NULL AFTER print_group;
+  
+-- main  2016-06-24  

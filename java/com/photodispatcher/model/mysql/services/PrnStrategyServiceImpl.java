@@ -210,6 +210,7 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 					   " LEFT OUTER JOIN suborders s ON pg.order_id = s.order_id AND pg.sub_id = s.sub_id"+
 					  " WHERE pqi.prn_queue = ? AND pqi.sub_queue = ?";
 		if(!all) sql=sql +" AND o.state<450";
+		sql=sql +" ORDER BY pqi.seq";
 		return runSelect(PrintGroup.class, sql, queue, subQueue);
 	}
 

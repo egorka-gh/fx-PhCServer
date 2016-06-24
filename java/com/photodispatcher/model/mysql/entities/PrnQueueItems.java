@@ -16,6 +16,9 @@ public class PrnQueueItems extends AbstractEntity {
     @Column(name="print_group")
     private String print_group;
 
+    @Column(name="seq")
+    private int seq;
+
 	public int getPrn_queue() {
 		return prn_queue;
 	}
@@ -38,6 +41,14 @@ public class PrnQueueItems extends AbstractEntity {
 
 	public void setSub_queue(int sub_queue) {
 		this.sub_queue = sub_queue;
+	}
+
+	public int getSeq() {
+		return seq;
+	}
+
+	public void setSeq(int seq) {
+		this.seq = seq;
 	}
 
 }

@@ -71,8 +71,6 @@ public class PrintGroup extends AbstractEntity {
     @Column(name="alias")
     private String alias;
 
-    @Column(name="is_finalizeprint")
-    private boolean is_finalizeprint;
     @Column(name="sheets_per_file")
     private int sheets_per_file;
     @Column(name="is_revers")
@@ -107,6 +105,10 @@ public class PrintGroup extends AbstractEntity {
     private String book_type_name;
     @Column(name="book_part_name", insertable=false, updatable=false)
     private String book_part_name;
+    @Column(name="min_sheet", insertable=false, updatable=false)
+    private int min_sheet;
+    @Column(name="max_sheet", insertable=false, updatable=false)
+    private int max_sheet;
 
     //childs
     @Transient
@@ -424,14 +426,6 @@ public class PrintGroup extends AbstractEntity {
 		this.prn_queue = prn_queue;
 	}
 
-	public boolean isIs_finalizeprint() {
-		return is_finalizeprint;
-	}
-
-	public void setIs_finalizeprint(boolean is_finalizeprint) {
-		this.is_finalizeprint = is_finalizeprint;
-	}
-
 	public int getSheets_per_file() {
 		return sheets_per_file;
 	}
@@ -446,6 +440,22 @@ public class PrintGroup extends AbstractEntity {
 
 	public void setIs_revers(boolean is_revers) {
 		this.is_revers = is_revers;
+	}
+
+	public int getMin_sheet() {
+		return min_sheet;
+	}
+
+	public void setMin_sheet(int min_sheet) {
+		this.min_sheet = min_sheet;
+	}
+
+	public int getMax_sheet() {
+		return max_sheet;
+	}
+
+	public void setMax_sheet(int max_sheet) {
+		this.max_sheet = max_sheet;
 	}
     
 }

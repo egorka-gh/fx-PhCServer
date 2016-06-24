@@ -27,6 +27,12 @@ public class PrintGroupFile extends AbstractEntity {
     private String caption;
     @Column(name="book_part")
     private int book_part;
+    @Column(name="printed")
+    private boolean printed;
+    /*
+    @Column(name="print_forvard")
+    private boolean print_forvard;
+    */
 
 	//ref props
     @Column(name="path", insertable=false, updatable=false)
@@ -133,6 +139,12 @@ public class PrintGroupFile extends AbstractEntity {
 	}
 	public void setBook_part(int book_part) {
 		this.book_part = book_part;
+	}
+	public boolean isPrinted() {
+		return printed;
+	}
+	public void setPrinted(boolean printed) {
+		this.printed = printed;
 	}
     
 
