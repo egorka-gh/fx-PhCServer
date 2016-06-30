@@ -20,6 +20,34 @@ import com.photodispatcher.model.mysql.entities.SqlResult;
 @Service("printGroupService")
 public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupService {
 
+	
+	public SelectResult<PrintGroup> load(String id){
+		String sql="SELECT pg.*, o.source source_id, s.name source_name, o.ftp_folder order_folder, os.name state_name,"+
+						" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name,"+
+						" lab.name lab_name, bt.name book_type_name, bp.name book_part_name"+
+					" FROM print_group pg"+
+						" INNER JOIN orders o ON pg.order_id = o.id"+
+						" INNER JOIN sources s ON o.source = s.id"+
+						" INNER JOIN order_state os ON pg.state = os.id"+
+						" INNER JOIN attr_value p ON pg.paper = p.id"+
+						" INNER JOIN attr_value fr ON pg.frame = fr.id"+
+						" INNER JOIN attr_value cr ON pg.correction = cr.id"+
+						" INNER JOIN attr_value cu ON pg.cutting = cu.id"+
+						" INNER JOIN book_type bt ON pg.book_type = bt.id"+
+						" INNER JOIN book_part bp ON pg.book_part = bp.id"+
+						" LEFT OUTER JOIN lab lab ON pg.destination = lab.id"+
+					" WHERE pg.id=?";
+		SelectResult<PrintGroup> result= runSelect(PrintGroup.class, sql, id);
+		if (!result.isComplete()) return result;
+		SelectResult<PrintGroupFile> fRes=loadFiles(result.getData().get(0).getId());
+		if(!fRes.isComplete()){
+			result.cloneError(fRes);
+			return result;
+		}
+		result.getData().get(0).setFiles(fRes.getData());
+		return result;
+	}
+
 	@Override
 	public SelectResult<PrintGroup> loadById(String id){
 		String sql="SELECT pg.*, o.source source_id, s.name source_name, o.ftp_folder order_folder, os.name state_name,"+
@@ -269,9 +297,47 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 		return result;
 	}
 	
+	@Override
+	public SelectResult<PrintGroup> printComplitePrepare(String pgid){
+		SelectResult<PrintGroup> result;
+		//PROCEDURE printComplitePrepare(IN pPgroupId varchar(50))
+		String sql= "{CALL printComplitePrepare(?)}";
+		SelectResult<PrintGroup> subres= runCallSelect(PrintGroup.class, sql, pgid);
+		if(!subres.isComplete() || subres.getData().isEmpty()) return subres;
+		result=load(subres.getData().get(0).getId());
+		if(!result.isComplete() || result.getData().isEmpty()) return result;
+		//clone min max sheet
+		result.getData().get(0).setMin_sheet(subres.getData().get(0).getMin_sheet());
+		result.getData().get(0).setMax_sheet(subres.getData().get(0).getMax_sheet());
+		return result;
+	}
+
+	@Override
+	public SqlResult printComplite(PrintGroup printGroup){
+		SqlResult result= new SqlResult();
+		List<PrintGroupFile> updateList = new ArrayList<PrintGroupFile>();
+		List<PrintGroupFile> insertList = new ArrayList<PrintGroupFile>();
+
+		if(printGroup.getFiles()!=null){
+			for(PrintGroupFile pgFile : printGroup.getFiles()){
+				if(pgFile.getPersistState()==0){
+					pgFile.setPrint_group(printGroup.getId());
+					insertList.add(pgFile);
+				}else{
+					updateList.add(pgFile);
+				}
+			}
+			if(!insertList.isEmpty()) result=runInsertBatch(insertList);
+			if (!result.isComplete()) return result;
+			if(!updateList.isEmpty()) result=runUpdateBatch(updateList);
+		}
+		String sql="UPDATE print_group pg SET pg.state = 200 WHERE pg.id = ?";
+		return runDML(sql, printGroup.getId());
+	}
+	
 	private SelectResult<PrintGroupFile> loadFiles(String pgId){
 		//load print files
-		String sql="SELECT pgf.* FROM print_group_file pgf WHERE pgf.print_group = ?";
+		String sql="SELECT pgf.* FROM print_group_file pgf WHERE pgf.print_group = ? ORDER BY pgf.print_forvard DESC, pgf.id";
 		return runSelect(PrintGroupFile.class,sql, pgId);
 	}
 

@@ -8,6 +8,7 @@ import org.granite.messaging.service.annotations.RemoteDestination;
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.SqlResult;
 
 @RemoteDestination(id="printGroupService", source="printGroupService")
 public interface PrintGroupService {
@@ -23,5 +24,7 @@ public interface PrintGroupService {
 	SelectResult<PrintGroup> loadInPrintPost(List<Integer> labIds);
 	SelectResult<PrintGroup> loadInPrint(List<Integer> labIds);
 	SelectResult<PrintGroup> loadById(String id);
+	SelectResult<PrintGroup> printComplitePrepare(String pgid);
+	SqlResult printComplite(PrintGroup printGroup);
 	
 }

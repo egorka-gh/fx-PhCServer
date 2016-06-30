@@ -400,3 +400,6 @@ ALTER TABLE prn_queue_items
   ADD COLUMN seq INT(11) AUTO_INCREMENT UNIQUE DEFAULT NULL AFTER print_group;
   
 -- main  2016-06-24  
+  
+ALTER TABLE lab ADD COLUMN pusher_enabled TINYINT(1) DEFAULT 1 AFTER post_delay;
+-- main  2016-06-30

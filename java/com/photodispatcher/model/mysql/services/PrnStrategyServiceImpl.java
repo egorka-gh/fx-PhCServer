@@ -123,6 +123,13 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 	}
 
 	@Override
+	public SqlResult releaseQueue(int queue){
+		//prn_queue_release(IN p_queue int)
+		String sql= "{CALL prn_queue_release(?)}";
+		return runCall(sql, queue);
+	}
+
+	@Override
 	public SelectResult<PrnQueue> loadQueues(){
 		SelectResult<PrnQueue> result= new SelectResult<PrnQueue>();
 		SqlResult suRes=checkQueue2();

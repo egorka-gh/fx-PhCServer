@@ -36,6 +36,10 @@ public class Lab extends AbstractEntity {
 
     @Column(name="post_delay")
     private float post_delay;
+
+    
+    @Column(name="pusher_enabled")
+    private boolean pusher_enabled;
     
   //db drived
     @Column(name="src_type_name", updatable=false, insertable=false)
@@ -160,6 +164,14 @@ public class Lab extends AbstractEntity {
 
 	public void setPost_delay(float post_delay) {
 		this.post_delay = post_delay;
+	}
+
+	public boolean getPusher_enabled() {
+		return pusher_enabled;
+	}
+
+	public void setPusher_enabled(boolean pusher_enabled) {
+		this.pusher_enabled = pusher_enabled;
 	}
 
 }

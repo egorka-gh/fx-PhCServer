@@ -34,4 +34,6 @@ public interface PrnStrategyService {
 
 	SqlResult deleteQueue(int queue);
 
+	SqlResult releaseQueue(int queue);
+
 }
