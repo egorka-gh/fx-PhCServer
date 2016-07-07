@@ -403,3 +403,4 @@ ALTER TABLE prn_queue_items
   
 ALTER TABLE lab ADD COLUMN pusher_enabled TINYINT(1) DEFAULT 1 AFTER post_delay;
 -- main  2016-06-30
+-- msk 2016-06-30
