@@ -107,6 +107,10 @@ public class BookPgTemplate extends AbstractEntity {
     private int reprint_size=0;
     @Column(name="reprint_offset")
     private String reprint_offset="+0+0";
+    @Column(name="queue_size")
+    private int queue_size=0;
+    @Column(name="queue_offset")
+    private String queue_offset="+0+0";
 
     //ref name
     @Column(name="book_part_name", updatable=false, insertable=false)
@@ -442,6 +446,18 @@ public class BookPgTemplate extends AbstractEntity {
 	}
 	public void setReprint_offset(String reprint_offset) {
 		this.reprint_offset = reprint_offset;
+	}
+	public int getQueue_size() {
+		return queue_size;
+	}
+	public void setQueue_size(int queue_size) {
+		this.queue_size = queue_size;
+	}
+	public String getQueue_offset() {
+		return queue_offset;
+	}
+	public void setQueue_offset(String queue_offset) {
+		this.queue_offset = queue_offset;
 	}
 
 }

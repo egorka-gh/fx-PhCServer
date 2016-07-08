@@ -42,9 +42,15 @@ public class PrnQueue extends AbstractEntity {
     @Column(name="lab")
     private int lab;
 
+    @Column(name="lab_type")
+    private int lab_type;
+
     @Column(name="is_reprint")
     private boolean is_reprint;
-    
+
+    @Column(name="pg_date")
+    private Date pg_date;
+
     
     //db drived
     
@@ -62,6 +68,9 @@ public class PrnQueue extends AbstractEntity {
 
     @Column(name="lab_name", updatable=false, insertable=false)
     private String lab_name;
+    
+    @Column(name="lab_type_name", updatable=false, insertable=false)
+    private String lab_type_name;
 
     //childs
     @Transient
@@ -194,6 +203,30 @@ public class PrnQueue extends AbstractEntity {
 
 	public void setIs_reprint(boolean is_reprint) {
 		this.is_reprint = is_reprint;
+	}
+
+	public int getLab_type() {
+		return lab_type;
+	}
+
+	public void setLab_type(int lab_type) {
+		this.lab_type = lab_type;
+	}
+
+	public Date getPg_date() {
+		return pg_date;
+	}
+
+	public void setPg_date(Date pg_date) {
+		this.pg_date = pg_date;
+	}
+
+	public String getLab_type_name() {
+		return lab_type_name;
+	}
+
+	public void setLab_type_name(String lab_type_name) {
+		this.lab_type_name = lab_type_name;
 	}
     
 }

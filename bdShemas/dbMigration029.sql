@@ -404,3 +404,12 @@ ALTER TABLE prn_queue_items
 ALTER TABLE lab ADD COLUMN pusher_enabled TINYINT(1) DEFAULT 1 AFTER post_delay;
 -- main  2016-06-30
 -- msk 2016-06-30
+
+ALTER TABLE prn_queue
+  ADD COLUMN pg_date DATETIME DEFAULT NULL AFTER is_reprint,
+  ADD COLUMN lab_type INT(5) DEFAULT 0 AFTER pg_date;
+  
+ALTER TABLE book_pg_template
+  ADD COLUMN queue_size INT(5) DEFAULT 0 AFTER reprint_offset,
+  ADD COLUMN queue_offset VARCHAR(10) DEFAULT '+0+0' AFTER queue_size;
+  
