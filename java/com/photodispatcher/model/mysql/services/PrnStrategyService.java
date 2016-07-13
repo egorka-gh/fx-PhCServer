@@ -28,12 +28,14 @@ public interface PrnStrategyService {
 
 	SelectResult<PrnQueue> loadComplitedQueues(Date date);
 
-	SqlResult createQueue(int strategy, int lab, PrintGroup params);
-
 	SqlResult checkQueues();
 
 	SqlResult deleteQueue(int queue);
 
 	SqlResult releaseQueue(int queue);
+
+	SelectResult<PrintGroup> getQueueMarkPGs(int queue);
+
+	SqlResult createQueue(int strategy, int lab, PrintGroup params);
 
 }

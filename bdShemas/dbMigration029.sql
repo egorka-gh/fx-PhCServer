@@ -412,4 +412,157 @@ ALTER TABLE prn_queue
 ALTER TABLE book_pg_template
   ADD COLUMN queue_size INT(5) DEFAULT 0 AFTER reprint_offset,
   ADD COLUMN queue_offset VARCHAR(10) DEFAULT '+0+0' AFTER queue_size;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS prn_queue1_create$$
+
+CREATE
+PROCEDURE prn_queue1_create(IN p_lab int, IN p_reprint int, IN p_paper int, IN p_width int, IN p_booksonly int)
+  MODIFIES SQL DATA
+BEGIN
+  DECLARE vRes int;
+  DECLARE vQueueId int(11);
+  DECLARE vPaper varchar(50);
+  DECLARE vLabType int;
+
+  SELECT MIN(l.src_type)
+  INTO vLabType
+    FROM lab l
+    WHERE l.id = p_lab;
+
+  -- load pg by lab
+  CALL loadPgByLabInternal(vLabType, 200);
+
+  DELETE
+    FROM tmp_pgid
+  WHERE NOT EXISTS (SELECT 1
+        FROM print_group
+        WHERE print_group.id = tmp_pgid.id
+          AND print_group.is_reprint = p_reprint
+          AND print_group.paper = p_paper
+          AND print_group.width = p_width
+          AND print_group.prn_queue = 0
+          AND (p_booksonly != 1 OR print_group.book_type IN (1, 2, 3)));
   
+  -- check 
+  SELECT COUNT(*)
+  INTO vRes
+    FROM tmp_pgid;
+
+  IF vRes > 0
+  THEN
+    -- get paper name
+    SELECT av.value
+    INTO vPaper
+      FROM attr_value av
+      WHERE av.id = p_paper
+        AND av.attr_tp = 2;
+
+    -- create queue, strategy now is strategy type !!!! 
+    INSERT INTO prn_queue (strategy, is_active, created, label, has_sub, lab, is_reprint)
+      VALUES (1, 1, NOW(), CONCAT_WS(';', IF(p_reprint, 'Перепечатка', NULL), vPaper, p_width, IF(p_booksonly,'Книги',NULL)), 0, p_lab, p_reprint);
+    SET vQueueId = LAST_INSERT_ID();
+
+    -- add printgroups
+    INSERT INTO prn_queue_items (prn_queue, sub_queue, print_group)
+      SELECT vQueueId, 0, tp.id
+        FROM tmp_pgid tp;
+
+    -- mark printgroups
+    UPDATE print_group
+    SET prn_queue = vQueueId
+    WHERE id IN (SELECT qi.print_group
+        FROM prn_queue_items qi
+        WHERE qi.prn_queue = vQueueId);
+
+    -- send result
+    SELECT vQueueId value;
+  ELSE
+    SELECT 0 value;
+  END IF;
+
+  -- kill temp
+  DROP TEMPORARY TABLE tmp_pgid;
+
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS prn_queue3_create$$
+
+CREATE
+PROCEDURE prn_queue3_create(IN p_lab int, IN p_reprint int, IN p_alias varchar(200), IN p_book_part int, IN p_sheet_num int, IN p_booksonly int)
+  MODIFIES SQL DATA
+BEGIN
+  DECLARE vRes int;
+  DECLARE vQueueId int(11);
+  DECLARE vBookPart varchar(50);
+  DECLARE vLabType int;
+
+  SELECT MIN(l.src_type)
+  INTO vLabType
+    FROM lab l
+    WHERE l.id = p_lab;
+
+  -- load pg by lab
+  CALL loadPgByLabInternal(vLabType, 200);
+
+  DELETE
+    FROM tmp_pgid
+  WHERE NOT EXISTS (SELECT 1
+        FROM print_group
+        WHERE print_group.id = tmp_pgid.id
+          AND print_group.is_reprint = p_reprint
+          AND print_group.alias = p_alias
+          AND print_group.book_part = p_book_part
+          AND print_group.sheet_num = p_sheet_num
+          AND print_group.prn_queue = 0
+          AND (p_booksonly != 1 OR print_group.book_type IN (1, 2, 3)));
+  
+  -- check 
+  SELECT COUNT(*)
+  INTO vRes
+    FROM tmp_pgid;
+
+  IF vRes > 0
+  THEN
+    -- get book part name
+    SELECT bp.name
+    INTO vBookPart
+      FROM book_part bp
+      WHERE bp.id=p_book_part;
+
+    -- create queue, strategy now is strategy type !!!! 
+    INSERT INTO prn_queue (strategy, is_active, created, label, has_sub, lab, is_reprint)
+      VALUES (3, 1, NOW(), CONCAT_WS(';', IF(p_reprint, 'Перепечатка', NULL), p_alias, vBookPart, p_sheet_num, IF(p_booksonly,'Книги',NULL)), 0, p_lab, p_reprint);
+    SET vQueueId = LAST_INSERT_ID();
+
+    -- add printgroups
+    INSERT INTO prn_queue_items (prn_queue, sub_queue, print_group)
+      SELECT vQueueId, 0, tp.id
+        FROM tmp_pgid tp;
+
+    -- mark printgroups
+    UPDATE print_group
+    SET prn_queue = vQueueId
+    WHERE id IN (SELECT qi.print_group
+        FROM prn_queue_items qi
+        WHERE qi.prn_queue = vQueueId);
+
+    -- send result
+    SELECT vQueueId value;
+  ELSE
+    SELECT 0 value;
+  END IF;
+
+  -- kill temp
+  DROP TEMPORARY TABLE tmp_pgid;
+
+END
+$$
+
+DELIMITER ;

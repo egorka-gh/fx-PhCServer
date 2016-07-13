@@ -61,12 +61,49 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 		return runCall(sql, strategy);
 	}
 
+	/**
+	 * returns first and last PrintGroup (to draw queue mark on first/last print)
+	 */
+	@Override
+	public SelectResult<PrintGroup> getQueueMarkPGs(int queue){
+		SelectResult<PrintGroup> result= new SelectResult<PrintGroup>();
+		
+		SelectResult<PrintGroup> selRes=loadQueueItems(queue, 0,true);
+		if(!selRes.isComplete()){
+			result.cloneError(selRes);
+		}else{
+			if(selRes.getData()!=null && !selRes.getData().isEmpty()){
+				List<PrintGroup> resultList=new ArrayList<PrintGroup>();
+				PrintGroupServiceImpl pgsvc= new PrintGroupServiceImpl();
+				//get first
+				SelectResult<PrintGroup> pgRes=pgsvc.load(selRes.getData().get(0).getId());
+				if(!pgRes.isComplete()){
+					result.cloneError(pgRes);
+					return result;
+				}
+				if(pgRes.getData()!=null && !pgRes.getData().isEmpty()) resultList.add(pgRes.getData().get(0));
+				//get last
+				pgRes=pgsvc.load(selRes.getData().get(selRes.getData().size()-1).getId());
+				if(!pgRes.isComplete()){
+					result.cloneError(pgRes);
+					return result;
+				}
+				if(pgRes.getData()!=null && !pgRes.getData().isEmpty()) resultList.add(pgRes.getData().get(0));
+				result.setData(resultList);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * returns created queue Id in resultCode (0 - not created)  
+	 */
 	@Override
 	public SqlResult createQueue(int strategy, int lab, PrintGroup params){
 		String sql;
 		SqlResult result= new SqlResult();
-		result.setResultCode(0);
-		SelectResult<FieldValue> val;
+		SelectResult<FieldValue> val=null;
+		int queueId=0;
 		int reprint=0;
 		if(params.isIs_reprint()) reprint=1;
 		/* strategy
@@ -77,16 +114,19 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 		case 1:
 			sql= "{CALL prn_queue1_create(?, ?, ?, ?, ?)}";
 			val=runCallSelect(FieldValue.class, sql, lab, reprint, params.getPaper(), params.getWidth(), params.getBook_type());
-			if(val.getData()!=null && !val.getData().isEmpty() && val.getData().get(0).getValue()!=0) result.setResultCode(1);
+			if(val.getData()!=null && !val.getData().isEmpty()) queueId=val.getData().get(0).getValue();
 			break;
 		case 3:
 			sql= "{CALL prn_queue3_create(?, ?, ?, ?, ?, ?)}";
 			val=runCallSelect(FieldValue.class, sql, lab, reprint, params.getAlias(), params.getBook_part(), params.getSheet_num(), 1);
-			if(val.getData()!=null && !val.getData().isEmpty() && val.getData().get(0).getValue()!=0) result.setResultCode(1);
+			if(val.getData()!=null && !val.getData().isEmpty()) queueId=val.getData().get(0).getValue();
 			break;
 		default:
 			break;
 		}
+		if(val!=null && !val.isComplete()) result.cloneError(val);
+		result.setResultCode(queueId);
+		
 		return result;
 	}
 
