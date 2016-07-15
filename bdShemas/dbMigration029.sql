@@ -460,8 +460,8 @@ BEGIN
         AND av.attr_tp = 2;
 
     -- create queue, strategy now is strategy type !!!! 
-    INSERT INTO prn_queue (strategy, is_active, created, label, has_sub, lab, is_reprint)
-      VALUES (1, 1, NOW(), CONCAT_WS(';', IF(p_reprint, 'Перепечатка', NULL), vPaper, p_width, IF(p_booksonly,'Книги',NULL)), 0, p_lab, p_reprint);
+    INSERT INTO prn_queue (strategy, is_active, created, label, has_sub, lab, is_reprint, lab_type)
+      VALUES (1, 1, NOW(), CONCAT_WS(';', IF(p_reprint, 'Перепечатка', NULL), vPaper, p_width, IF(p_booksonly,'Книги',NULL)), 0, p_lab, p_reprint, vLabType);
     SET vQueueId = LAST_INSERT_ID();
 
     -- add printgroups
@@ -537,8 +537,8 @@ BEGIN
       WHERE bp.id=p_book_part;
 
     -- create queue, strategy now is strategy type !!!! 
-    INSERT INTO prn_queue (strategy, is_active, created, label, has_sub, lab, is_reprint)
-      VALUES (3, 1, NOW(), CONCAT_WS(';', IF(p_reprint, 'Перепечатка', NULL), p_alias, vBookPart, p_sheet_num, IF(p_booksonly,'Книги',NULL)), 0, p_lab, p_reprint);
+    INSERT INTO prn_queue (strategy, is_active, created, label, has_sub, lab, is_reprint, lab_type)
+      VALUES (3, 1, NOW(), CONCAT_WS(';', IF(p_reprint, 'Перепечатка', NULL), p_alias, vBookPart, p_sheet_num, IF(p_booksonly,'Книги',NULL)), 0, p_lab, p_reprint, vLabType);
     SET vQueueId = LAST_INSERT_ID();
 
     -- add printgroups

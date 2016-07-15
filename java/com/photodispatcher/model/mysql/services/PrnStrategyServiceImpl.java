@@ -170,6 +170,30 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 	}
 
 	@Override
+	public SelectResult<PrnQueue> loadQueue(int queue, int subQueue){
+		String sql="SELECT IFNULL(psq.lab, pq.lab) lab, pst.default_priority priority, pq.created, pq.id, IFNULL(psq.sub_queue, 0) sub_queue,"+
+				" pq.strategy, pq.is_active, IFNULL(psq.started, pq.started) started, pq.label,"+
+				" lab.name lab_name, pq.strategy strategy_type, pst.name strategy_type_name, pq.is_reprint"+
+		 " FROM prn_queue pq"+
+		 //  " INNER JOIN prn_strategy ps ON pq.strategy=ps.id"+
+		 //  " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
+		   " INNER JOIN prn_strategy_type pst ON pq.strategy = pst.id"+
+		   " LEFT OUTER JOIN prn_sub_queue psq ON pq.id = psq.prn_queue AND psq.sub_queue = ?"+
+		   " LEFT OUTER JOIN lab ON IFNULL(psq.lab, pq.lab) = lab.id"+
+		 " WHERE pq.id = ?";
+		SelectResult<PrnQueue> result=runSelect(PrnQueue.class, sql, subQueue, queue);
+		if(!result.isComplete() || result.getData().isEmpty()) return result;
+		//load print group
+		SelectResult<PrintGroup> selRes=loadQueueItems(result.getData().get(0).getId(), result.getData().get(0).getSub_queue(), false);
+		if(selRes.isComplete()){
+			result.getData().get(0).setPrintGroups(selRes.getData());
+		}else{
+			result.cloneError(selRes);
+		}
+		return result;
+	}
+
+	@Override
 	public SelectResult<PrnQueue> loadQueues(){
 		SelectResult<PrnQueue> result= new SelectResult<PrnQueue>();
 		SqlResult suRes=checkQueue2();

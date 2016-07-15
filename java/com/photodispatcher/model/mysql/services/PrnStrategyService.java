@@ -38,4 +38,6 @@ public interface PrnStrategyService {
 
 	SqlResult createQueue(int strategy, int lab, PrintGroup params);
 
+	SelectResult<PrnQueue> loadQueue(int queue, int subQueue);
+
 }
