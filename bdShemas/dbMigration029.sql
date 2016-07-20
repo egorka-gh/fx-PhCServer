@@ -413,6 +413,20 @@ ALTER TABLE book_pg_template
   ADD COLUMN queue_size INT(5) DEFAULT 0 AFTER reprint_offset,
   ADD COLUMN queue_offset VARCHAR(10) DEFAULT '+0+0' AFTER queue_size;
 
+CREATE TABLE prn_queue_start_timetable (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  is_active tinyint(1) DEFAULT 0,
+  lab_type int(5) DEFAULT 0,
+  strategy_type int(5) NOT NULL DEFAULT 0,
+  time_start datetime DEFAULT NULL,
+  last_start datetime DEFAULT NULL,
+  PRIMARY KEY (id)
+)
+ENGINE = INNODB
+AUTO_INCREMENT = 1
+CHARACTER SET utf8
+COLLATE utf8_general_ci;  
+  
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS prn_queue1_create$$
@@ -566,3 +580,140 @@ END
 $$
 
 DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS prn_queues_create$$
+
+CREATE
+PROCEDURE prn_queues_create(IN p_lab_type int, IN p_strategy_type int, IN p_booksonly int)
+BEGIN
+  DECLARE vRes int DEFAULT (0);
+  DECLARE vIsEnd int DEFAULT (0);
+
+  DECLARE vReprint int;
+
+  DECLARE vPaper int;
+  DECLARE vWidth int;
+
+  DECLARE vAlias varchar(100);
+  DECLARE vBookPart int;
+  DECLARE vSheetNum int;
+
+  DECLARE vQueueId int(11);
+  DECLARE vPaperName varchar(50);
+  DECLARE vBookPartName varchar(50);
+
+  DECLARE vCur1 CURSOR FOR
+  SELECT DISTINCT pg.is_reprint, pg.paper, av.value paper_name, pg.width
+    FROM tmp_pgid t
+      INNER JOIN print_group pg ON pg.id = t.id
+      INNER JOIN attr_value av ON av.id = pg.paper AND av.attr_tp = 2;
+
+  DECLARE vCur3 CURSOR FOR
+  SELECT DISTINCT pg.is_reprint, pg.alias, pg.book_part, bp.name book_part_name, pg.sheet_num
+    FROM tmp_pgid t
+      INNER JOIN print_group pg ON pg.id = t.id
+      INNER JOIN book_part bp ON bp.id = pg.book_part;
+
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET vIsEnd = 1;
+
+  -- load pg by labtype
+  CALL loadPgByLabInternal(p_lab_type, 200);
+
+  -- delete in queue and not book
+  DELETE
+    FROM tmp_pgid
+  WHERE NOT EXISTS (SELECT 1
+        FROM print_group
+        WHERE print_group.id = tmp_pgid.id
+          AND print_group.prn_queue = 0
+          AND (p_booksonly != 1 OR print_group.book_type IN (1, 2, 3)));
+  -- check has some pg
+  SELECT COUNT(*)
+  INTO vRes
+    FROM tmp_pgid;
+
+  IF vRes > 0
+  THEN
+    IF p_strategy_type = 1
+    THEN
+      -- by paper, width
+      OPEN vCur1;
+    wet1:
+      LOOP
+        FETCH vCur1 INTO vReprint, vPaper, vPaperName, vWidth;
+        IF vIsEnd
+        THEN
+          LEAVE wet1;
+        END IF;
+        -- create queue, strategy now is strategy type !!!! 
+        INSERT INTO prn_queue (strategy, is_active, created, label, has_sub, lab, is_reprint, lab_type)
+          VALUES (p_strategy_type, 1, NOW(), CONCAT_WS(';', IF(vReprint, 'Перепечатка', NULL), vPaper, vWidth, IF(p_booksonly, 'Книги', NULL)), 0, 0, vReprint, p_lab_type);
+        SET vQueueId = LAST_INSERT_ID();
+        -- add printgroups
+        INSERT INTO prn_queue_items (prn_queue, sub_queue, print_group)
+          SELECT vQueueId, 0, t.id
+            FROM tmp_pgid t
+              INNER JOIN print_group pg ON pg.id = t.id
+            WHERE pg.is_reprint = vReprint
+              AND pg.paper = vPaper
+              AND pg.width = vWidth;
+        -- mark print groups
+        UPDATE print_group
+        SET prn_queue = vQueueId
+        WHERE id IN (SELECT qi.print_group
+            FROM prn_queue_items qi
+            WHERE qi.prn_queue = vQueueId);
+
+      END LOOP wet1;
+      CLOSE vCur1;
+    ELSEIF p_strategy_type = 3
+    THEN
+      -- by alias, book part, sheets
+      OPEN vCur3;
+    wet3:
+      LOOP
+        FETCH vCur3 INTO vReprint, vAlias, vBookPart, vBookPartName, vSheetNum;
+        IF vIsEnd
+        THEN
+          LEAVE wet3;
+        END IF;
+        -- create queue, strategy now is strategy type !!!! 
+        INSERT INTO prn_queue (strategy, is_active, created, label, has_sub, lab, is_reprint, lab_type)
+          VALUES (p_strategy_type, 1, NOW(), CONCAT_WS(';', IF(vReprint, 'Перепечатка', NULL), vAlias, vBookPartName, vSheetNum), 0, 0, vReprint, p_lab_type);
+        SET vQueueId = LAST_INSERT_ID();
+        -- add printgroups
+        INSERT INTO prn_queue_items (prn_queue, sub_queue, print_group)
+          SELECT vQueueId, 0, t.id
+            FROM tmp_pgid t
+              INNER JOIN print_group pg ON pg.id = t.id
+            WHERE pg.is_reprint = vReprint
+              AND pg.alias = vAlias
+              AND pg.book_part = vBookPart
+              AND pg.sheet_num = vSheetNum;
+        -- mark print groups
+        UPDATE print_group
+        SET prn_queue = vQueueId
+        WHERE id IN (SELECT qi.print_group
+            FROM prn_queue_items qi
+            WHERE qi.prn_queue = vQueueId);
+
+      END LOOP wet3;
+      CLOSE vCur3;
+    ELSE
+      SET vRes = 0;
+    END IF;
+  END IF;
+
+  -- kill temp
+  DROP TEMPORARY TABLE tmp_pgid;
+  -- return result
+  SELECT vRes value;
+END
+$$
+
+DELIMITER ;
+
+-- main  2016-07-20

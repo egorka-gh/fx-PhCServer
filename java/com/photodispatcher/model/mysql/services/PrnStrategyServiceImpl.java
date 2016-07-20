@@ -9,13 +9,13 @@ import org.springframework.stereotype.Service;
 import com.photodispatcher.model.mysql.entities.FieldValue;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.PrnQueue;
+import com.photodispatcher.model.mysql.entities.PrnQueueTimetable;
 import com.photodispatcher.model.mysql.entities.PrnStrategy;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 
 @Service("prnStrategyService")
 public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategyService {
-	
 
 	@Override
 	public SelectResult<PrnStrategy> persistStrategies(List<PrnStrategy> items){
@@ -130,6 +130,35 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 		return result;
 	}
 
+	/**
+	 * gets PrnQueueTimetable list 
+	 * returns non zero if create some queue   
+	 */
+	@Override
+	public SqlResult createQueueBatch(List<PrnQueueTimetable> params){
+		SqlResult result= new SqlResult();
+		SelectResult<FieldValue> val=null;
+		int books=1;
+
+		//PROCEDURE prn_queues_create(IN p_lab_type int, IN p_strategy_type int, IN p_booksonly int)
+		String sql="{CALL prn_queues_create(?, ?, ?)}";
+		for(PrnQueueTimetable param : params){
+			books=1;
+			if(!param.isBooksonly()) books=0;
+			val=runCallSelect(FieldValue.class, sql, param.getLab_type(), param.getStrategy_type(),books);
+			if(!val.isComplete()){
+				result.cloneError(val);
+				break;
+			}
+			if(val.getData()!=null && !val.getData().isEmpty()) result.setResultCode(Math.max(result.getResultCode(), val.getData().get(0).getValue()));
+			param.setLast_start(new Date());
+		}
+		//update time table
+		SqlResult ures=runUpdateBatch(params);
+		if (!ures.isComplete()) result.cloneError(ures);
+		return result;
+	}
+
 	@Override
 	public SqlResult deleteQueue(int queue){
 		//prn_queue_delete(IN p_queue int)
@@ -173,7 +202,7 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 	public SelectResult<PrnQueue> loadQueue(int queue, int subQueue){
 		String sql="SELECT IFNULL(psq.lab, pq.lab) lab, pst.default_priority priority, pq.created, pq.id, IFNULL(psq.sub_queue, 0) sub_queue,"+
 				" pq.strategy, pq.is_active, IFNULL(psq.started, pq.started) started, pq.label,"+
-				" lab.name lab_name, pq.strategy strategy_type, pst.name strategy_type_name, pq.is_reprint"+
+				" lab.name lab_name, pq.strategy strategy_type, pst.name strategy_type_name, pq.is_reprint, pq.lab_type"+
 		 " FROM prn_queue pq"+
 		 //  " INNER JOIN prn_strategy ps ON pq.strategy=ps.id"+
 		 //  " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
@@ -208,7 +237,7 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 		}
 		String sql="SELECT IFNULL(psq.lab, pq.lab) lab, pst.default_priority priority, pq.created, pq.id, IFNULL(psq.sub_queue, 0) sub_queue,"+
 							" pq.strategy, pq.is_active, IFNULL(psq.started, pq.started) started, pq.label,"+
-							" lab.name lab_name, pq.strategy strategy_type, pst.name strategy_type_name, pq.is_reprint"+
+							" lab.name lab_name, pq.strategy strategy_type, pst.name strategy_type_name, pq.is_reprint, pq.lab_type"+
 					 " FROM prn_queue pq"+
 					 //  " INNER JOIN prn_strategy ps ON pq.strategy=ps.id"+
 					 //  " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
@@ -237,7 +266,7 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 	@Override
 	public SelectResult<PrnQueue> loadComplitedQueues(Date date){
 		SelectResult<PrnQueue> result= new SelectResult<PrnQueue>();
-		String sql="SELECT psq.lab , pst.default_priority priority, pq.strategy strategy_type, pq.created, psq.complited, pq.id, psq.sub_queue, pq.strategy, pq.is_active, psq.started, pq.label, lab.name lab_name, pst.name strategy_type_name, pq.is_reprint"+
+		String sql="SELECT psq.lab , pst.default_priority priority, pq.strategy strategy_type, pq.created, psq.complited, pq.id, psq.sub_queue, pq.strategy, pq.is_active, psq.started, pq.label, lab.name lab_name, pst.name strategy_type_name, pq.is_reprint, pq.lab_type"+
 					 " FROM prn_sub_queue psq"+
 					   " INNER JOIN prn_queue pq ON pq.id = psq.prn_queue"+
 					  // " INNER JOIN prn_strategy ps ON pq.strategy = ps.id"+
@@ -246,7 +275,7 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 					    " LEFT OUTER JOIN lab ON psq.lab = lab.id"+
 					  " WHERE psq.complited > DATE(?) AND psq.complited < DATE_ADD(DATE(?), INTERVAL 1 DAY)"+
 					" UNION ALL"+
-					" SELECT pq.lab, pst.default_priority priority, pq.strategy strategy_type, pq.created, pq.complited, pq.id, 0 sub_queue, pq.strategy, pq.is_active, pq.started, pq.label, lab.name lab_name, pst.name strategy_type_name, pq.is_reprint"+
+					" SELECT pq.lab, pst.default_priority priority, pq.strategy strategy_type, pq.created, pq.complited, pq.id, 0 sub_queue, pq.strategy, pq.is_active, pq.started, pq.label, lab.name lab_name, pst.name strategy_type_name, pq.is_reprint, pq.lab_type"+
 					  " FROM prn_queue pq"+
 					   // " INNER JOIN prn_strategy ps ON pq.strategy = ps.id"+
 					   // " INNER JOIN prn_strategy_type pst ON ps.strategy_type = pst.id"+
@@ -283,6 +312,52 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 		if(!all) sql=sql +" AND o.state<450";
 		sql=sql +" ORDER BY pqi.seq";
 		return runSelect(PrintGroup.class, sql, queue, subQueue);
+	}
+
+	@Override
+	public SelectResult<PrnQueueTimetable> loadStartTimetable(){
+		//" (SELECT MAX(tt2.last_start) FROM prn_queue_start_timetable tt2 WHERE tt2.lab_type = tt.lab_type) last_start_c"+
+		String sql="SELECT tt.*, lt.name lab_type_name, st.name strategy_type_name"+
+				  " FROM prn_queue_start_timetable tt"+
+				    " LEFT OUTER JOIN src_type lt ON tt.lab_type = lt.id"+
+				    " LEFT OUTER JOIN prn_strategy_type st ON tt.strategy_type = st.id"+
+				  " ORDER BY tt.time_start, tt.lab_type, tt.strategy_type";
+		return runSelect(PrnQueueTimetable.class, sql);
+	}
+
+	@Override
+	public SelectResult<PrnQueueTimetable> persistStartTimetable(List<PrnQueueTimetable> items){
+		SelectResult<PrnQueueTimetable> res = new SelectResult<PrnQueueTimetable>();
+		SqlResult result=new SqlResult();
+		List<PrnQueueTimetable> insertList=new ArrayList<PrnQueueTimetable>();
+		List<PrnQueueTimetable> updateList=new ArrayList<PrnQueueTimetable>();
+
+		for(PrnQueueTimetable item : items){
+			if(item.getPersistState()==0){
+				insertList.add(item);
+			}else if(item.getPersistState()==-1){
+				updateList.add(item);
+			}
+		}
+		if(!insertList.isEmpty()){
+			result=runInsertBatch(insertList);
+		}
+		if(result.isComplete() && !updateList.isEmpty()){
+			result=runUpdateBatch(updateList);
+		}
+		if(!result.isComplete()){
+			res.cloneError(result);
+		}else{
+			res=loadStartTimetable();
+		}
+		return res;
+	}
+
+	@Override
+	public SelectResult<PrnQueueTimetable> deleteStartTimetable(int id){
+		String sql="DELETE FROM prn_queue_start_timetable WHERE id = ?";
+		runDML(sql, id);
+		return loadStartTimetable();
 	}
 
 }

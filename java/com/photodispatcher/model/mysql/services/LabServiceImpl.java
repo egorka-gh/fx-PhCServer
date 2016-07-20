@@ -429,10 +429,21 @@ public class LabServiceImpl extends AbstractDAO implements LabService {
 
 	@Override
 	public SelectResult<LabMeter> loadLabMeters(){
+		/*
 		String sql = "SELECT NOW() server_time, lm.*"+
 					  " FROM lab l"+
 					   " INNER JOIN lab_meter lm ON lm.lab = l.id"+
 					  " WHERE l.is_active = 1";
+					  */
+		String sql = "SELECT l.name lab_name, ld.name device_name, lmt.name type_name, IF(lm.meter_type=10,lst.name, os.name) state_name, NOW() server_time, lm.*"+
+					  " FROM lab l"+
+					  " INNER JOIN lab_meter lm ON l.id=lm.lab"+
+					  " INNER JOIN lab_meter_type lmt ON lm.meter_type=lmt.id"+
+					  " LEFT OUTER JOIN lab_device ld ON ld.id= lm.lab_device"+
+					  " LEFT OUTER JOIN order_state os ON lm.state=os.id"+
+					  " LEFT OUTER JOIN lab_stop_type lst ON lm.state= lst.id"+
+					 " WHERE l.is_active = 1";
+		
 		return runSelect(LabMeter.class, sql);
 	}
 
