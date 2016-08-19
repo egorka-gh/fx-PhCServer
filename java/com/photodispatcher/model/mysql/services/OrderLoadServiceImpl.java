@@ -1,0 +1,206 @@
+package com.photodispatcher.model.mysql.services;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+
+import org.sansorm.OrmElf;
+import org.sansorm.SqlClosureElf;
+import org.sansorm.internal.OrmWriter;
+import org.springframework.stereotype.Service;
+
+import com.photodispatcher.model.mysql.ConnectionFactory;
+import com.photodispatcher.model.mysql.entities.Order;
+import com.photodispatcher.model.mysql.entities.OrderFile;
+import com.photodispatcher.model.mysql.entities.OrderLoad;
+import com.photodispatcher.model.mysql.entities.OrderTemp;
+import com.photodispatcher.model.mysql.entities.SelectResult;
+import com.photodispatcher.model.mysql.entities.Source;
+import com.photodispatcher.model.mysql.entities.SqlResult;
+
+@Service("orderLoadService")
+public class OrderLoadServiceImpl extends AbstractDAO implements OrderLoadService {
+
+	@Override
+	public SqlResult beginSync(){
+		//clear tmp_orders table
+		String sql="DELETE FROM tmp_orders";
+		return runDML(sql);
+	}
+
+	@Override
+	public SqlResult addSyncItems(List<OrderTemp> items){
+		return runInsertBatch(items);
+	}
+
+	@Override
+	public SelectResult<Source> sync(){
+		SqlResult sync;
+		SelectResult<Source> result= new SelectResult<Source>();
+		
+		String sql="{CALL sync_4load()}";
+		sync=runCall(sql);
+		if(!sync.isComplete()){
+			result.cloneError(sync);
+			return result;
+		}
+		SourceServiceImpl svc= new SourceServiceImpl(); 
+		result=svc.loadAll(Source.LOCATION_TYPE_SOURCE);
+		
+		return result;
+	}
+
+	@Override
+	public SelectResult<Order> loadByState(int stateFrom, int stateTo){
+		String sql="SELECT o.*, s.name source_name, os.name state_name"+
+					" FROM orders_load o"+
+					" INNER JOIN order_state os ON o.state = os.id"+
+					" INNER JOIN sources s ON o.source = s.id";
+		String  where="";
+		if(stateFrom!=-1){
+			where+=" o.state>=?";
+		}
+		if(stateTo!=-1){
+			if(where.length()>0) where+=" AND";
+			where+=" o.state<?";
+		}
+		if(where.length()>0) where=" WHERE"+where;
+		sql+=where;
+		
+		if(stateFrom==-1 && stateTo==-1){
+			return runSelect(Order.class,sql);
+		}else if(stateFrom!=-1 && stateTo==-1){
+			return runSelect(Order.class,sql,stateFrom);
+		}else if(stateFrom==-1 && stateTo!=-1){
+			return runSelect(Order.class,sql,stateTo);
+		}
+		return runSelect(Order.class, sql, stateFrom, stateTo);
+	}
+
+	@Override
+	public SelectResult<OrderLoad> loadById(String id){
+		SelectResult<OrderLoad> result=new SelectResult<OrderLoad>(); 
+		String sql="SELECT o.*, s.name source_name, os.name state_name"+
+					" FROM orders_load o"+
+					" INNER JOIN order_state os ON o.state = os.id"+
+					" INNER JOIN sources s ON o.source = s.id"+
+					" WHERE o.id=?";
+		result= runSelect(OrderLoad.class, sql, id);
+		if(result.getData()!=null && !result.getData().isEmpty()){
+			sql="SELECT of.*, os.name state_name"+
+					" FROM order_files of"+
+					" INNER JOIN order_state os ON of.state = os.id"+
+					" WHERE order_id = ?";
+			SelectResult<OrderFile> subResult= runSelect(OrderFile.class, sql, id);
+			if(!subResult.isComplete()){
+				result.cloneError(subResult);
+			}else{
+				result.getData().get(0).setFiles(subResult.getData());
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public SqlResult save(OrderLoad order){
+		SqlResult result= new SqlResult();
+		if(order==null) return result;
+		
+		Connection connection = null;
+		try {
+			connection=ConnectionFactory.getConnection();
+			connection.setAutoCommit(false);
+			//update order
+			OrmElf.updateObject(connection, order);
+			if(order.getFiles()!=null && !order.getFiles().isEmpty()){
+				//save files
+				OrmElf.insertOrUpdateListBatched(connection, order.getFiles());
+			}
+			//attempt to commit
+			connection.commit();
+		} catch (SQLException e) {
+			result.setComplete(false);
+			result.setErrCode(e.getErrorCode());
+			result.setErrMesage(e.getMessage());
+			e.printStackTrace();
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}finally{
+			if(connection!=null){
+				try {
+					connection.setAutoCommit(true);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			SqlClosureElf.quietClose(connection);
+		}
+
+		return result;
+	}
+
+	@Override
+	public SelectResult<OrderLoad> merge(OrderLoad order){
+		SelectResult<OrderLoad> result= new SelectResult<OrderLoad>();
+		if(order==null) return result;
+		
+		Connection connection = null;
+		try {
+			connection=ConnectionFactory.getConnection();
+			connection.setAutoCommit(false);
+			//update order
+			OrmElf.updateObject(connection, order);
+
+			//merge files
+			//set mark
+			String sql="UPDATE order_files of SET of.chk=1 WHERE of.order_id=?";
+			OrmWriter.executeUpdate(connection, sql, order.getId());
+			if(order.getFiles()!=null && !order.getFiles().isEmpty()){
+				//add update files
+				for(OrderFile of : order.getFiles()){
+					sql="INSERT INTO order_files (order_id, file_name, state, state_date , size, hash_remote, chk)"+
+							" VALUES (?,?,?,?,?,?,0)"+
+							" ON DUPLICATE KEY UPDATE"+
+							" state_date = IF(state < 0, NOW(), state_date), state = IF(state < 0, 102, state), size = ?, hash_remote = ?, chk = 0";
+					OrmWriter.executeUpdate(connection, sql,
+							order.getId(), of.getFile_name(), of.getState(), of.getState_date(), of.getSize(), of.getHash_remote(),
+							of.getSize(), of.getHash_remote());
+				}
+			}
+			//delete not merged
+			sql="DELETE FROM order_files WHERE order_id=? AND chk=1";
+			OrmWriter.executeUpdate(connection, sql, order.getId());
+			
+			//attempt to commit
+			connection.commit();
+		} catch (SQLException e) {
+			result.setComplete(false);
+			result.setErrCode(e.getErrorCode());
+			result.setErrMesage(e.getMessage());
+			e.printStackTrace();
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}finally{
+			if(connection!=null){
+				try {
+					connection.setAutoCommit(true);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			SqlClosureElf.quietClose(connection);
+		}
+		if(result.isComplete()){
+			return loadById(order.getId());
+		}else{
+			return result;
+		}
+	}
+
+}
