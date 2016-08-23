@@ -148,15 +148,18 @@ public class OrderLoadServiceImpl extends AbstractDAO implements OrderLoadServic
 		if(order==null) return result;
 		
 		Connection connection = null;
+		String sql="";
 		try {
 			connection=ConnectionFactory.getConnection();
 			connection.setAutoCommit(false);
 			//update order
 			OrmElf.updateObject(connection, order);
+			//sql="UPDATE orders_load SET ftp_folder = ?, fotos_num = ? WHERE id = ?";
+			//OrmWriter.executeUpdate(connection, sql, order.getFtp_folder(), order.getFotos_num(), order.getId());
 
 			//merge files
 			//set mark
-			String sql="UPDATE order_files of SET of.chk=1 WHERE of.order_id=?";
+			sql="UPDATE order_files of SET of.chk=1 WHERE of.order_id=?";
 			OrmWriter.executeUpdate(connection, sql, order.getId());
 			if(order.getFiles()!=null && !order.getFiles().isEmpty()){
 				//add update files

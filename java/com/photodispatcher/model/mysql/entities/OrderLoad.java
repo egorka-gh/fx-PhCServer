@@ -19,6 +19,8 @@ public class OrderLoad extends AbstractEntity {
     private int source;
     @Column(name="src_id")
     private String src_id;
+    @Column(name="src_state")
+    private int src_state;
     @Column(name="state")
     private int state;
     @Column(name="state_date")
@@ -146,6 +148,12 @@ public class OrderLoad extends AbstractEntity {
 	}
 	public void setStateLog(List<StateLog> stateLog) {
 		this.stateLog = stateLog;
+	}
+	public int getSrc_state() {
+		return src_state;
+	}
+	public void setSrc_state(int src_state) {
+		this.src_state = src_state;
 	} 
 
 }
