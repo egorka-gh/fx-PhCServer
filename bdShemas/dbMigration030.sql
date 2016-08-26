@@ -15,6 +15,9 @@ INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(114, '
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(115, 'Проверка', 1, 0, 0, 0);
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(102, 'Ожидание загрузки исправлен', 0, 0, 0, 0);
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(-325, 'Ошибка FTP', 0, 0, 0, 0);
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(-326, 'Ошибка проверки', 0, 0, 0, 0);
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(-327, 'Ошибка проверки MD5', 0, 0, 0, 0);
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(-328, 'Ошибка проверки IM', 0, 0, 0, 0);
 
 ALTER TABLE services
   ADD COLUMN appkey VARCHAR(50) DEFAULT NULL AFTER connections;

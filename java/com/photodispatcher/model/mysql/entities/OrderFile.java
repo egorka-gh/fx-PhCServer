@@ -20,8 +20,6 @@ public class OrderFile extends AbstractEntity {
     private int state;
     @Column(name="state_date")
     private Date state_date;
-    @Column(name="previous_state")
-    private int previous_state;
     @Column(name="size")
     private int size;
     @Column(name="hash_remote")
@@ -29,9 +27,14 @@ public class OrderFile extends AbstractEntity {
     @Column(name="hash_local")
     private String hash_local;
 
+
     //ref
     @Column(name="state_name", updatable=false, insertable=false)
     private String state_name;
+    @Column(name="previous_state", updatable=false, insertable=false)
+    private int previous_state;
+    @Column(name="previous_state_name", updatable=false, insertable=false)
+    private String previous_state_name;
     
 	public String getOrder_id() {
 		return order_id;
@@ -86,6 +89,12 @@ public class OrderFile extends AbstractEntity {
 	}
 	public void setPrevious_state(int previous_state) {
 		this.previous_state = previous_state;
+	}
+	public String getPrevious_state_name() {
+		return previous_state_name;
+	}
+	public void setPrevious_state_name(String previous_state_name) {
+		this.previous_state_name = previous_state_name;
 	}
 
 
