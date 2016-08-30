@@ -23,4 +23,5 @@ public interface OrderLoadService {
 	SelectResult<OrderLoad> loadById(String id);
 	SelectResult<OrderLoad> merge(OrderLoad order);
 	SqlResult saveFile(OrderFile file);
+	SqlResult saveFiles(List<OrderFile> items);
 }

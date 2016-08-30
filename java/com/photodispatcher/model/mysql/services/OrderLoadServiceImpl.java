@@ -107,6 +107,11 @@ public class OrderLoadServiceImpl extends AbstractDAO implements OrderLoadServic
 	}
 
 	@Override
+	public SqlResult saveFiles(List<OrderFile> items){
+		return runInesrtUpdateBatch(items);
+	}
+
+	@Override
 	public SqlResult save(OrderLoad order){
 		SqlResult result= new SqlResult();
 		if(order==null) return result;
