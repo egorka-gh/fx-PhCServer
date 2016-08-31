@@ -17,6 +17,7 @@ import com.photodispatcher.model.mysql.entities.OrderTemp;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.Source;
 import com.photodispatcher.model.mysql.entities.SqlResult;
+import com.photodispatcher.model.mysql.entities.StateLog;
 
 @Service("orderLoadService")
 public class OrderLoadServiceImpl extends AbstractDAO implements OrderLoadService {
@@ -78,9 +79,19 @@ public class OrderLoadServiceImpl extends AbstractDAO implements OrderLoadServic
 	}
 
 	@Override
+	public SelectResult<OrderLoad> findeById(String id){
+		String sql="SELECT o.*, s.name source_name, s.code source_code, os.name state_name"+
+				" FROM orders_load o"+
+				" INNER JOIN order_state os ON o.state = os.id"+
+				" INNER JOIN sources s ON o.source = s.id"+
+				" WHERE o.id LIKE ?";
+		return runSelect(OrderLoad.class, sql, id);
+	}
+
+	@Override
 	public SelectResult<OrderLoad> loadById(String id){
 		SelectResult<OrderLoad> result=new SelectResult<OrderLoad>(); 
-		String sql="SELECT o.*, s.name source_name, os.name state_name"+
+		String sql="SELECT o.*, s.name source_name, s.code source_code, os.name state_name"+
 					" FROM orders_load o"+
 					" INNER JOIN order_state os ON o.state = os.id"+
 					" INNER JOIN sources s ON o.source = s.id"+
@@ -101,6 +112,24 @@ public class OrderLoadServiceImpl extends AbstractDAO implements OrderLoadServic
 		return result;
 	}
 
+	@Override
+	public SelectResult<OrderLoad> loadFull(String id){
+		SelectResult<OrderLoad> result=loadById(id);
+		if(result.isComplete() && result.getData()!=null && !result.getData().isEmpty()){
+			String sql= "SELECT sl.*, os.name state_name"+
+						" FROM state_log sl INNER JOIN order_state os ON sl.state = os.id"+
+						" WHERE sl.order_id = ?";
+			SelectResult<StateLog> slgRes=runSelect(StateLog.class, sql, id);
+			if(!slgRes.isComplete()){
+				result.cloneError(slgRes);
+			}else{
+				result.getData().get(0).setStateLog(slgRes.getData());
+			}
+		}
+		return result;
+	}
+
+	
 	@Override
 	public SqlResult saveFile(OrderFile file){
 		return runInsertOrUpdate(file);
