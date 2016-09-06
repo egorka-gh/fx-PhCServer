@@ -266,12 +266,12 @@ BEGIN
     WHERE source = pSourceId
       AND is_new = 1;
 
-    -- check if some vs error state
+    -- reset if err state or reload
     UPDATE orders_load o
     SET state = 102,
         state_date = NOW()
     WHERE o.source = pSourceId
-    AND o.state = 120
+    AND o.state BETWEEN 105 AND 130
     AND o.sync = vSync;
 
     -- cancel not in sync
@@ -280,7 +280,7 @@ BEGIN
     SET state = 505,
         state_date = NOW()
     WHERE o.source = pSourceId
-    AND o.state = 100
+    AND o.state IN (100,102)
     AND o.sync != vSync;
 
     -- finalize

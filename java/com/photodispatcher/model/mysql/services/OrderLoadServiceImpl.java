@@ -132,7 +132,7 @@ public class OrderLoadServiceImpl extends AbstractDAO implements OrderLoadServic
 	
 	@Override
 	public SqlResult saveFile(OrderFile file){
-		return runInsertOrUpdate(file);
+		return runUpdate(file);// runInsertOrUpdate(file);
 	}
 
 	@Override
@@ -141,10 +141,17 @@ public class OrderLoadServiceImpl extends AbstractDAO implements OrderLoadServic
 	}
 
 	@Override
-	public SqlResult save(OrderLoad order){
+	public SqlResult save(OrderLoad order, int fromState){
 		SqlResult result= new SqlResult();
 		if(order==null) return result;
-		
+
+		if(!checkState(order.getId(), fromState)){
+			result.setComplete(false);
+			result.setErrCode(-322);
+			result.setErrMesage("Ожидаемый статус заказа: " +fromState);
+			return result;
+		}
+
 		Connection connection = null;
 		try {
 			connection=ConnectionFactory.getConnection();
@@ -182,10 +189,16 @@ public class OrderLoadServiceImpl extends AbstractDAO implements OrderLoadServic
 	}
 
 	@Override
-	public SelectResult<OrderLoad> merge(OrderLoad order){
+	public SelectResult<OrderLoad> merge(OrderLoad order, int fromState){
 		SelectResult<OrderLoad> result= new SelectResult<OrderLoad>();
 		if(order==null) return result;
-		
+		if(!checkState(order.getId(), fromState)){
+			result.setComplete(false);
+			result.setErrCode(-322);
+			result.setErrMesage("Ожидаемый статус заказа: " +fromState);
+			return result;
+		}
+
 		Connection connection = null;
 		String sql="";
 		try {
@@ -197,12 +210,17 @@ public class OrderLoadServiceImpl extends AbstractDAO implements OrderLoadServic
 			//OrmWriter.executeUpdate(connection, sql, order.getFtp_folder(), order.getFotos_num(), order.getId());
 
 			//merge files
-			//set mark
+			//set not merged mark
 			sql="UPDATE order_files of SET of.chk=1 WHERE of.order_id=?";
 			OrmWriter.executeUpdate(connection, sql, order.getId());
 			if(order.getFiles()!=null && !order.getFiles().isEmpty()){
-				//add update files
 				for(OrderFile of : order.getFiles()){
+					//delete loaded and changed 
+					sql="DELETE FROM order_files"+
+							" WHERE order_id=? AND file_name=? AND state>=0 AND (size!=? OR hash_remote!=?)";
+					OrmWriter.executeUpdate(connection, sql,
+							order.getId(), of.getFile_name(), of.getSize(), of.getHash_remote());
+					//add new, update files vs err, set merged mark 4 loaded
 					sql="INSERT INTO order_files (order_id, file_name, state, state_date , size, hash_remote, chk)"+
 							" VALUES (?,?,?,?,?,?,0)"+
 							" ON DUPLICATE KEY UPDATE"+
@@ -245,4 +263,11 @@ public class OrderLoadServiceImpl extends AbstractDAO implements OrderLoadServic
 		}
 	}
 
+	private Boolean checkState(String id, int state){
+		if(state<=0) return true;
+		SelectResult<OrderLoad> res=loadById(id);
+		if(!res.isComplete()) return false;
+		if(res.getData()==null || res.getData().isEmpty()) return true;
+		return res.getData().get(0).getState()==state;
+	}
 }

@@ -19,11 +19,11 @@ public interface OrderLoadService {
 	SqlResult addSyncItems(List<OrderTemp> items);
 	SelectResult<Source> sync();
 	SelectResult<Order> loadByState(int stateFrom, int stateTo);
-	SqlResult save(OrderLoad order);
 	SelectResult<OrderLoad> loadById(String id);
-	SelectResult<OrderLoad> merge(OrderLoad order);
 	SqlResult saveFile(OrderFile file);
 	SqlResult saveFiles(List<OrderFile> items);
 	SelectResult<OrderLoad> loadFull(String id);
 	SelectResult<OrderLoad> findeById(String id);
+	SqlResult save(OrderLoad order, int fromState);
+	SelectResult<OrderLoad> merge(OrderLoad order, int fromState);
 }
