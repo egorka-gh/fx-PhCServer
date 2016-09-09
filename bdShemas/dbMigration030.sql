@@ -300,3 +300,15 @@ $$
 DELIMITER ;
 
 --- TODO lkz PhotoLoader ручками меняем связь state_log на orders_load
+
+ALTER TABLE services
+  ADD COLUMN priority INT(5) DEFAULT 0 AFTER appkey;
+
+ALTER TABLE services
+  DROP PRIMARY KEY,
+  ADD PRIMARY KEY (src_id, srvc_id, appkey);
+  
+INSERT INTO attr_type(id, attr_fml, name, field, list, persist) VALUES(97, 2, 'FTP источники', 'ftpAppKeys', 0, 0);
+INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES(4, 97, 'appkey');
+
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(-329, 'Не загружен на FTP', 1, 0, 0, 0);

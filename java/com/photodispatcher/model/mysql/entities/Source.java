@@ -1,6 +1,7 @@
 package com.photodispatcher.model.mysql.entities;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -49,10 +50,11 @@ public class Source extends AbstractEntity {
     private boolean sync_state;
 
     //childs
-    private SourceSvc ftpService;
+    private SourceSvc ftpService;//backward, site or primary ftp service
     private SourceSvc webService;
     private SourceSvc fbookService;
     private SourceSvc hotFolder;
+    private List<SourceSvc> ftpServices; //all ftp services
 
 	public int getId() {
 		return id;
@@ -137,6 +139,12 @@ public class Source extends AbstractEntity {
 	}
 	public void setSync_state(boolean sync_state) {
 		this.sync_state = sync_state;
+	}
+	public List<SourceSvc> getFtpServices() {
+		return ftpServices;
+	}
+	public void setFtpServices(List<SourceSvc> ftpServices) {
+		this.ftpServices = ftpServices;
 	}
 
 }

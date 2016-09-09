@@ -45,13 +45,17 @@ public class SourceServiceImpl extends AbstractDAO implements SourceService {
 					" WHERE s.src_id = ?";
 		SelectResult<SourceSvc> childs=runSelect(SourceSvc.class, sql, source.getId());
 		if(childs.isComplete()){
+			source.setFtpServices( new ArrayList<SourceSvc>());
 			for (SourceSvc service : childs.getData()){
 				switch (service.getSrvc_id()) {
 				case SourceSvc.FBOOK_SERVICE:
 					source.setFbookService(service);
 					break;
 				case SourceSvc.FTP_SERVICE:
-					source.setFtpService(service);
+					//first will be primary  
+					if(source.getFtpService()==null) source.setFtpService(service);
+					//fill full list
+					source.getFtpServices().add(service);
 					break;
 				case SourceSvc.HOT_FOLDER:
 					source.setHotFolder(service);

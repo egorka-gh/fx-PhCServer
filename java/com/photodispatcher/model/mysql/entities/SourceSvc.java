@@ -36,6 +36,8 @@ public class SourceSvc extends AbstractEntity {
     private int connections;
 	@Column(name="appkey")
     private String appkey;
+	@Column(name="priority")
+    private int priority;
 	
     //ref name
     @Column(name="type_name", updatable=false, insertable=false)
@@ -113,6 +115,14 @@ public class SourceSvc extends AbstractEntity {
 
 	public void setAppkey(String appkey) {
 		this.appkey = appkey;
+	}
+
+	public int getPriority() {
+		return priority;
+	}
+
+	public void setPriority(int priority) {
+		this.priority = priority;
 	}
 
 }
