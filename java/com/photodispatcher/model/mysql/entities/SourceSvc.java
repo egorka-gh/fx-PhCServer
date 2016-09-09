@@ -34,7 +34,9 @@ public class SourceSvc extends AbstractEntity {
     private String pass;
 	@Column(name="connections")
     private int connections;
-
+	@Column(name="appkey")
+    private String appkey;
+	
     //ref name
     @Column(name="type_name", updatable=false, insertable=false)
     private String type_name;
@@ -103,6 +105,14 @@ public class SourceSvc extends AbstractEntity {
 
 	public void setLoc_type(int loc_type) {
 		this.loc_type = loc_type;
+	}
+
+	public String getAppkey() {
+		return appkey;
+	}
+
+	public void setAppkey(String appkey) {
+		this.appkey = appkey;
 	}
 
 }
