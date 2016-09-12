@@ -312,3 +312,6 @@ INSERT INTO attr_type(id, attr_fml, name, field, list, persist) VALUES(97, 2, 'F
 INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES(4, 97, 'appkey');
 
 INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(-329, 'Не загружен на FTP', 1, 0, 0, 0);
+
+DELETE FROM alias_forward;
+INSERT INTO alias_forward(alias, state) VALUES('obrazec', 450);
