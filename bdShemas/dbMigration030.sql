@@ -315,3 +315,5 @@ INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(-329, 
 
 DELETE FROM alias_forward;
 INSERT INTO alias_forward(alias, state) VALUES('obrazec', 450);
+
+-- main 2016-09-14
