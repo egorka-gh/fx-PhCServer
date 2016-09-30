@@ -17,6 +17,7 @@ import com.photodispatcher.model.mysql.entities.SqlResult;
 import com.photodispatcher.model.mysql.entities.StaffActivity;
 import com.photodispatcher.model.mysql.entities.TechReject;
 import com.photodispatcher.model.mysql.entities.TechRejectItem;
+import com.photodispatcher.model.mysql.entities.TechRejectPG;
 
 @Service("techRejecService")
 public class TechRejecServiceImpl extends AbstractDAO implements TechRejecService{
@@ -92,6 +93,20 @@ public class TechRejecServiceImpl extends AbstractDAO implements TechRejecServic
 
 	@Override
 	public SqlResult updateRejectBatch(List<TechReject> items){
+		SqlResult result;
+		String sql="DELETE FROM tech_reject_pg WHERE tech_reject=?";
+		ArrayList<TechRejectPG> pgLinks= new ArrayList<TechRejectPG>();
+		for(TechReject reject : items){
+			if(reject.getPgroups()!=null && !reject.getPgroups().isEmpty()){
+				//recreate links
+				runDML(sql, reject.getId());
+				pgLinks.addAll(reject.getPgroups());
+			}
+		}
+		if(!pgLinks.isEmpty()){
+			result=runInsertBatch(pgLinks);
+			if(!result.isComplete()) return result;
+		}
 		return runUpdateBatch(items);
 	}
 

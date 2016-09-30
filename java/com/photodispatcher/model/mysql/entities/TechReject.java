@@ -52,7 +52,7 @@ public class TechReject extends AbstractEntity {
     @Transient
     private List<TechRejectItem> items;
     @Transient
-    private List<TechRejectItem> pgroups;
+    private List<TechRejectPG> pgroups;
     @Transient
     private StaffActivity activityObj;
 
@@ -128,10 +128,10 @@ public class TechReject extends AbstractEntity {
 	public void setItems(List<TechRejectItem> items) {
 		this.items = items;
 	}
-	public List<TechRejectItem> getPgroups() {
+	public List<TechRejectPG> getPgroups() {
 		return pgroups;
 	}
-	public void setPgroups(List<TechRejectItem> pgroups) {
+	public void setPgroups(List<TechRejectPG> pgroups) {
 		this.pgroups = pgroups;
 	}
 	public StaffActivity getActivityObj() {

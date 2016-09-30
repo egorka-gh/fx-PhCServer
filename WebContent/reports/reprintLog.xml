@@ -1,18 +1,27 @@
 <element-set>
   <element name="rpbody">
     <sql>
-      <![CDATA[    
-SELECT sa.log_date, s.name staff, s1.name src, CONCAT_WS('', s1.code, o.src_id) ordNum, pg.id gpid, bt.name booktype, bp.name bookpart, av.value paper, pg.width, pg.height, pg.prints, sat.name satype,  sa.remark
-FROM staff_activity sa
-  INNER JOIN staff s ON s.id=sa.staff
-  INNER JOIN staff_activity_type sat ON sa.sa_type = sat.id
-  INNER JOIN orders o ON sa.order_id = o.id
-  INNER JOIN sources s1 ON o.source=s1.id
-  INNER JOIN print_group pg ON sa.pg_id =pg.id
-  INNER JOIN book_part bp ON bp.id = pg.book_part
-  INNER JOIN book_type bt ON bt.id = pg.book_type
-  INNER JOIN attr_value av ON av.id = pg.paper
-  WHERE sa.log_date BETWEEN :pfrom AND DATE_ADD( :pto , INTERVAL 1 DAY)
+      <![CDATA[
+SELECT tr.created log_date, s.name staff, s1.name src, CONCAT_WS('', s1.code, o.src_id) ordNum, pg.id gpid, bt.name booktype, bp.name bookpart, av.value paper, pg.width, pg.height, 
+  SUM(IF(tri.thech_unit = 0,1, pg.sheet_num)) prints, sat.name satype, sa.remark 
+  FROM tech_reject tr
+    INNER JOIN staff_activity sa ON sa.id = tr.activity
+    INNER JOIN staff s ON s.id = sa.staff
+    INNER JOIN staff_activity_type sat ON sa.sa_type = sat.id
+    INNER JOIN tech_reject_items tri ON tri.tech_reject = tr.id
+    INNER JOIN print_group pgs ON tri.pg_src = pgs.id
+    INNER JOIN print_group pg ON pg.order_id = pgs.order_id AND pg.sub_id = pgs.sub_id AND pg.is_reprint=0
+      AND ((tri.thech_unit = 0 AND pgs.id = pg.id)
+      OR (tri.thech_unit IN (1, 2) AND pg.book_part = tri.thech_unit)
+      OR (tri.thech_unit = 3))
+    INNER JOIN orders o ON o.id = pg.order_id
+    INNER JOIN sources s1 ON o.source = s1.id
+    INNER JOIN book_part bp ON bp.id = pg.book_part
+    INNER JOIN book_type bt ON bt.id = pg.book_type
+    INNER JOIN attr_value av ON av.id = pg.paper
+  WHERE tr.created BETWEEN :pfrom AND DATE_ADD( :pto , INTERVAL 1 DAY) AND tr.state >= 250
+  GROUP BY tr.id, pg.id
+  ORDER BY tr.created
 	]]>
     </sql>
   </element>
