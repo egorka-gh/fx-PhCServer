@@ -9,6 +9,7 @@ import com.photodispatcher.model.mysql.entities.Order;
 import com.photodispatcher.model.mysql.entities.OrderExtraInfo;
 import com.photodispatcher.model.mysql.entities.OrderTemp;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
+import com.photodispatcher.model.mysql.entities.PrintGroupReject;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.Source;
 import com.photodispatcher.model.mysql.entities.SqlResult;
@@ -51,4 +52,5 @@ public interface OrderService {
 	SqlResult captureState(String orderId, int fromState, int toState, String owner);
 	SqlResult cleanUpOrder(String id, int state);
 	SqlResult setSuborderState(SubOrder suborder);
+	SelectResult<PrintGroupReject> loadRejects4PG(String pgId);
 }

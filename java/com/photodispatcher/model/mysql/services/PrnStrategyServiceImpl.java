@@ -300,6 +300,18 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 		return result;
 	}
 
+	@Override
+	public SelectResult<PrintGroup> loadQueueItemsByPG(String pgId){
+		SelectResult<PrintGroup> result;
+		String sql="SELECT pg.* FROM print_group pg WHERE pg.id =?";
+		result=runSelect(PrintGroup.class, sql, pgId);
+		if(!result.isComplete() || result.getData()==null || result.getData().isEmpty()) return result;
+		int queue=result.getData().get(0).getPrn_queue();
+		if(queue==0) return result;
+		return loadQueueItems(queue,0,true);
+	}
+
+
 	private SelectResult<PrintGroup> loadQueueItems(int queue, int subQueue, boolean all){
 		String sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder, IFNULL(s.alias, pg.path) alias, os.name state_name, av.value paper_name"+
 					 " FROM prn_queue_items pqi"+

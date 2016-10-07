@@ -30,6 +30,10 @@ public class TechRejectItem extends AbstractEntity {
     //db drived
     @Column(name="thech_unit_name", updatable=false, insertable=false)
     private String thech_unit_name;
+    /*
+    @Column(name="pg_dst", updatable=false, insertable=false)
+    private String pg_dst;
+    */
 
 	public int getId() {
 		return id;

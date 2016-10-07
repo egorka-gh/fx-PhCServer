@@ -85,7 +85,7 @@ public class TechRejecServiceImpl extends AbstractDAO implements TechRejecServic
 		String sql="SELECT * FROM tech_reject tr WHERE tr.order_id= ? AND ? IN (tr.state,0)";
 		return runSelect(TechReject.class, sql, orderId, state);
 	}
-
+	
 	@Override
 	public DmlResult<TechReject> updateReject(TechReject item){
 		return runUpdate(item);
@@ -188,4 +188,33 @@ public class TechRejecServiceImpl extends AbstractDAO implements TechRejecServic
 		return runSelect(TechRejectItem.class,sql,rejectId);
 	}
 	
+	/*
+	@Override
+	public SelectResult<TechRejectItem> loadItemsByPg(String pgId){
+		//TODO refactor
+		String sql="SELECT tri.*, tu.name thech_unit_name, pgd.id pg_dst" +
+					" FROM print_group pg" +
+					 " INNER JOIN tech_reject tr ON pg.order_id=tr.order_id" +
+					 " INNER JOIN tech_reject_items tri ON tr.id = tri.tech_reject AND (tri.pg_src=pg.id OR tri.thech_unit=3)" +
+					 " INNER JOIN tech_unit tu ON tri.thech_unit=tu.id" +
+					 " LEFT OUTER JOIN tech_reject_pg trp ON tr.id = trp.tech_reject AND trp.pg_src=pg.id" +
+					 " LEFT OUTER JOIN print_group pgd ON trp.pg_dst=pgd.id AND pgd.state<450" +
+					 " WHERE pg.id=?";
+		return runSelect(TechRejectItem.class, sql, pgId);
+	}
+
+	@Override
+	public SelectResult<TechRejectItem> loadItemsByOrder(String orderId){
+		//TODO refactor
+		String sql="SELECT tri.*, tu.name thech_unit_name, pgd.id pg_dst" +
+					" FROM tech_reject tr" +
+					 " INNER JOIN tech_reject_items tri ON tr.id = tri.tech_reject" +
+					 " INNER JOIN tech_unit tu ON tri.thech_unit=tu.id" +
+					 " LEFT OUTER JOIN tech_reject_pg trp ON tr.id = trp.tech_reject AND trp.pg_src=tri.pg_src" +
+					 " LEFT OUTER JOIN print_group pgd ON trp.pg_dst=pgd.id AND pgd.state<450" +
+					 " WHERE tr.order_id=?";
+		return runSelect(TechRejectItem.class, sql, orderId);
+	}
+	*/
+
 }

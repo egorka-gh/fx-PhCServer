@@ -113,6 +113,8 @@ public class PrintGroup extends AbstractEntity {
     //childs
     @Transient
     private List<PrintGroupFile> files;
+    @Transient
+    private List<PrintGroupReject> rejects;
 
 	public String getId() {
 		return id;
@@ -456,6 +458,14 @@ public class PrintGroup extends AbstractEntity {
 
 	public void setMax_sheet(int max_sheet) {
 		this.max_sheet = max_sheet;
+	}
+
+	public List<PrintGroupReject> getRejects() {
+		return rejects;
+	}
+
+	public void setRejects(List<PrintGroupReject> rejects) {
+		this.rejects = rejects;
 	}
     
 }

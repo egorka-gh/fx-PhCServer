@@ -50,4 +50,6 @@ public interface PrnStrategyService {
 
 	SqlResult createQueueBatch(List<PrnQueueTimetable> params);
 
+	SelectResult<PrintGroup> loadQueueItemsByPG(String pgId);
+
 }

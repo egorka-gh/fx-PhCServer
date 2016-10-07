@@ -23,6 +23,7 @@ import com.photodispatcher.model.mysql.entities.OrderExtraStateProlong;
 import com.photodispatcher.model.mysql.entities.OrderTemp;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.PrintGroupFile;
+import com.photodispatcher.model.mysql.entities.PrintGroupReject;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.Source;
 import com.photodispatcher.model.mysql.entities.SqlResult;
@@ -531,6 +532,17 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	@Override
+	public SelectResult<PrintGroupReject> loadRejects4PG(String pgId){
+		String sql="SELECT pgr.*, IFNULL(tu.name,'') thech_unit_name"+
+					 " FROM print_group pg"+
+					   " INNER JOIN print_group pg1 ON pg1.order_id = pg.order_id AND pg.id IN (pg1.reprint_id, pg1.id) AND pg1.state < 450"+
+					   " INNER JOIN print_group_rejects pgr ON pgr.print_group = pg1.id"+
+					   " LEFT OUTER JOIN tech_unit tu ON pgr.thech_unit=tu.id"+
+					 " WHERE pg.id = ?";		
+		return runSelect(PrintGroupReject.class,sql, pgId);
+	}
+
+	@Override
 	public DmlResult<Order> addManual(Order order){
 		return runInsert(order);
 	}
@@ -739,6 +751,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		Set<String> subIds= new HashSet<String>();
 		Set<String> parentIds= new HashSet<String>();
 		List<PrintGroupFile> pgFiles = new ArrayList<PrintGroupFile>();
+		List<PrintGroupReject> pgRejects = new ArrayList<PrintGroupReject>();
 		Date dt =new Date();
 		for (PrintGroup pg : items){
 			order_id=pg.getOrder_id();
@@ -748,6 +761,12 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 				for(PrintGroupFile pgFile : pg.getFiles()){
 					pgFile.setPrint_group(pg.getId());
 					pgFiles.add(pgFile);
+				}
+			}
+			if(pg.getRejects()!=null){
+				for(PrintGroupReject pgReject : pg.getRejects()){
+					pgReject.setPrint_group(pg.getId());
+					pgRejects.add(pgReject);
 				}
 			}
 		}
@@ -792,6 +811,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			OrmElf.insertListBatched(connection, items);
 			//add files
 			OrmElf.insertListBatched(connection, pgFiles);
+			//add rejects
+			OrmElf.insertListBatched(connection, pgRejects);
 			//set order state
 			String sql="UPDATE orders SET state = ?, state_date = ?, reported_state=0 WHERE id = ? AND state > ?";
 			OrmWriter.executeUpdate(connection, sql, 210, dt, order_id, 210);
