@@ -48,8 +48,8 @@ public interface PrnStrategyService {
 
 	SelectResult<PrnQueueTimetable> deleteStartTimetable(int id);
 
-	SqlResult createQueueBatch(List<PrnQueueTimetable> params);
+	SqlResult createQueueBatch(List<PrnQueueTimetable> params, int reprintsMode);
 
-	SelectResult<PrintGroup> loadQueueItemsByPG(String pgId);
+	SelectResult<PrintGroup> loadQueueItemsByPG(String pgId, boolean loadRejects);
 
 }

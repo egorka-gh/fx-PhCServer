@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.photodispatcher.model.mysql.entities.FieldValue;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
+import com.photodispatcher.model.mysql.entities.PrintGroupReject;
 import com.photodispatcher.model.mysql.entities.PrnQueue;
 import com.photodispatcher.model.mysql.entities.PrnQueueTimetable;
 import com.photodispatcher.model.mysql.entities.PrnStrategy;
@@ -132,20 +133,23 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 
 	/**
 	 * gets PrnQueueTimetable list 
-	 * returns non zero if create some queue   
+	 * returns non zero if create some queue  
+	 * reprintsMode
+	 * 	-1 join in queue
+	 *   0 (!=-1) create separate queue 
 	 */
 	@Override
-	public SqlResult createQueueBatch(List<PrnQueueTimetable> params){
+	public SqlResult createQueueBatch(List<PrnQueueTimetable> params, int reprintsMode){
 		SqlResult result= new SqlResult();
 		SelectResult<FieldValue> val=null;
 		int books=1;
 
-		//PROCEDURE prn_queues_create(IN p_lab_type int, IN p_strategy_type int, IN p_booksonly int)
-		String sql="{CALL prn_queues_create(?, ?, ?)}";
+		//PROCEDURE prn_queues_create(IN p_lab_type int, IN p_strategy_type int, IN p_booksonly int, IN p_reprintsmode int)
+		String sql="{CALL prn_queues_create(?, ?, ?, ?)}";
 		for(PrnQueueTimetable param : params){
 			books=1;
 			if(!param.isBooksonly()) books=0;
-			val=runCallSelect(FieldValue.class, sql, param.getLab_type(), param.getStrategy_type(),books);
+			val=runCallSelect(FieldValue.class, sql, param.getLab_type(), param.getStrategy_type(),books, reprintsMode);
 			if(!val.isComplete()){
 				result.cloneError(val);
 				break;
@@ -301,14 +305,28 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 	}
 
 	@Override
-	public SelectResult<PrintGroup> loadQueueItemsByPG(String pgId){
+	public SelectResult<PrintGroup> loadQueueItemsByPG(String pgId, boolean loadRejects){
 		SelectResult<PrintGroup> result;
 		String sql="SELECT pg.* FROM print_group pg WHERE pg.id =?";
 		result=runSelect(PrintGroup.class, sql, pgId);
 		if(!result.isComplete() || result.getData()==null || result.getData().isEmpty()) return result;
 		int queue=result.getData().get(0).getPrn_queue();
-		if(queue==0) return result;
-		return loadQueueItems(queue,0,true);
+		if(queue!=0){		
+			result= loadQueueItems(queue,0,true);
+			if(!result.isComplete()) return result;
+		}
+		if(loadRejects && result.getData()!=null){
+			OrderServiceImpl svc= new OrderServiceImpl();
+			for(PrintGroup item : result.getData()){
+				SelectResult<PrintGroupReject> subres=svc.loadRejects4PG(item.getId());
+				if(!subres.isComplete()){
+					result.cloneError(subres);
+					return result;
+				}
+				item.setRejects(subres.getData());
+			}
+		}
+		return result;
 	}
 
 

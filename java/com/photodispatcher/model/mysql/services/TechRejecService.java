@@ -9,7 +9,6 @@ import com.photodispatcher.model.mysql.entities.Order;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 import com.photodispatcher.model.mysql.entities.TechReject;
-import com.photodispatcher.model.mysql.entities.TechRejectItem;
 
 @RemoteDestination(id="techRejecService", source="techRejecService")
 public interface TechRejecService {
