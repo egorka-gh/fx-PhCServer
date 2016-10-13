@@ -50,6 +50,6 @@ public interface PrnStrategyService {
 
 	SqlResult createQueueBatch(List<PrnQueueTimetable> params, int reprintsMode);
 
-	SelectResult<PrintGroup> loadQueueItemsByPG(String pgId, boolean loadRejects);
+	SelectResult<PrnQueue> loadQueueItemsByPG(String pgId, boolean loadRejects);
 
 }

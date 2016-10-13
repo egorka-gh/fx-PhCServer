@@ -53,4 +53,5 @@ public interface OrderService {
 	SqlResult cleanUpOrder(String id, int state);
 	SqlResult setSuborderState(SubOrder suborder);
 	SelectResult<PrintGroupReject> loadRejects4PG(String pgId);
+	SelectResult<PrintGroupReject> loadRejects4Order(String pgId);
 }

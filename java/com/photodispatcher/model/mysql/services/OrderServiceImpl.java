@@ -543,6 +543,17 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	}
 
 	@Override
+	public SelectResult<PrintGroupReject> loadRejects4Order(String pgId){
+		String sql="SELECT pgr.*, IFNULL(tu.name,'') thech_unit_name"+
+					 " FROM print_group pg"+
+					   " INNER JOIN print_group pg1 ON pg1.order_id = pg.order_id AND pg.sub_id=pg1.sub_id AND pg1.is_reprint=1 AND pg1.state < 450"+
+					   " INNER JOIN print_group_rejects pgr ON pgr.print_group = pg1.id"+
+					   " LEFT OUTER JOIN tech_unit tu ON pgr.thech_unit=tu.id"+
+					 " WHERE pg.id = ?";		
+		return runSelect(PrintGroupReject.class,sql, pgId);
+	}
+
+	@Override
 	public DmlResult<Order> addManual(Order order){
 		return runInsert(order);
 	}
