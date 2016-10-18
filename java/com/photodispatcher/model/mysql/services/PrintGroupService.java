@@ -26,5 +26,6 @@ public interface PrintGroupService {
 	SelectResult<PrintGroup> loadById(String id);
 	SelectResult<PrintGroup> printComplitePrepare(String pgid);
 	SqlResult printComplite(PrintGroup printGroup);
+	SelectResult<PrintGroup> findeById(String id);
 	
 }

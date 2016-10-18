@@ -48,6 +48,21 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 		return result;
 	}
 
+	
+	@Override
+	public SelectResult<PrintGroup> findeById(String id){
+		String sql="SELECT pg.*, os.name state_name, p.value paper_name, bp.name book_part_name"+
+					 " FROM print_group pg"+
+					   " INNER JOIN order_state os ON pg.state = os.id"+
+					   " INNER JOIN attr_value p ON pg.paper = p.id"+
+					   " INNER JOIN book_part bp ON pg.book_part = bp.id"+
+					 " WHERE pg.id LIKE ? AND pg.state < 460"+
+					 " ORDER BY pg.state_date DESC";
+		
+		return runSelect(PrintGroup.class, sql, id);
+	}
+
+	
 	@Override
 	public SelectResult<PrintGroup> loadById(String id){
 		String sql="SELECT pg.*, o.source source_id, s.name source_name, o.ftp_folder order_folder, os.name state_name,"+
