@@ -15,14 +15,4 @@ public class DmlResult<T> extends SqlResult implements Serializable {
 		this.item = item;
 	}
 	
-	/*
-	private int lastId;
-
-	public int getLastId() {
-		return lastId;
-	}
-	public void setLastId(int lastId) {
-		this.lastId = lastId;
-	}
-	*/
 }
