@@ -7,6 +7,7 @@ import org.granite.messaging.service.annotations.RemoteDestination;
 
 import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.PrnQueue;
+import com.photodispatcher.model.mysql.entities.PrnQueueLink;
 import com.photodispatcher.model.mysql.entities.PrnQueueTimetable;
 import com.photodispatcher.model.mysql.entities.PrnStrategy;
 import com.photodispatcher.model.mysql.entities.SelectResult;
@@ -51,5 +52,9 @@ public interface PrnStrategyService {
 	SqlResult createQueueBatch(List<PrnQueueTimetable> params, int reprintsMode);
 
 	SelectResult<PrnQueue> loadQueueItemsByPG(String pgId, boolean loadRejects);
+
+	SelectResult<PrnQueueLink> getLinkByPG(String pgId);
+
+	SelectResult<PrnQueueLink> getLink(int queue);
 
 }

@@ -10,6 +10,7 @@ import com.photodispatcher.model.mysql.entities.FieldValue;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
 import com.photodispatcher.model.mysql.entities.PrintGroupReject;
 import com.photodispatcher.model.mysql.entities.PrnQueue;
+import com.photodispatcher.model.mysql.entities.PrnQueueLink;
 import com.photodispatcher.model.mysql.entities.PrnQueueTimetable;
 import com.photodispatcher.model.mysql.entities.PrnStrategy;
 import com.photodispatcher.model.mysql.entities.SelectResult;
@@ -94,6 +95,21 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public SelectResult<PrnQueueLink> getLink(int queue){
+		String sql="SELECT ql.* FROM prn_queue_link ql WHERE ql.prn_queue = ?";
+		return runSelect(PrnQueueLink.class, sql, queue);
+	}
+
+	@Override
+	public SelectResult<PrnQueueLink> getLinkByPG(String pgId){
+		String sql="SELECT ql.*"+
+					 " FROM print_group pg"+
+					   " INNER JOIN prn_queue_link ql ON pg.prn_queue = ql.prn_queue"+
+					  " WHERE pg.id = ?";
+		return runSelect(PrnQueueLink.class, sql, pgId);
 	}
 
 	/**
