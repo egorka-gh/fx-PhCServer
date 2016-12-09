@@ -76,6 +76,7 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 		}else{
 			if(selRes.getData()!=null && !selRes.getData().isEmpty()){
 				List<PrintGroup> resultList=new ArrayList<PrintGroup>();
+				// get files
 				PrintGroupServiceImpl pgsvc= new PrintGroupServiceImpl();
 				//get first
 				SelectResult<PrintGroup> pgRes=pgsvc.load(selRes.getData().get(0).getId());
