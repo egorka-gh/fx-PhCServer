@@ -26,4 +26,7 @@ public interface OrderLoadService {
 	SelectResult<OrderLoad> findeById(String id);
 	SqlResult save(OrderLoad order, int fromState);
 	SelectResult<OrderLoad> merge(OrderLoad order, int fromState);
+	SqlResult syncValid();
+	SqlResult markKilled(String orderId);
+	SelectResult<OrderLoad> load4CleanFS(int days, int limit);
 }

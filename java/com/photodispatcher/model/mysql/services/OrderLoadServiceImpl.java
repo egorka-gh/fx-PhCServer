@@ -52,6 +52,27 @@ public class OrderLoadServiceImpl extends AbstractDAO implements OrderLoadServic
 	}
 
 	@Override
+	public SqlResult syncValid(){
+		String sql="{CALL sync_4Lvalid()}";
+		return runCall(sql);
+	}
+
+	@Override
+	public SelectResult<OrderLoad> load4CleanFS(int days, int limit){
+		String sql="SELECT o.* FROM orders_load o"+
+					" WHERE o.state = 529 AND o.state_date <= DATE_SUB(CURDATE(), INTERVAL ? DAY)" +
+					" ORDER BY o.state_date"+
+		    		" LIMIT "+Integer.toString(limit);
+		return runSelect(OrderLoad.class, sql, days );
+	}
+
+	@Override
+	public SqlResult markKilled(String orderId){
+		String sql="UPDATE orders_load ol SET ol.state = 530, ol.state_date=NOW() WHERE ol.id = ? AND ol.state = 529";
+		return runDML(sql, orderId);
+	}
+
+	@Override
 	public SelectResult<Order> loadByState(int stateFrom, int stateTo){
 		String sql="SELECT o.*, s.name source_name, os.name state_name"+
 					" FROM orders_load o"+
