@@ -233,6 +233,3 @@ END
 $$
 
 DELIMITER ;
-
-INSERT INTO form(id, name, report) VALUES(5, 'Печать ШК2', 'mpBarcodeFrm2');
-INSERT INTO delivery_type_form(delivery_type, form) VALUES(0, 5);
