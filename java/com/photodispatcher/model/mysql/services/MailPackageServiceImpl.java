@@ -202,7 +202,7 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 					" FROM orders o"+
 					" INNER JOIN order_state os ON o.state = os.id"+
 					" INNER JOIN sources s ON o.source = s.id"+
-					" WHERE o.source = ? AND o.group_id=?";
+					" WHERE o.source = ? AND o.group_id=? AND o.state<500";
 		result=runSelect(Order.class,sql, source, id);
 		return result;
 	}
