@@ -658,6 +658,13 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			OrmElf.insertListBatched(connection, printGroups);
 			//add files
 			OrmElf.insertListBatched(connection, pgFiles);
+			//add books
+			String sql="INSERT IGNORE INTO order_books (pg_id,target_pg,book,sheets,state,state_date)"+
+						" SELECT pg.id, pg.id, gk.n, pg.sheet_num, 100, NOW()"+
+						 " FROM phcconfig.print_group pg"+
+						   " INNER JOIN generator_1k gk ON gk.n BETWEEN 1 AND pg.book_num"+
+						  " WHERE pg.order_id = ? AND pg.is_reprint=0";
+			OrmWriter.executeUpdate(connection, sql, order.getId());
 			//attempt to commit
 			connection.commit();
 		} catch (SQLException e) {
@@ -758,14 +765,14 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		SqlResult result= new SqlResult();
 		if(items==null ||items.isEmpty()) return result;
 		
-		String order_id="";
+		//String order_id="";
 		Set<String> subIds= new HashSet<String>();
 		Set<String> parentIds= new HashSet<String>();
 		List<PrintGroupFile> pgFiles = new ArrayList<PrintGroupFile>();
 		List<PrintGroupReject> pgRejects = new ArrayList<PrintGroupReject>();
-		Date dt =new Date();
+		//Date dt =new Date();
 		for (PrintGroup pg : items){
-			order_id=pg.getOrder_id();
+			//order_id=pg.getOrder_id();
 			if(pg.getSub_id()!=null && pg.getSub_id().length()>0) subIds.add(pg.getSub_id());
 			if(pg.getReprint_id()!=null && pg.getReprint_id().length()>0) parentIds.add(pg.getReprint_id());
 			if(pg.getFiles()!=null){
@@ -781,7 +788,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 				}
 			}
 		}
-
+		
 		/*
 		if(result.isComplete()) result=runInsertBatch(items);
 		if(result.isComplete()) result=runInsertBatch(pgFiles);
@@ -824,6 +831,29 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			OrmElf.insertListBatched(connection, pgFiles);
 			//add rejects
 			OrmElf.insertListBatched(connection, pgRejects);
+
+			for (PrintGroup pg : items){
+				// add reprint books
+				String sql="INSERT IGNORE INTO order_books (pg_id, target_pg, book, sheets, state, state_date, is_reject)"+
+							" SELECT pg.id, pg.reprint_id, pgr.book, IF(MAX(pgr.thech_unit) = 0, COUNT(*), pg.sheet_num) sheets, 145, NOW(), 1"+
+							 " FROM print_group pg"+
+							   " INNER JOIN print_group_rejects pgr ON pg.id = pgr.print_group"+
+							  " WHERE pg.id = ?"+
+							  " GROUP BY pgr.book";
+				OrmWriter.executeUpdate(connection, sql, pg.getId() );
+				
+				//mark target books as rejected
+				sql="UPDATE order_books ob"+
+					" INNER JOIN order_books obs ON ob.pg_id = obs.target_pg AND ob.book = obs.book"+
+					 " SET ob.is_rejected = 1"+
+					 " WHERE obs.pg_id = ?";
+				OrmWriter.executeUpdate(connection, sql, pg.getId() );
+				
+				/* TODO add reprint extra state (subid=pgid)*/
+				
+			}
+			
+			/*
 			//set order state
 			String sql="UPDATE orders SET state = ?, state_date = ?, reported_state=0 WHERE id = ? AND state > ?";
 			OrmWriter.executeUpdate(connection, sql, 210, dt, order_id, 210);
@@ -843,6 +873,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 				sql="UPDATE print_group SET state = ?, state_date = ? WHERE id = ?";
 				OrmWriter.executeUpdate(connection, sql, 251, dt, subId);
 			}
+			*/
 			
 			//attempt to commit
 			connection.commit();
