@@ -96,6 +96,8 @@ public class Order extends AbstractEntity {
     private List<OrderExtraState> extraState; 
     @Transient
     private List<OrderExtraStateProlong>  extraStateProlong;
+    @Transient
+    private List<OrderBook>  books;
     
     
 	public String getId() {
@@ -277,6 +279,12 @@ public class Order extends AbstractEntity {
 	}
 	public void setTag(String tag) {
 		this.tag = tag;
+	}
+	public List<OrderBook> getBooks() {
+		return books;
+	}
+	public void setBooks(List<OrderBook> books) {
+		this.books = books;
 	}
     
 

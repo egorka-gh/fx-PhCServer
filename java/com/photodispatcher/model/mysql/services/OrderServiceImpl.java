@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.photodispatcher.model.mysql.ConnectionFactory;
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.Order;
+import com.photodispatcher.model.mysql.entities.OrderBook;
 import com.photodispatcher.model.mysql.entities.OrderExtraInfo;
 import com.photodispatcher.model.mysql.entities.OrderExtraMessage;
 import com.photodispatcher.model.mysql.entities.OrderExtraState;
@@ -417,6 +418,25 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 				return result;
 			}
 			order.setStateLog(slgRes.getData());
+			
+			//books
+			sql="SELECT pg.sub_id, os.name state_name, pg.book_part, bp.name book_part_name, s.name staff_name, sat.name sa_type_name, sa.remark sa_remark, ob.*"+
+				 " FROM print_group pg"+
+				   " INNER JOIN order_books ob ON pg.id = ob.pg_id"+
+				   " INNER JOIN order_state os ON ob.state = os.id"+
+				   " INNER JOIN book_part bp ON bp.id = pg.book_part"+
+				   " LEFT OUTER JOIN print_group_rejects pgr ON pg.id = pgr.print_group"+
+				   " LEFT OUTER JOIN staff_activity sa ON pgr.activity = sa.id"+
+				   " LEFT OUTER JOIN staff s ON s.id = sa.staff"+
+				   " LEFT OUTER JOIN staff_activity_type sat ON sa.sa_type = sat.id"+
+				  " WHERE pg.order_id = ?"+
+				 " ORDER BY pg.sub_id, ob.pg_id, ob.book";
+			SelectResult<OrderBook> obRes=runSelect(OrderBook.class, sql, id);
+			if(!obRes.isComplete()){
+				result.cloneError(obRes);
+				return result;
+			}
+			order.setBooks(obRes.getData());
 		}
 		return result;
 	}
@@ -632,14 +652,6 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			}
 		}
 
-		/*
-		result=runUpdate(order);
-		if(result.isComplete()) result=runInsertBatch(subOrders);
-		if(result.isComplete()) result=runInsertBatch(einfos);
-		if(result.isComplete()) result=runInsertBatch(printGroups);
-		if(result.isComplete()) result=runInsertBatch(pgFiles);
-		*/
-		
 		//run in transaction
 		Connection connection = null;
 		try {
@@ -659,12 +671,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			//add files
 			OrmElf.insertListBatched(connection, pgFiles);
 			//add books
-			String sql="INSERT IGNORE INTO order_books (pg_id,target_pg,book,sheets,state,state_date)"+
-						" SELECT pg.id, pg.id, gk.n, pg.sheet_num, 100, NOW()"+
-						 " FROM phcconfig.print_group pg"+
-						   " INNER JOIN generator_1k gk ON gk.n BETWEEN 1 AND pg.book_num"+
-						  " WHERE pg.order_id = ? AND pg.is_reprint=0";
-			OrmWriter.executeUpdate(connection, sql, order.getId());
+			OrmWriter.executeCall(connection, "{CALL fill_order(?)}", order.getId());
 			//attempt to commit
 			connection.commit();
 		} catch (SQLException e) {
@@ -834,20 +841,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 
 			for (PrintGroup pg : items){
 				// add reprint books
-				String sql="INSERT IGNORE INTO order_books (pg_id, target_pg, book, sheets, state, state_date, is_reject)"+
-							" SELECT pg.id, pg.reprint_id, pgr.book, IF(MAX(pgr.thech_unit) = 0, COUNT(*), pg.sheet_num) sheets, 145, NOW(), 1"+
-							 " FROM print_group pg"+
-							   " INNER JOIN print_group_rejects pgr ON pg.id = pgr.print_group"+
-							  " WHERE pg.id = ?"+
-							  " GROUP BY pgr.book";
-				OrmWriter.executeUpdate(connection, sql, pg.getId() );
-				
-				//mark target books as rejected
-				sql="UPDATE order_books ob"+
-					" INNER JOIN order_books obs ON ob.pg_id = obs.target_pg AND ob.book = obs.book"+
-					 " SET ob.is_rejected = 1"+
-					 " WHERE obs.pg_id = ?";
-				OrmWriter.executeUpdate(connection, sql, pg.getId() );
+				OrmWriter.executeCall(connection, "{CALL fill_books_reject(?)}", pg.getId());
 				
 				/* TODO add reprint extra state (subid=pgid)*/
 				

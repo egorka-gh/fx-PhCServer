@@ -23,6 +23,10 @@ public class OrderExtraState extends AbstractEntity {
     private Date start_date;
     @Column(name="state_date")
     private Date state_date;
+    @Column(name="transit_date")
+    private Date transit_date;
+    @Column(name="is_reject")
+    private boolean is_reject;
     @Column(name="reported")
     private boolean reported;
     
@@ -122,6 +126,18 @@ public class OrderExtraState extends AbstractEntity {
 	}
 	public void setState_name2(String state_name2) {
 		this.state_name2 = state_name2;
+	}
+	public Date getTransit_date() {
+		return transit_date;
+	}
+	public void setTransit_date(Date transit_date) {
+		this.transit_date = transit_date;
+	}
+	public boolean isIs_reject() {
+		return is_reject;
+	}
+	public void setIs_reject(boolean is_reject) {
+		this.is_reject = is_reject;
 	}
 
 }

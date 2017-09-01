@@ -92,3 +92,60 @@ END
 $$
 
 DELIMITER ;
+
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(531, 'Удален (сбросить)', 0, 0, 0, 0);
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS syncS4Lvalid$$
+CREATE 
+PROCEDURE syncS4Lvalid(IN pSourceId int)
+  MODIFIES SQL DATA
+main:
+BEGIN
+
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+  END;
+
+  IF NOT EXISTS (SELECT 1
+        FROM tmp_orders t
+        WHERE t.source = pSourceId)
+  THEN
+    LEAVE main;
+  END IF;
+
+  -- keep in transaction
+  START TRANSACTION;
+
+    -- cancel not in sync
+    UPDATE orders_load o
+    SET state = 506,
+        state_date = NOW()
+    WHERE o.source = pSourceId
+    AND o.state < 465
+    AND NOT EXISTS(SELECT 1
+        FROM tmp_orders t
+        WHERE t.source = pSourceId AND t.id=o.id);
+
+    -- mark to resest
+    UPDATE orders_load o
+    SET state = 531,
+        state_date = NOW()
+    WHERE o.source = pSourceId
+    AND o.state > 500 AND o.state NOT IN(531,510)
+    AND EXISTS(SELECT 1
+        FROM tmp_orders t
+        WHERE t.source = pSourceId AND t.id=o.id AND t.state = 531);
+
+    -- finalize
+    DELETE
+      FROM tmp_orders
+    WHERE source = pSourceId;
+
+  COMMIT;
+END
+$$
+
+DELIMITER ;

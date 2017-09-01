@@ -7,7 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table(name = "order_books")
-public class OrderBooks extends AbstractEntity {
+public class OrderBook extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 
     @Id
@@ -30,16 +30,32 @@ public class OrderBooks extends AbstractEntity {
     private boolean is_reject;
 
 	//ref
+    @Column(name="sub_id", insertable=false, updatable=false)
+    private String sub_id;
     @Column(name="state_name", insertable=false, updatable=false)
     private String state_name;
     @Column(name="book_part_name", insertable=false, updatable=false)
     private String book_part_name;
+    @Column(name="book_part", insertable=false, updatable=false)
+    private int book_part;
+    
+    /*
+    @Column(name="state2", insertable=false, updatable=false)
+    private int state2;
+    @Column(name="state_date2", insertable=false, updatable=false)
+    private Date state_date2;
+    @Column(name="state_name2", insertable=false, updatable=false)
+    private String state_name2;
+    */
+
     @Column(name="sa_type_name", updatable=false, insertable=false)
     private String sa_type_name;
     @Column(name="staff_name", updatable=false, insertable=false)
     private String staff_name;
     @Column(name="sa_remark", updatable=false, insertable=false)
     private String sa_remark;
+    
+    
 	public String getPg_id() {
 		return pg_id;
 	}
@@ -118,6 +134,38 @@ public class OrderBooks extends AbstractEntity {
 	public void setSa_remark(String sa_remark) {
 		this.sa_remark = sa_remark;
 	}
-
+	public String getSub_id() {
+		return sub_id;
+	}
+	public void setSub_id(String sub_id) {
+		this.sub_id = sub_id;
+	}
+	public int getBook_part() {
+		return book_part;
+	}
+	public void setBook_part(int book_part) {
+		this.book_part = book_part;
+	}
+	
+	/*
+	public int getState2() {
+		return state2;
+	}
+	public void setState2(int state2) {
+		this.state2 = state2;
+	}
+	public Date getState_date2() {
+		return state_date2;
+	}
+	public void setState_date2(Date state_date2) {
+		this.state_date2 = state_date2;
+	}
+	public String getState_name2() {
+		return state_name2;
+	}
+	public void setState_name2(String state_name2) {
+		this.state_name2 = state_name2;
+	}
+	*/
     
 }
