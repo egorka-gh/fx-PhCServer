@@ -425,7 +425,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 				   " INNER JOIN order_books ob ON pg.id = ob.pg_id"+
 				   " INNER JOIN order_state os ON ob.state = os.id"+
 				   " INNER JOIN book_part bp ON bp.id = pg.book_part"+
-				   " LEFT OUTER JOIN print_group_rejects pgr ON pg.id = pgr.print_group"+
+				   " LEFT OUTER JOIN print_group_rejects pgr ON pg.id = pgr.print_group AND pgr.book=ob.book"+
 				   " LEFT OUTER JOIN staff_activity sa ON pgr.activity = sa.id"+
 				   " LEFT OUTER JOIN staff s ON s.id = sa.staff"+
 				   " LEFT OUTER JOIN staff_activity_type sat ON sa.sa_type = sat.id"+

@@ -1,5 +1,5 @@
 -- main    
--- new main (virt)    
+-- cycle rep    
 -- moskva 
 -- ua 
 -- reserv 
@@ -252,7 +252,7 @@ PROCEDURE fill_order(IN p_orderid VARCHAR(50))
 BEGIN
   -- fill  books
   INSERT IGNORE INTO order_books (pg_id, target_pg, book, sheets, state, state_date)
-    SELECT pg.id, pg.id, gk.n, pg.sheet_num, 100, NOW()
+    SELECT pg.id, pg.id, gk.n, pg.sheet_num, 200, NOW()
       FROM print_group pg
         INNER JOIN generator_1k gk ON gk.n BETWEEN 1 AND pg.book_num
       WHERE pg.order_id = p_orderid
@@ -263,3 +263,215 @@ $$
 DELIMITER ;
 
 -- main 2017-09-01
+-- cycle rep 2017-09-07
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS setEntireBookState$$
+CREATE 
+PROCEDURE setEntireBookState(IN pOrder varchar(50), IN pSubOrder varchar(50), IN pBook int, IN pState int)
+BEGIN
+  UPDATE order_books obb
+  INNER JOIN print_group pg ON pg.order_id = pOrder AND pg.sub_id = pSubOrder AND obb.pg_id = pg.id
+    SET obb.state = pState, obb.is_rejected=0, obb.state_date=NOW()
+  WHERE pBook = -1 OR obb.book = pBook AND obb.state < pState;
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS techLogPg$$
+CREATE
+PROCEDURE techLogPg(IN pPgroup varchar(50), IN pSheet int, IN pTechPoint int, IN pDate datetime, IN pCalc int)
+  MODIFIES SQL DATA
+BEGIN
+  DECLARE vOrderId varchar(50);
+  DECLARE vSubId varchar(50);
+  DECLARE vrepgroup varchar(50);
+  DECLARE vTrgetPg varchar(50);
+  DECLARE vState int;
+  DECLARE vBookPart int;
+  DECLARE vBooks int;
+  DECLARE vPrints int;
+
+  -- used for paper count
+  DECLARE vWidth int;
+  DECLARE vHeight int;
+  DECLARE vPaper int;
+  -- 
+
+  BEGIN
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET vOrderId = NULL;
+
+    SELECT pg.order_id, pg.sub_id, pg.book_num, pg.prints, pg.width, pg.height, pg.paper, IFNULL(pg.reprint_id, pg.id)
+    INTO vOrderId, vSubId, vBooks, vPrints, vWidth, vHeight, vPaper, vTrgetPg
+      FROM print_group pg
+      WHERE pg.id = pPgroup;
+
+    SELECT tp.tech_type, os.book_part
+    INTO vState, vBookPart
+      FROM tech_point tp
+        INNER JOIN order_state os ON os.id = tp.tech_type
+      WHERE tp.id = pTechPoint;
+  END;
+
+  IF vOrderId IS NOT NULL
+  THEN
+    /* bug due to restart in java after dead lock
+    IF vState = 300 THEN
+      -- count paper after printing
+      UPDATE lab_rolls lr SET lr.len=lr.len-vHeight 
+        WHERE lr.lab_device IN (SELECT lb.id FROM lab_device lb WHERE lb.tech_point=pTechPoint) AND lr.width=vWidth AND lr.paper=vPaper AND lr.len>0;
+    END IF;
+   */
+
+    /*
+    IF vState <= 300
+    THEN
+      -- may be reprint
+      BEGIN
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET vrepgroup = NULL;
+        SET vrepgroup = printPg2Reprint(pPgroup);
+      END;
+
+      IF vrepgroup IS NOT NULL AND pPgroup!=vrepgroup THEN
+        SET pPgroup=vrepgroup;
+        SELECT pg.prints
+          INTO vPrints
+          FROM print_group pg
+          WHERE pg.id = pPgroup;
+      END IF; 
+
+    END IF;
+  */
+
+    -- log
+    INSERT INTO tech_log (order_id, sub_id, print_group, sheet, src_id, log_date)
+      VALUES (vOrderId, vSubId, pPgroup, pSheet, pTechPoint, pDate);
+
+    -- recalc
+    IF pCalc > 0
+    THEN
+      -- check TODO incorparate into code (do not need sub call)
+      CALL techUnitCalc(vOrderId, vSubId, pPgroup, vState, vBooks, vPrints);
+      -- recalc book
+      IF vState > 300 AND vBookPart = 0
+      THEN
+        -- book join or OTK
+        CALL setEntireBookState(vOrderId, vSubId, (pSheet DIV 100), vState);
+      ELSE
+        CALL tech_calc_books(pPgroup);
+      END IF;
+    END IF;
+  END IF;
+
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS extraStateSetOTK$$
+CREATE
+PROCEDURE extraStateSetOTK(IN pOrder varchar(50), IN pSubOrder varchar(50), IN pDate datetime)
+  MODIFIES SQL DATA
+BEGIN
+  DECLARE vMinSubState int;
+  DECLARE vMinPhotoState int;
+
+  IF pDate IS NULL
+  THEN
+    SET pDate = NOW();
+  END IF;
+
+  IF pSubOrder != ''
+  THEN
+    -- fix suborder
+    -- forvard suborder pgs state
+    UPDATE print_group pg
+    SET pg.state = 450,
+        pg.state_date = pDate
+    WHERE pg.order_id = pOrder
+    AND pg.sub_id = pSubOrder
+    AND pg.state < 450
+    ORDER BY pg.id;
+
+    -- set suborder state
+    UPDATE suborders s
+    SET s.state = 450,
+        s.state_date = pDate
+    WHERE s.order_id = pOrder
+    AND s.sub_id = pSubOrder
+    AND s.state < 450;
+
+    -- fix suborder extra state
+    INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date)
+      VALUES (pOrder, pSubOrder, 450, pDate, pDate)
+    ON DUPLICATE KEY UPDATE state_date = pDate;
+
+  END IF;
+
+  -- calc min state by photo pgs 
+  SELECT MIN(pg.state)
+  INTO vMinPhotoState
+    FROM print_group pg
+    WHERE pg.order_id = pOrder
+      AND pg.is_reprint = 0
+      AND pg.book_type = 0;
+
+  -- calc min state by suborders
+  SELECT MIN(so.state)
+  INTO vMinSubState
+    FROM suborders so
+    WHERE so.order_id = pOrder;
+
+  -- attempt to forvard order state
+  IF (vMinPhotoState IS NULL
+    OR vMinPhotoState >= 450)
+    AND (vMinSubState IS NULL
+    OR vMinSubState >= 450)
+  THEN
+    -- no photo or photo pgs pass OTK and no suborders or all suborders pass otk
+
+    -- forvard pgs state
+    UPDATE print_group pg
+    SET pg.state = 450,
+        pg.state_date = pDate
+    WHERE pg.order_id = pOrder
+    AND pg.sub_id = ''
+    AND pg.state < 450
+    ORDER BY pg.id;
+
+    -- set order state
+    UPDATE orders o
+    SET o.state = 450,
+        o.state_date = pDate
+    WHERE o.id = pOrder
+    AND o.state < 450;
+
+    -- fix order extra state
+    INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date)
+      VALUES (pOrder, '', 450, pDate, pDate)
+    ON DUPLICATE KEY UPDATE state_date = pDate;
+
+    -- stop all started order extra states
+    UPDATE order_extra_state es
+    SET es.state_date = pDate
+    WHERE es.id = pOrder
+    -- AND es.sub_id = ''
+    AND es.state < 450
+    AND es.state_date IS NULL
+    ORDER BY es.sub_id, es.state;
+
+  END IF;
+
+  CALL setEntireBookState(pOrder, pSubOrder, -1, 450);
+END
+$$
+
+DELIMITER ;
+
+-- main 2017-09-14
