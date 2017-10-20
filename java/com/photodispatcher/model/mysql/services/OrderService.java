@@ -6,6 +6,7 @@ import org.granite.messaging.service.annotations.RemoteDestination;
 
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.Order;
+import com.photodispatcher.model.mysql.entities.OrderBook;
 import com.photodispatcher.model.mysql.entities.OrderExtraInfo;
 import com.photodispatcher.model.mysql.entities.OrderTemp;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
@@ -54,4 +55,6 @@ public interface OrderService {
 	SqlResult setSuborderState(SubOrder suborder);
 	SelectResult<PrintGroupReject> loadRejects4PG(String pgId);
 	SelectResult<PrintGroupReject> loadRejects4Order(String pgId);
+	SelectResult<OrderBook> loadOrderBooks(String orderId);
+	SelectResult<OrderBook> loadSubOrderBooks(String orderId, String subId);
 }

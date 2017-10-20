@@ -30,6 +30,8 @@ public class OrderBook extends AbstractEntity {
     private boolean is_reject;
 
 	//ref
+    @Column(name="order_id", insertable=false, updatable=false)
+    private String order_id;
     @Column(name="sub_id", insertable=false, updatable=false)
     private String sub_id;
     @Column(name="state_name", insertable=false, updatable=false)
@@ -145,6 +147,12 @@ public class OrderBook extends AbstractEntity {
 	}
 	public void setBook_part(int book_part) {
 		this.book_part = book_part;
+	}
+	public String getOrder_id() {
+		return order_id;
+	}
+	public void setOrder_id(String order_id) {
+		this.order_id = order_id;
 	}
 	
 	/*

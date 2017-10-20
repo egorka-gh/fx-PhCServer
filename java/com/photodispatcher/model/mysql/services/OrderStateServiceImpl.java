@@ -5,6 +5,7 @@ import java.util.Date;
 import org.springframework.stereotype.Service;
 
 import com.photodispatcher.model.mysql.entities.FieldValue;
+import com.photodispatcher.model.mysql.entities.OrderBook;
 import com.photodispatcher.model.mysql.entities.OrderExtraState;
 import com.photodispatcher.model.mysql.entities.OrderState;
 import com.photodispatcher.model.mysql.entities.SelectResult;
@@ -56,6 +57,18 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 	public SqlResult extraStateSet(String orderId, String subId, int state, Date date){
 		//PROCEDURE extraStateSet(IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int, IN pDate datetime)
 		String sql= "{CALL extraStateSet(?,?,?,?)}";
+		return runCall(sql, orderId, subId, state, date);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.photodispatcher.model.mysql.services.OrderStateService#extraStateStop(java.lang.String, java.lang.String, int, java.util.Date)
+	 * stops all extra states less or equal state (fix state_date and transit_date)
+	 */
+	@Override
+	public SqlResult extraStateStop(String orderId, String subId, int state, Date date){
+		//PROCEDURE fotocycle_cycle.extraStateStop(IN pOrder varchar(50), IN pSubOrder varchar(50), IN pState int, IN pDate datetime)
+		String sql= "{CALL extraStateStop(?,?,?,?)}";
 		return runCall(sql, orderId, subId, state, date);
 	}
 
@@ -143,6 +156,23 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 
 	
 	@Override
+	public SqlResult getStateByPGroups(String orderId){
+		int resultCode=0;
+		SqlResult result= new SqlResult();
+
+		String sql="SELECT IFNULL(MIN(pg.state),0) value FROM print_group pg WHERE pg.order_id = ? AND pg.is_reprint = 0";
+		SelectResult<FieldValue> subres=runSelect(FieldValue.class, sql, orderId);
+		if(!subres.isComplete()){
+			result.cloneError(subres);
+			return result;
+		}
+		if(subres.getData()!= null && !subres.getData().isEmpty()) resultCode=subres.getData().get(0).getValue();
+		result.setResultCode(resultCode);
+		return result;
+	}
+
+	
+	@Override
 	public SqlResult extraStateStartMonitor(String orderId, String subId, int state){
 		int resultCode=0;
 		SqlResult result= new SqlResult();
@@ -177,23 +207,6 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 		return result;
 	}
 
-	@Override
-	public SqlResult getStateByPGroups(String orderId){
-		int resultCode=0;
-		SqlResult result= new SqlResult();
-
-		String sql="SELECT IFNULL(MIN(pg.state),0) value FROM print_group pg WHERE pg.order_id = ? AND pg.is_reprint = 0";
-		SelectResult<FieldValue> subres=runSelect(FieldValue.class, sql, orderId);
-		if(!subres.isComplete()){
-			result.cloneError(subres);
-			return result;
-		}
-		if(subres.getData()!= null && !subres.getData().isEmpty()) resultCode=subres.getData().get(0).getValue();
-		result.setResultCode(resultCode);
-		return result;
-	}
-
-	
 	@Override
 	public SqlResult extraStateStartOTK(String orderId, String subId, int stateStart){
 		int resultCode=0;
@@ -232,10 +245,31 @@ public class OrderStateServiceImpl extends AbstractDAO implements OrderStateServ
 	}
 	
 	@Override
+	public SelectResult<SpyData> loadSpyRejects(int pFromState, int pToState){
+		//PROCEDURE loadSpyRejects(IN pFromState int, IN pToState int)
+		String sql= "{CALL loadSpyRejects(?,?)}";
+		return runCallSelect(SpyData.class, sql, pFromState, pToState);
+	}
+
+	@Override
 	public SelectResult<SpyData> loadSpyData(Date pDate, int pFromState, int pToState, int pBookPart){
 		//PROCEDURE loadSpy(IN pDate datetime, IN pFromState INT, IN pToState INT, IN pBookPart INT)
 		String sql= "{CALL loadSpy(?,?,?,?)}";
 		return runCallSelect(SpyData.class, sql, pDate, pFromState, pToState, pBookPart);
+	}
+
+	@Override
+	public SqlResult setEntireBookState(OrderBook book){
+		//PROCEDURE setEntireBookState(IN pOrder varchar(50), IN pSubOrder varchar(50), IN pBook int, IN pState int)
+		String sql="{CALL setEntireBookState(?, ?, ?, ?)}";
+		return runCall(sql, book.getOrder_id(), book.getSub_id(), book.getBook(), book.getState());
+	}
+
+	@Override
+	public SqlResult setBookState(OrderBook book, boolean resetReject){
+		//PROCEDURE setBookState(IN pPgroup varchar(50), IN pBook int, IN pState int, IN pResetReject int)
+		String sql="{CALL setBookState(?, ?, ?, ?)}";
+		return runCall(sql, book.getPg_id(), book.getBook(), book.getState(), (resetReject?0:1) );
 	}
 
 }

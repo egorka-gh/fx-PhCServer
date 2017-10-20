@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.granite.messaging.service.annotations.RemoteDestination;
 
+import com.photodispatcher.model.mysql.entities.OrderBook;
 import com.photodispatcher.model.mysql.entities.OrderExtraState;
 import com.photodispatcher.model.mysql.entities.OrderState;
 import com.photodispatcher.model.mysql.entities.SelectResult;
@@ -43,5 +44,13 @@ public interface OrderStateService {
 	SqlResult extraStateStartOTK(String orderId, String subId, int stateStart);
 	SqlResult extraStateSetOTK(String orderId, String subId, Date date);
 	SqlResult extraStateSetOTKbyPG(String pgId, Date date);
+
+	SqlResult setEntireBookState(OrderBook book);
+
+	SqlResult setBookState(OrderBook book, boolean resetReject);
+
+	SqlResult extraStateStop(String orderId, String subId, int state, Date date);
+
+	SelectResult<SpyData> loadSpyRejects(int pFromState, int pToState);
 
 }

@@ -1,12 +1,15 @@
 package com.photodispatcher.model.mysql.services;
 
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 import com.photodispatcher.model.mysql.entities.TechLog;
+import com.photodispatcher.model.mysql.entities.TechTimeline;
 
 @Service("techService")
 public class TechServiceImpl extends AbstractDAO implements TechService {
@@ -67,6 +70,21 @@ public class TechServiceImpl extends AbstractDAO implements TechService {
 		//PROCEDURE lab_meter_forward_tp(IN ptechpoint int(7), IN pprintgroup varchar(50))
 		String sql= "{CALL lab_meter_forward_tp(?, ?)}";
 		return runCall(sql, techPoint, printgroup);
+	}
+
+	@Override
+	public SelectResult<TechTimeline> loadTimeLine(int process){
+		String sql="SELECT ? tech_process, os.id tech_type, os.name tech_type_name, os.book_part, bp.name book_part_name, tt.oper_time, tt.pass_time"+
+					 " FROM order_state os"+
+					   " INNER JOIN book_part bp ON bp.id = os.book_part"+
+					   " LEFT OUTER JOIN tech_timeline tt ON tt.tech_process = ? AND tt.tech_type = os.id"+
+					  " WHERE os.tech != 0"+
+					  " ORDER BY os.id";
+		return runSelect(TechTimeline.class, sql, process, process);
+	}
+	@Override
+	public SqlResult persistTimeLineBatch(List<TechTimeline> items){
+		return runInesrtUpdateBatch(items);
 	}
 
 }

@@ -328,20 +328,16 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			}
 			order.setPrintGroups(pgRes.getData());
 
+			//books
 			/*
-			//techlog books
-			sql="SELECT (tl.sheet DIV 100)*100 sheet, MIN(tl.log_date) log_date"+
-				" FROM tech_point tp"+
-				" INNER JOIN tech_log tl ON tl.src_id=tp.id"+
-				" WHERE tp.tech_type=450 AND tl.sheet>99 AND tl.order_id=? AND tl.sub_id=?"+
-				" GROUP BY (tl.sheet DIV 100)*100";
-			SelectResult<TechLog> tlRes=runSelect(TechLog.class, sql, id, sub_id);
-			if(!tlRes.isComplete()){
-				result.cloneError(tlRes);
+			SelectResult<OrderBook> obRes= loadSubOrderBooks(id, sub_id);
+			if(!obRes.isComplete()){
+				result.cloneError(obRes);
 				return result;
 			}
-			order.setTechLog(tlRes.getData());
+			order.setBooks(obRes.getData());
 			*/
+			
 		}
 		return result;
 	}
@@ -420,6 +416,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			order.setStateLog(slgRes.getData());
 			
 			//books
+			/*
 			sql="SELECT pg.sub_id, os.name state_name, pg.book_part, bp.name book_part_name, s.name staff_name, sat.name sa_type_name, sa.remark sa_remark, ob.*"+
 				 " FROM print_group pg"+
 				   " INNER JOIN order_books ob ON pg.id = ob.pg_id"+
@@ -432,6 +429,8 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 				  " WHERE pg.order_id = ?"+
 				 " ORDER BY pg.sub_id, ob.pg_id, ob.book";
 			SelectResult<OrderBook> obRes=runSelect(OrderBook.class, sql, id);
+			*/
+			SelectResult<OrderBook> obRes=loadOrderBooks(id);
 			if(!obRes.isComplete()){
 				result.cloneError(obRes);
 				return result;
@@ -439,6 +438,39 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			order.setBooks(obRes.getData());
 		}
 		return result;
+	}
+
+	@Override
+	public SelectResult<OrderBook> loadOrderBooks(String orderId){
+		String sql="SELECT pg.order_id, pg.sub_id, os.name state_name, pg.book_part, bp.name book_part_name, s.name staff_name, sat.name sa_type_name, sa.remark sa_remark, ob.*"+
+				 " FROM print_group pg"+
+				   " INNER JOIN order_books ob ON pg.id = ob.pg_id"+
+				   " INNER JOIN order_state os ON ob.state = os.id"+
+				   " INNER JOIN book_part bp ON bp.id = pg.book_part"+
+				   " LEFT OUTER JOIN print_group_rejects pgr ON pg.id = pgr.print_group AND pgr.book=ob.book"+
+				   " LEFT OUTER JOIN staff_activity sa ON pgr.activity = sa.id"+
+				   " LEFT OUTER JOIN staff s ON s.id = sa.staff"+
+				   " LEFT OUTER JOIN staff_activity_type sat ON sa.sa_type = sat.id"+
+				  " WHERE pg.order_id = ?"+
+				 " ORDER BY pg.sub_id, ob.pg_id, ob.book";
+		return runSelect(OrderBook.class, sql, orderId);
+	}
+	
+	@Override
+	public SelectResult<OrderBook> loadSubOrderBooks(String orderId, String subId){
+		if(subId==null) subId="";
+		String sql="SELECT pg.order_id, pg.sub_id, os.name state_name, pg.book_part, bp.name book_part_name, s.name staff_name, sat.name sa_type_name, sa.remark sa_remark, ob.*"+
+				 " FROM print_group pg"+
+				   " INNER JOIN order_books ob ON pg.id = ob.pg_id"+
+				   " INNER JOIN order_state os ON ob.state = os.id"+
+				   " INNER JOIN book_part bp ON bp.id = pg.book_part"+
+				   " LEFT OUTER JOIN print_group_rejects pgr ON pg.id = pgr.print_group AND pgr.book=ob.book"+
+				   " LEFT OUTER JOIN staff_activity sa ON pgr.activity = sa.id"+
+				   " LEFT OUTER JOIN staff s ON s.id = sa.staff"+
+				   " LEFT OUTER JOIN staff_activity_type sat ON sa.sa_type = sat.id"+
+				  " WHERE pg.order_id = ? AND pg.sub_id = ?"+
+				 " ORDER BY pg.sub_id, ob.pg_id, ob.book";
+		return runSelect(OrderBook.class, sql, orderId, subId);
 	}
 
 	@Override
@@ -777,7 +809,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		Set<String> parentIds= new HashSet<String>();
 		List<PrintGroupFile> pgFiles = new ArrayList<PrintGroupFile>();
 		List<PrintGroupReject> pgRejects = new ArrayList<PrintGroupReject>();
-		//Date dt =new Date();
+		Date dt =new Date();
 		for (PrintGroup pg : items){
 			//order_id=pg.getOrder_id();
 			if(pg.getSub_id()!=null && pg.getSub_id().length()>0) subIds.add(pg.getSub_id());
@@ -839,12 +871,14 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			//add rejects
 			OrmElf.insertListBatched(connection, pgRejects);
 
+			String sql;
 			for (PrintGroup pg : items){
 				// add reprint books
 				OrmWriter.executeCall(connection, "{CALL fill_books_reject(?)}", pg.getId());
 				
-				/* TODO add reprint extra state (subid=pgid)*/
-				
+				/* start print_post extra state (subid=pgid)*/
+				sql="INSERT IGNORE INTO order_extra_state (id, sub_id, state, start_date) VALUES (?, ?, ?, ?)";
+				OrmWriter.executeUpdate(connection, sql, pg.getOrder_id(), pg.getId(), 210, ((pg.getState_date()==null)?dt:pg.getState_date()));
 			}
 			
 			/*
