@@ -822,3 +822,357 @@ END
 $$
 
 DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS techCalcPg$$
+CREATE
+PROCEDURE techCalcPg(IN pPgroup varchar(50), IN pTechPoint int)
+  MODIFIES SQL DATA
+BEGIN
+  DECLARE vDataValid int;
+  DECLARE vOrderId varchar(50);
+  DECLARE vSubId varchar(50);
+  DECLARE vrepgroup varchar(50);
+  DECLARE vState int;
+  DECLARE vBooks int;
+  DECLARE vPrints int;
+  DECLARE vIsReprint int;
+  DECLARE vDate datetime;
+  DECLARE vBookPart int;
+
+  DECLARE vMinBookState int;
+  DECLARE vMinBookTime datetime;
+  DECLARE vMaxBookTime datetime;
+
+  BEGIN
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET vDataValid = 0;
+
+    SET vDate = NOW();
+
+    SELECT pg.order_id, pg.sub_id, pg.book_num, pg.prints, pg.is_reprint, 1
+    INTO vOrderId, vSubId, vBooks, vPrints, vIsReprint, vDataValid
+      FROM print_group pg
+      WHERE pg.id = pPgroup;
+
+    SELECT tp.tech_type, os.book_part, 1
+    INTO vState, vBookPart, vDataValid
+      FROM tech_point tp
+        INNER JOIN order_state os ON os.id = tp.tech_type
+      WHERE tp.id = pTechPoint;
+  END;
+
+  IF vDataValid = 1
+  THEN
+    IF vIsReprint = 0
+    THEN
+      -- check TODO incorparate into code (do not need sub call)
+      CALL techUnitCalc(vOrderId, vSubId, pPgroup, vState, vBooks, vPrints);
+    END IF;
+    IF NOT (vState > 300
+      AND vBookPart = 0)
+    THEN
+      CALL tech_calc_books(pPgroup);
+    END IF;
+
+    IF vIsReprint != 0
+    THEN
+      -- recalc rejects extra
+      -- get books state
+      SELECT IFNULL(MIN(ob.state), 0),
+        IFNULL(MIN(IF(ob.state = vState, ob.state_date, NULL)), vDate),
+        IFNULL(MAX(IF(ob.state = vState, ob.state_date, NULL)), vDate)
+      INTO vMinBookState, vMinBookTime, vMaxBookTime
+        FROM order_books ob
+        WHERE ob.pg_id = pPgroup;
+
+      -- forward pg state
+      UPDATE print_group pg
+        SET pg.state = vMinBookState,
+            pg.state_date = vMaxBookTime
+        WHERE pg.id = pPgroup AND pg.state < vMinBookState;
+
+      -- forward extra state
+      IF vMinBookState >= vState
+      THEN
+        -- TODO what if common state (vBookPart=0), what about parent pg extra?
+        -- stop extra
+        INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date, is_reject)
+          VALUES (vOrderId, pPgroup, vState, vMinBookTime, vMaxBookTime, 1)
+        ON DUPLICATE KEY UPDATE state_date = vMaxBookTime;
+      ELSE
+        -- start extrastate
+        INSERT IGNORE INTO order_extra_state (id, sub_id, state, start_date, is_reject)
+          VALUES (vOrderId, pPgroup, vState, vMinBookTime, 1);
+      END IF;
+      -- close prev state_date & transit_date
+      UPDATE order_extra_state es
+        SET es.state_date = IFNULL(es.state_date, vMinBookTime),
+            es.transit_date = IFNULL(es.transit_date, vMinBookTime)
+        WHERE es.id = vOrderId AND es.sub_id = pPgroup AND es.state < vState AND (es.state_date IS NULL OR es.transit_date IS NULL);
+    END IF;
+
+  END IF;
+
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS techLogPg$$
+CREATE
+PROCEDURE techLogPg(IN pPgroup varchar(50), IN pSheet int, IN pTechPoint int, IN pDate datetime, IN pCalc int)
+  MODIFIES SQL DATA
+BEGIN
+  DECLARE vDataValid int;
+  DECLARE vOrderId varchar(50);
+  DECLARE vSubId varchar(50);
+  DECLARE vState int;
+  DECLARE vBookPart int;
+  DECLARE vBooks int;
+  DECLARE vPrints int;
+  DECLARE vIsReprint int;
+
+  DECLARE vMinBookState int;
+  DECLARE vMinBookTime datetime;
+  DECLARE vMaxBookTime datetime;
+
+  BEGIN
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET vDataValid = 0;
+
+    IF pDate IS NULL
+    THEN
+      SET pDate = NOW();
+    END IF;
+
+
+    SELECT pg.order_id, pg.sub_id, pg.book_num, pg.prints, pg.is_reprint, 1
+    INTO vOrderId, vSubId, vBooks, vPrints, vIsReprint, vDataValid
+      FROM print_group pg
+      WHERE pg.id = pPgroup;
+
+    SELECT tp.tech_type, os.book_part, 1
+    INTO vState, vBookPart, vDataValid
+      FROM tech_point tp
+        INNER JOIN order_state os ON os.id = tp.tech_type
+      WHERE tp.id = pTechPoint;
+  END;
+
+  IF vDataValid=1
+  THEN
+    -- log
+    INSERT INTO tech_log (order_id, sub_id, print_group, sheet, src_id, log_date)
+      VALUES (vOrderId, vSubId, pPgroup, pSheet, pTechPoint, pDate);
+
+    -- recalc
+    IF pCalc > 0
+    THEN
+      IF vIsReprint = 0
+      THEN
+        -- check TODO incorparate into code (do not need sub call)
+        CALL techUnitCalc(vOrderId, vSubId, pPgroup, vState, vBooks, vPrints);
+      END IF;
+      -- recalc book
+      IF NOT (vState > 300 AND vBookPart = 0)
+      THEN
+        /*
+        -- book join or OTK
+        CALL setEntireBookState(vOrderId, vSubId, (pSheet DIV 100), vState);
+      ELSE
+        */
+        CALL tech_calc_books(pPgroup);
+      END IF;
+
+      IF vIsReprint != 0
+      THEN
+        -- recalc rejects extra
+        -- get books state
+        SELECT IFNULL(MIN(ob.state), 0),
+          IFNULL(MIN(IF(ob.state = vState, ob.state_date, NULL)), pDate),
+          IFNULL(MAX(IF(ob.state = vState, ob.state_date, NULL)), pDate)
+        INTO vMinBookState, vMinBookTime, vMaxBookTime
+          FROM order_books ob
+          WHERE ob.pg_id = pPgroup;
+
+        -- forward pg state
+        UPDATE print_group pg
+          SET pg.state = vMinBookState,
+              pg.state_date = vMaxBookTime
+          WHERE pg.id = pPgroup AND pg.state < vMinBookState;
+
+        -- forward extra state
+        IF vMinBookState >= vState
+        THEN
+          -- TODO what if common state (vBookPart=0), what about parent pg extra?
+          -- stop extra
+          INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date, is_reject)
+            VALUES (vOrderId, pPgroup, vState, vMinBookTime, vMaxBookTime, 1)
+          ON DUPLICATE KEY UPDATE state_date = vMaxBookTime;
+        ELSE
+          -- start extrastate
+          INSERT IGNORE INTO order_extra_state (id, sub_id, state, start_date, is_reject)
+            VALUES (vOrderId, pPgroup, vState, vMinBookTime, 1);
+        END IF;
+        -- close prev state_date & transit_date
+        UPDATE order_extra_state es
+          SET es.state_date = IFNULL(es.state_date, vMinBookTime),
+              es.transit_date = IFNULL(es.transit_date, vMinBookTime)
+          WHERE es.id = vOrderId AND es.sub_id = pPgroup AND es.state < vState AND (es.state_date IS NULL OR es.transit_date IS NULL);
+      END IF;
+
+    END IF;
+  END IF;
+
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS techLogPg$$
+CREATE
+PROCEDURE techLogPg(IN pPgroup varchar(50), IN pSheet int, IN pTechPoint int, IN pDate datetime, IN pCalc int)
+  MODIFIES SQL DATA
+BEGIN
+  DECLARE vDataValid int;
+  DECLARE vOrderId varchar(50);
+  DECLARE vSubId varchar(50);
+  DECLARE vState int;
+  DECLARE vBookPart int;
+  DECLARE vBooks int;
+  DECLARE vPrints int;
+  DECLARE vIsReprint int;
+
+  DECLARE vMinBookState int;
+  DECLARE vMinBookTime datetime;
+  DECLARE vMaxBookTime datetime;
+
+  BEGIN
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET vDataValid = 0;
+
+    IF pDate IS NULL
+    THEN
+      SET pDate = NOW();
+    END IF;
+
+
+    SELECT pg.order_id, pg.sub_id, pg.book_num, pg.prints, pg.is_reprint, 1
+    INTO vOrderId, vSubId, vBooks, vPrints, vIsReprint, vDataValid
+      FROM print_group pg
+      WHERE pg.id = pPgroup;
+
+    SELECT tp.tech_type, os.book_part, LEAST(vDataValid, 1)
+    INTO vState, vBookPart, vDataValid
+      FROM tech_point tp
+        INNER JOIN order_state os ON os.id = tp.tech_type
+      WHERE tp.id = pTechPoint;
+  END;
+
+  IF vDataValid=1
+  THEN
+    -- log
+    INSERT INTO tech_log (order_id, sub_id, print_group, sheet, src_id, log_date)
+      VALUES (vOrderId, vSubId, pPgroup, pSheet, pTechPoint, pDate);
+
+    -- recalc
+    IF pCalc > 0
+    THEN
+      IF vIsReprint = 0
+      THEN
+        -- check TODO incorparate into code (do not need sub call)
+        CALL techUnitCalc(vOrderId, vSubId, pPgroup, vState, vBooks, vPrints);
+      END IF;
+      -- recalc book
+      IF NOT (vState > 300 AND vBookPart = 0)
+      THEN
+        /*
+        -- book join or OTK
+        CALL setEntireBookState(vOrderId, vSubId, (pSheet DIV 100), vState);
+      ELSE
+        */
+        CALL tech_calc_books(pPgroup);
+      END IF;
+
+      IF vIsReprint != 0
+      THEN
+        -- recalc rejects extra
+        -- get books state
+        SELECT IFNULL(MIN(ob.state), 0),
+          IFNULL(MIN(IF(ob.state = vState, ob.state_date, NULL)), pDate),
+          IFNULL(MAX(IF(ob.state = vState, ob.state_date, NULL)), pDate)
+        INTO vMinBookState, vMinBookTime, vMaxBookTime
+          FROM order_books ob
+          WHERE ob.pg_id = pPgroup;
+
+        -- forward pg state
+        UPDATE print_group pg
+          SET pg.state = vMinBookState,
+              pg.state_date = vMaxBookTime
+          WHERE pg.id = pPgroup AND pg.state < vMinBookState;
+
+        -- forward extra state
+        IF vMinBookState >= vState
+        THEN
+          -- TODO what if common state (vBookPart=0), what about parent pg extra?
+          -- stop extra
+          INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date, is_reject)
+            VALUES (vOrderId, pPgroup, vState, vMinBookTime, vMaxBookTime, 1)
+          ON DUPLICATE KEY UPDATE state_date = vMaxBookTime;
+        ELSE
+          -- start extrastate
+          INSERT IGNORE INTO order_extra_state (id, sub_id, state, start_date, is_reject)
+            VALUES (vOrderId, pPgroup, vState, vMinBookTime, 1);
+        END IF;
+        -- close prev state_date & transit_date
+        UPDATE order_extra_state es
+          SET es.state_date = IFNULL(es.state_date, vMinBookTime),
+              es.transit_date = IFNULL(es.transit_date, vMinBookTime)
+          WHERE es.id = vOrderId AND es.sub_id = pPgroup AND es.state < vState AND (es.state_date IS NULL OR es.transit_date IS NULL);
+      END IF;
+
+    END IF;
+  END IF;
+
+END
+$$
+
+DELIMITER ;
+-- main 2017-10-26
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS loadSpyRejects$$
+CREATE
+PROCEDURE loadSpyRejects(IN pFromState int, IN pToState int)
+BEGIN
+  SELECT t.id, t.sub_id, t.state, t.start_date, t.state_date, t.transit_date, t.is_reject,
+    t.lastDate, TIMESTAMPDIFF(MINUTE, lastDate, NOW()) delay,
+    pg.book_type, pg.alias, os.name op_name, pg.book_part, bp.name bp_name, bt.name bt_name
+    FROM (SELECT id, sub_id, state, start_date, state_date, transit_date, is_reject, IFNULL(oes.transit_date, IFNULL(oes.state_date, oes.start_date)) lastDate
+        FROM order_extra_state oes
+        WHERE oes.state_date IS NULL
+          AND oes.is_reject != 0
+          AND oes.state BETWEEN pFromState AND pToState
+      UNION ALL
+      SELECT id, sub_id, state, start_date, state_date, transit_date, is_reject, IFNULL(oes.transit_date, IFNULL(oes.state_date, oes.start_date)) lastDate
+        FROM order_extra_state oes
+        WHERE oes.transit_date IS NULL
+          AND oes.is_reject != 0
+          AND oes.state BETWEEN pFromState AND pToState) t
+      INNER JOIN order_state os ON t.state = os.id
+      INNER JOIN print_group pg ON t.sub_id = pg.id AND pg.book_type > 0
+      INNER JOIN book_part bp ON pg.book_part = bp.id
+      INNER JOIN book_type bt ON bt.id = pg.book_type
+      INNER JOIN tech_timeline tt ON tt.tech_process = 0 AND t.state = tt.tech_type
+        AND ((t.state_date IS NULL AND t.start_date < DATE_SUB(NOW(), INTERVAL tt.oper_time MINUTE)) OR
+        (t.state_date IS NOT NULL AND t.state_date < DATE_SUB(NOW(), INTERVAL tt.pass_time MINUTE)))
+    ORDER BY t.lastDate;
+END
+$$
+
+DELIMITER ;
+
+-- main 2017-11-15
