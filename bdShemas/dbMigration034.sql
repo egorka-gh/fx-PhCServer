@@ -1176,3 +1176,63 @@ $$
 DELIMITER ;
 
 -- main 2017-11-15
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS extraStateSetOTKByPG$$
+CREATE 
+PROCEDURE extraStateSetOTKByPG(IN pPrintGroup varchar(50), IN pDate datetime)
+  MODIFIES SQL DATA
+  COMMENT 'works only vs photo print groups'
+BEGIN
+  DECLARE vOrder varchar(50);
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET vOrder = NULL;
+
+  IF pDate IS NULL
+  THEN
+    SET pDate = NOW();
+  END IF;
+
+  SELECT pg.order_id
+  INTO vOrder
+    FROM print_group pg
+    WHERE pg.id = pPrintGroup
+      AND pg.sub_id = ''
+      AND pg.book_type = 0;
+
+  IF vOrder IS NOT NULL
+  THEN
+    -- pg found
+    UPDATE print_group pg
+      SET pg.state = 450,
+          pg.state_date = pDate
+      WHERE pg.id = pPrintGroup;
+
+    CALL extraStateSetOTK(vOrder, '', pDate);
+  ELSE
+    -- may be order
+    SELECT o.id
+    INTO vOrder
+      FROM orders o
+      WHERE o.id = pPrintGroup;
+    IF vOrder IS NOT NULL
+    THEN
+      -- order found
+      -- close all photos
+      UPDATE print_group pg
+        SET pg.state = 450,
+            pg.state_date = pDate
+        WHERE pg.order_id = vOrder 
+          AND pg.state < 450
+          AND pg.sub_id = ''
+          AND pg.book_type = 0;
+  
+      CALL extraStateSetOTK(vOrder, '', pDate);
+    END IF;
+  END IF;
+
+END
+$$
+
+DELIMITER ;
