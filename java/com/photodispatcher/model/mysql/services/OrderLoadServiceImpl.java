@@ -89,6 +89,8 @@ public class OrderLoadServiceImpl extends AbstractDAO implements OrderLoadServic
 		if(where.length()>0) where=" WHERE"+where;
 		sql+=where;
 		
+		sql+=" ORDER BY o.state_date"; 
+		
 		if(stateFrom==-1 && stateTo==-1){
 			return runSelect(Order.class,sql);
 		}else if(stateFrom!=-1 && stateTo==-1){

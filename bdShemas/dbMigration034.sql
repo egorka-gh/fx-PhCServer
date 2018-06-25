@@ -1236,3 +1236,74 @@ END
 $$
 
 DELIMITER ;
+
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS packageSetOrderSpace$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE packageSetOrderSpace (IN pOrderId varchar(50), IN pSpace int)
+BEGIN
+  DECLARE vSource int;
+  DECLARE vPackage int;
+  DECLARE vOrderWeight float DEFAULT (0);
+  DECLARE vResult int DEFAULT (0);
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND BEGIN
+    SET vPackage = NULL;
+    SET vResult = 0;
+  END;
+
+  -- get order data
+  SELECT
+    o.source,
+    o.group_id,
+    IFNULL(oei.weight, 0) INTO vSource, vPackage, vOrderWeight
+  FROM orders o
+    LEFT OUTER JOIN order_extra_info oei
+      ON o.id = oei.id
+      AND oei.sub_id = ''
+  WHERE o.id = pOrderId;
+
+  IF vPackage IS NOT NULL THEN
+    -- check if space has different package
+    SELECT
+      IFNULL(MIN(-1), 1) INTO vResult
+    FROM rack_orders ro
+      INNER JOIN orders o
+        ON ro.order_id = o.id
+    WHERE ro.space = pSpace
+    AND (o.source != vSource
+    OR o.group_id != vPackage);
+    IF vResult > 0 THEN
+      -- check wieght
+      SELECT
+        IF(rs.weight < ROUND(((IFNULL(SUM(oei.weight), 0) + vOrderWeight) / 1000), 1), -2, 1) INTO vResult
+      FROM rack_space rs
+        LEFT OUTER JOIN rack_orders ro
+          ON rs.id = ro.space
+        LEFT OUTER JOIN order_extra_info oei
+          ON ro.order_id = oei.id
+          AND oei.sub_id = ''
+      WHERE rs.id = pSpace
+      AND ro.order_id != pOrderId;
+    END IF;
+    IF vResult > 0 THEN
+      -- set order space
+      INSERT IGNORE INTO rack_orders (order_id, space)
+        VALUES (pOrderId, pSpace);
+    END IF;
+  END IF;
+
+  -- return result ?
+  SELECT
+    vResult AS value;
+END
+$$
+
+DELIMITER ;
