@@ -50,7 +50,7 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 	public SelectResult<FieldValue> getStaffValueList(){
 		SelectResult<FieldValue> result;
 		String sql="SELECT id value, name label FROM staff s"+
-					" WHERE s.id!=0"+
+					" WHERE s.id!=0 AND s.active= 1"+
 					" ORDER BY s.name";
 		result=runSelect(FieldValue.class, sql);
 		return result;
