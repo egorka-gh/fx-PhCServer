@@ -635,3 +635,4 @@ INSERT INTO delivery_type_dictionary(source, delivery_type, site_id) VALUES
 (23, 14, 31370),
 (23, 15, 34930);  
 
+-- 2019-11-25 applied on main cycle
