@@ -6,6 +6,7 @@ import org.granite.messaging.service.annotations.RemoteDestination;
 
 import com.photodispatcher.model.mysql.entities.DeliveryType;
 import com.photodispatcher.model.mysql.entities.DeliveryTypeDictionary;
+import com.photodispatcher.model.mysql.entities.FieldValue;
 import com.photodispatcher.model.mysql.entities.MailPackage;
 import com.photodispatcher.model.mysql.entities.Order;
 import com.photodispatcher.model.mysql.entities.RackOrders;
@@ -42,5 +43,5 @@ public interface MailPackageService {
 	SqlResult persistsDeliveryTypeDictionaryBatch(List<DeliveryTypeDictionary> items);
 	SelectResult<DeliveryType> loadDeliveryType();
 	SqlResult persistsDeliveryTypeBatch(List<DeliveryType> items);
-	
+	SelectResult<FieldValue> getProductsCount(int source, int id);
 }

@@ -39,6 +39,9 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 			connection.setAutoCommit(false);
 			
 			//insert/update package
+			//result=runInsertOrUpdate(item);
+			OrmElf.insertOrUpdateObject(connection, item);
+			/*
 			if(item.getPersistState()==0){
 				//add new
 				OrmElf.insertObject(connection, item);
@@ -47,8 +50,9 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 				//if(item.getPersistState()==-1)
 				OrmElf.updateObject(connection, item);
 			}
+			*/
 			
-			/*
+			
 			//insert/update props
 			if(item.getProperties()!=null){
 				OrmElf.insertOrUpdateListBatched(connection, item.getProperties());
@@ -57,6 +61,7 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 			if(item.getBarcodes()!=null){
 				OrmElf.insertOrUpdateListBatched(connection, item.getBarcodes());
 			}
+			/*
 			//insert/update messages
 			if(item.getMessages()!=null){
 				OrmElf.insertOrUpdateListBatched(connection, item.getMessages());
@@ -257,8 +262,8 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	public SqlResult startState(MailPackage item){
 		SqlResult result= new SqlResult();
 		
-		//result=persist(item);
-		result=runInsertOrUpdate(item);
+		result=persist(item);
+		//result=runInsertOrUpdate(item);
 		
 		if(!result.isComplete()) return result;
 
@@ -390,6 +395,17 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 		//PROCEDURE packageGetSpaces(IN pOrderId varchar(50), IN pTechPoint int)
 		String sql= "{CALL packageGetSpaces(?,?)}";
 		return  runCallSelect(RackSpace.class, sql, orderId, techPoint);
+	}
+
+	@Override
+	public SelectResult<FieldValue> getProductsCount(int source, int id){
+		String sql= "SELECT IF(bt.id = 0, 'Фото', bt.name) label, IF(bt.id = 0, SUM(pg.prints), SUM(pg.book_num)) value"+
+					 " FROM orders o"+
+					   " INNER JOIN print_group pg ON pg.order_id = o.id AND pg.is_reprint = 0 AND pg.book_part IN (0, 2, 5)"+
+					   " INNER JOIN book_type bt ON pg.book_type = bt.id"+
+					  " WHERE o.group_id = ? AND o.source = ? AND o.state < 500"+
+					 " GROUP BY IF(bt.id = 0, 'Фото', bt.name)";
+		return  runSelect(FieldValue.class, sql, id, source);
 	}
 
 	@Override
