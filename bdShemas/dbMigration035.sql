@@ -636,3 +636,112 @@ INSERT INTO delivery_type_dictionary(source, delivery_type, site_id) VALUES
 (23, 15, 34930);  
 
 -- 2019-11-25 applied on main cycle
+
+ALTER TABLE package_barcode 
+  ADD COLUMN box_number INT(5) DEFAULT 0;
+
+DELIMITER $$
+
+--
+-- Создать функцию `package_field`
+--
+CREATE 
+FUNCTION package_field (pSource int, pPackage int, pField int)
+RETURNS varchar(1000) CHARSET utf8
+READS SQL DATA
+BEGIN
+  DECLARE vResult varchar(1000) DEFAULT ('');
+  DECLARE vIsEnd int DEFAULT (0);
+
+  DECLARE vIsField int;
+  DECLARE vChildField int;
+  DECLARE vDelemiter varchar(20);
+  DECLARE vPrefix varchar(20);
+  DECLARE vSufix varchar(20);
+  DECLARE vValue varchar(255);
+
+
+  DECLARE vCur CURSOR FOR
+  SELECT ffi.is_field, ffi.child_field, ffi.delemiter, ffi.prefix, ffi.sufix, pp.value
+    FROM form_field_items ffi
+      INNER JOIN attr_type at ON ffi.attr_type = AT.id
+      LEFT OUTER JOIN package_prop pp ON pp.property = AT.field AND pp.source = pSource AND pp.id = pPackage AND LENGTH(pp.value) > 0
+    WHERE ffi.form_field = pField
+      AND (pp.id IS NOT NULL OR ffi.is_field = 1)
+    ORDER BY ffi.sequence;
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET vIsEnd = 1;
+
+  OPEN vCur;
+wet:
+  LOOP
+    FETCH vCur INTO vIsField, vChildField, vDelemiter, vPrefix, vSufix, vValue;
+    IF vIsEnd
+    THEN
+      LEAVE wet;
+    END IF;
+    IF vIsField = 1
+    THEN
+      SET vValue = package_field2(pSource, pPackage, vChildField);
+    END IF;
+    SET vResult = CONCAT_WS('', vResult, IF(LENGTH(vResult) > 0, vDelemiter, ''), vPrefix, vValue, vSufix);
+  END LOOP wet;
+  CLOSE vCur;
+
+  RETURN vResult;
+END
+$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+--
+-- Создать функцию `package_field2`
+--
+CREATE
+FUNCTION package_field2 (pSource int, pPackage int, pField int)
+RETURNS varchar(1000) CHARSET utf8
+READS SQL DATA
+BEGIN
+  DECLARE vResult varchar(1000) DEFAULT ('');
+  DECLARE vIsEnd int DEFAULT (0);
+
+  DECLARE vDelemiter varchar(20);
+  DECLARE vPrefix varchar(20);
+  DECLARE vSufix varchar(20);
+  DECLARE vValue varchar(255);
+
+
+  DECLARE vCur CURSOR FOR
+  SELECT ffi.delemiter, ffi.prefix, ffi.sufix, pp.value
+    FROM form_field_items ffi
+      INNER JOIN attr_type at ON ffi.attr_type = AT.id
+      INNER JOIN package_prop pp ON pp.property = AT.field AND pp.source = pSource AND pp.id = pPackage AND LENGTH(pp.value) > 0
+    WHERE ffi.form_field = pField
+      AND ffi.is_field = 0
+    ORDER BY ffi.sequence;
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET vIsEnd = 1;
+
+  OPEN vCur;
+wet:
+  LOOP
+    FETCH vCur INTO vDelemiter, vPrefix, vSufix, vValue;
+    IF vIsEnd
+    THEN
+      LEAVE wet;
+    END IF;
+    SET vResult = CONCAT_WS('', vResult, IF(LENGTH(vResult) > 0, vDelemiter, ''), vPrefix, vValue, vSufix);
+  END LOOP wet;
+  CLOSE vCur;
+
+  RETURN vResult;
+END
+$$
+
+DELIMITER ;
+
+INSERT INTO xrep_report(id, src_type, name, rep_group, hidden) VALUES('otkDailyRep', 1, 'ОТК', 0, 0);
+INSERT INTO xrep_report_params(report, parameter) VALUES('otkDailyRep', 'period');
+-- 2019-01-28 applied on main cycle

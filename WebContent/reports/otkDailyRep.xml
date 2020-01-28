@@ -1,0 +1,16 @@
+<element-set>
+  <element name="rpbody">
+    <sql>
+      <![CDATA[
+SELECT os.name state, p.state_date, s.code, p.id_name, package_field(p.source, p.id, 1) fio, package_field(p.source, p.id, 18) adr, 
+		GREATEST(1, (SELECT IFNULL(MAX(pb.box_number),0) FROM package_barcode pb WHERE pb.source = p.source AND pb.id = p.id)) packs
+  FROM package p
+    INNER JOIN order_state os ON os.id = p.state
+    INNER JOIN sources s ON s.id = p.source
+  WHERE p.state < 500 AND p.state_date BETWEEN :pfrom AND DATE_ADD( :pto , INTERVAL 1 DAY)
+  ORDER BY p.state, p.state_date
+	]]>
+    </sql>
+  </element>
+
+</element-set>

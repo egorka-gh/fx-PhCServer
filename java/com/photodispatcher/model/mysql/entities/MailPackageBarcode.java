@@ -4,7 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "package_prop")
+@Table(name = "package_barcode")
 public class MailPackageBarcode extends AbstractEntity {
 	private static final long serialVersionUID = 1L;
 	
@@ -19,6 +19,8 @@ public class MailPackageBarcode extends AbstractEntity {
     private String barcode;
     @Column(name="bar_type")
     private int bar_type;
+    @Column(name="box_number")
+    private int box_number;
     
     
 	public int getId() {
@@ -44,5 +46,11 @@ public class MailPackageBarcode extends AbstractEntity {
 	}
 	public void setBar_type(int bar_type) {
 		this.bar_type = bar_type;
+	}
+	public int getBox_number() {
+		return box_number;
+	}
+	public void setBox_number(int box_number) {
+		this.box_number = box_number;
 	}
 }
