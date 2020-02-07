@@ -84,12 +84,13 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 	@Override
 	public SelectResult<BookPgTemplate> loadTemplates(int book){
 		SelectResult<BookPgTemplate> result;
-		String sql="SELECT pg.*, p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name, bp.name book_part_name, st1.name lab_type_name"+
+		String sql="SELECT pg.*, p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name, la.value laminat_name, bp.name book_part_name, st1.name lab_type_name"+
 					" FROM book_pg_template pg"+
 					" INNER JOIN attr_value p ON pg.paper = p.id"+
 					" INNER JOIN attr_value fr ON pg.frame = fr.id"+
 					" INNER JOIN attr_value cr ON pg.correction = cr.id"+
 					" INNER JOIN attr_value cu ON pg.cutting = cu.id"+
+					" INNER JOIN attr_value la ON pg.laminat = la.id"+
 					" INNER JOIN book_part bp ON pg.book_part = bp.id"+
 					" INNER JOIN src_type st1 ON st1.id=pg.lab_type "+
 					" WHERE pg.book=?";

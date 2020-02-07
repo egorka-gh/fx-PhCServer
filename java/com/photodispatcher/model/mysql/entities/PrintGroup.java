@@ -61,6 +61,8 @@ public class PrintGroup extends AbstractEntity {
     private String reprint_id;
     @Column(name="butt")
     private int butt;
+    @Column(name="laminat")
+    private int laminat;
     
     @Column(name="prints_done")
     private int prints_done;
@@ -109,6 +111,8 @@ public class PrintGroup extends AbstractEntity {
     private int min_sheet;
     @Column(name="max_sheet", insertable=false, updatable=false)
     private int max_sheet;
+    @Column(name="laminat_name", updatable=false, insertable=false)
+    private String laminat_name;
 
     //childs
     @Transient
@@ -466,6 +470,22 @@ public class PrintGroup extends AbstractEntity {
 
 	public void setRejects(List<PrintGroupReject> rejects) {
 		this.rejects = rejects;
+	}
+
+	public int getLaminat() {
+		return laminat;
+	}
+
+	public void setLaminat(int laminat) {
+		this.laminat = laminat;
+	}
+
+	public String getLaminat_name() {
+		return laminat_name;
+	}
+
+	public void setLaminat_name(String laminat_name) {
+		this.laminat_name = laminat_name;
 	}
     
 }

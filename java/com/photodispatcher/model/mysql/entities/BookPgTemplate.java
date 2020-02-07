@@ -111,6 +111,8 @@ public class BookPgTemplate extends AbstractEntity {
     private int queue_size=0;
     @Column(name="queue_offset")
     private String queue_offset="+0+0";
+    @Column(name="laminat")
+    private int laminat=0;
 
     //ref name
     @Column(name="book_part_name", updatable=false, insertable=false)
@@ -125,6 +127,9 @@ public class BookPgTemplate extends AbstractEntity {
     private String cutting_name;
     @Column(name="lab_type_name", updatable=false, insertable=false)
     private String lab_type_name;
+    @Column(name="laminat_name", updatable=false, insertable=false)
+    private String laminat_name;
+    
     
     @Transient
     private List<BookPgAltPaper> altPaper;
@@ -458,6 +463,18 @@ public class BookPgTemplate extends AbstractEntity {
 	}
 	public void setQueue_offset(String queue_offset) {
 		this.queue_offset = queue_offset;
+	}
+	public int getLaminat() {
+		return laminat;
+	}
+	public void setLaminat(int laminat) {
+		this.laminat = laminat;
+	}
+	public String getLaminat_name() {
+		return laminat_name;
+	}
+	public void setLaminat_name(String laminat_name) {
+		this.laminat_name = laminat_name;
 	}
 
 }

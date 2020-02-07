@@ -23,7 +23,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 	
 	public SelectResult<PrintGroup> load(String id){
 		String sql="SELECT pg.*, o.source source_id, s.name source_name, o.ftp_folder order_folder, os.name state_name,"+
-						" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name,"+
+						" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name, la.value laminat_name,"+
 						" lab.name lab_name, bt.name book_type_name, bp.name book_part_name"+
 					" FROM print_group pg"+
 						" INNER JOIN orders o ON pg.order_id = o.id"+
@@ -33,6 +33,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 						" INNER JOIN attr_value fr ON pg.frame = fr.id"+
 						" INNER JOIN attr_value cr ON pg.correction = cr.id"+
 						" INNER JOIN attr_value cu ON pg.cutting = cu.id"+
+						" INNER JOIN attr_value la ON pg.laminat = la.id"+
 						" INNER JOIN book_type bt ON pg.book_type = bt.id"+
 						" INNER JOIN book_part bp ON pg.book_part = bp.id"+
 						" LEFT OUTER JOIN lab lab ON pg.destination = lab.id"+
@@ -66,7 +67,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 	@Override
 	public SelectResult<PrintGroup> loadById(String id){
 		String sql="SELECT pg.*, o.source source_id, s.name source_name, o.ftp_folder order_folder, os.name state_name,"+
-						" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name,"+
+						" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name, la.value laminat_name,"+
 						" lab.name lab_name, bt.name book_type_name, bp.name book_part_name"+
 					" FROM print_group pg"+
 						" INNER JOIN orders o ON pg.order_id = o.id"+
@@ -76,6 +77,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 						" INNER JOIN attr_value fr ON pg.frame = fr.id"+
 						" INNER JOIN attr_value cr ON pg.correction = cr.id"+
 						" INNER JOIN attr_value cu ON pg.cutting = cu.id"+
+						" INNER JOIN attr_value la ON pg.laminat = la.id"+
 						" INNER JOIN book_type bt ON pg.book_type = bt.id"+
 						" INNER JOIN book_part bp ON pg.book_part = bp.id"+
 						" LEFT OUTER JOIN lab lab ON pg.destination = lab.id"+
@@ -86,7 +88,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 	@Override
 	public SelectResult<PrintGroup> loadByState(int stateFrom, int stateTo){
 		String sql="SELECT pg.*, o.source source_id, s.name source_name, o.ftp_folder order_folder, os.name state_name,"+
-						" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name,"+
+						" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name, la.value laminat_name,"+
 						" lab.name lab_name, bt.name book_type_name, bp.name book_part_name"+
 					" FROM print_group pg"+
 						" INNER JOIN orders o ON pg.order_id = o.id"+
@@ -96,6 +98,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 						" INNER JOIN attr_value fr ON pg.frame = fr.id"+
 						" INNER JOIN attr_value cr ON pg.correction = cr.id"+
 						" INNER JOIN attr_value cu ON pg.cutting = cu.id"+
+						" INNER JOIN attr_value la ON pg.laminat = la.id"+
 						" INNER JOIN book_type bt ON pg.book_type = bt.id"+
 						" INNER JOIN book_part bp ON pg.book_part = bp.id"+
 						" LEFT OUTER JOIN lab lab ON pg.destination = lab.id";
@@ -136,7 +139,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 		}
 
 		String sql="SELECT pg.*, o.source source_id, s.name source_name, o.ftp_folder order_folder, os.name state_name,"+
-				" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name,"+
+				" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name, la.value laminat_name,"+
 				" lab.name lab_name, bt.name book_type_name, bp.name book_part_name"+
 			" FROM print_group pg"+
 				" INNER JOIN orders o ON pg.order_id = o.id"+
@@ -146,6 +149,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 				" INNER JOIN attr_value fr ON pg.frame = fr.id"+
 				" INNER JOIN attr_value cr ON pg.correction = cr.id"+
 				" INNER JOIN attr_value cu ON pg.cutting = cu.id"+
+				" INNER JOIN attr_value la ON pg.laminat = la.id"+
 				" INNER JOIN book_type bt ON pg.book_type = bt.id"+
 				" INNER JOIN book_part bp ON pg.book_part = bp.id"+
 				" INNER JOIN lab lab ON pg.destination = lab.id"+
@@ -158,11 +162,12 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 	
 	@Override
 	public SelectResult<PrintGroup> loadReady4Print(int limit, boolean onlyBook){
-		String sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder, IFNULL(s.alias, pg.path) alias, os.name state_name, av.value paper_name"+
+		String sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder, IFNULL(s.alias, pg.path) alias, os.name state_name, av.value paper_name, la.value laminat_name"+
 					 " FROM print_group pg"+
 					   " INNER JOIN orders o ON pg.order_id = o.id"+
 					   " INNER JOIN order_state os ON pg.state = os.id"+
 					   " INNER JOIN attr_value av ON pg.paper = av.id"+
+  					   " INNER JOIN attr_value la ON pg.laminat = la.id"+
 					   " LEFT OUTER JOIN suborders s ON s.order_id = pg.order_id AND s.sub_id = pg.sub_id"+
 					  " WHERE pg.state = 200";
 		if(onlyBook){
@@ -180,7 +185,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 	@Override
 	public SelectResult<PrintGroup> loadByOrderState(int stateFrom, int stateTo){
 		String sql="SELECT pg.*, o.source source_id, s.name source_name, o.ftp_folder order_folder, os.name state_name,"+
-						" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name,"+
+						" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name, la.value laminat_name,"+
 						" lab.name lab_name, bt.name book_type_name, bp.name book_part_name"+
 					" FROM print_group pg"+
 						" INNER JOIN orders o ON pg.order_id = o.id"+
@@ -190,6 +195,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 						" INNER JOIN attr_value fr ON pg.frame = fr.id"+
 						" INNER JOIN attr_value cr ON pg.correction = cr.id"+
 						" INNER JOIN attr_value cu ON pg.cutting = cu.id"+
+						" INNER JOIN attr_value la ON pg.laminat = la.id"+
 						" INNER JOIN book_type bt ON pg.book_type = bt.id"+
 						" INNER JOIN book_part bp ON pg.book_part = bp.id"+
 						" LEFT OUTER JOIN lab lab ON pg.destination = lab.id";
@@ -250,7 +256,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 
 		//pg state >= in print and order state < pack send
 		String sql="SELECT pg.*, o.source source_id, s.name source_name, o.ftp_folder order_folder, os.name state_name,"+
-						" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name,"+
+						" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name, la.value laminat_name,"+
 						" lab.name lab_name, bt.name book_type_name, bp.name book_part_name"+
 					" FROM print_group pg"+
 						" INNER JOIN orders o ON pg.order_id = o.id"+
@@ -260,6 +266,7 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 						" INNER JOIN attr_value fr ON pg.frame = fr.id"+
 						" INNER JOIN attr_value cr ON pg.correction = cr.id"+
 						" INNER JOIN attr_value cu ON pg.cutting = cu.id"+
+						" INNER JOIN attr_value la ON pg.laminat = la.id"+
 						" INNER JOIN book_type bt ON pg.book_type = bt.id"+
 						" INNER JOIN book_part bp ON pg.book_part = bp.id"+
 						" LEFT OUTER JOIN lab lab ON pg.destination = lab.id"+

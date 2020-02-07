@@ -745,3 +745,13 @@ DELIMITER ;
 INSERT INTO xrep_report(id, src_type, name, rep_group, hidden) VALUES('otkDailyRep', 1, 'ОТК', 0, 0);
 INSERT INTO xrep_report_params(report, parameter) VALUES('otkDailyRep', 'period');
 -- 2019-01-28 applied on main cycle
+
+INSERT INTO attr_type(id, attr_fml, name, field, list, persist) VALUES(99, 2, 'Ламинат', 'laminat', 1, 1);
+--INSERT INTO attr_value(id, attr_tp, value, locked) VALUES(44, 99, 'Нет', 1);
+INSERT INTO attr_value(id, attr_tp, value, locked) VALUES(45, 99, 'Глянец', 1);
+INSERT INTO attr_value(id, attr_tp, value, locked) VALUES(46, 99, 'Матовый', 1);
+
+ALTER TABLE book_pg_template 
+  ADD COLUMN laminat INT(5) DEFAULT 0;
+ALTER TABLE print_group 
+  ADD COLUMN laminat INT(5) DEFAULT 0;  
