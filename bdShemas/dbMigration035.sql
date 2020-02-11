@@ -754,4 +754,13 @@ INSERT INTO attr_value(id, attr_tp, value, locked) VALUES(46, 99, 'Матовы�
 ALTER TABLE book_pg_template 
   ADD COLUMN laminat INT(5) DEFAULT 0;
 ALTER TABLE print_group 
-  ADD COLUMN laminat INT(5) DEFAULT 0;  
+  ADD COLUMN laminat INT(5) DEFAULT 0;
+
+  INSERT INTO attr_synonym (src_type, attr_val, synonym)
+  SELECT DISTINCT 25 src_tp, sy.attr_val,
+    CONCAT(IF(AT.id = 3, '-', ''), LEFT(AT.field, 1), IF(AT.id = 2, sy.attr_val, IF(AT.id = 3, '_b', av.value)), IF(AT.id = 3, '', '-')) syn
+    FROM attr_type at
+      INNER JOIN attr_value av ON av.attr_tp = at.id
+      INNER JOIN attr_synonym sy ON sy.attr_val = av.id AND sy.src_type = 4
+    WHERE AT.attr_fml = 1;
+ -- 2019-02-11 applied on main cycle
