@@ -28,6 +28,12 @@ public class OrderBook extends AbstractEntity {
     private boolean is_rejected;
     @Column(name="is_reject")
     private boolean is_reject;
+    @Column(name="compo_type")
+    private int compo_type;
+    @Column(name="compo_pg")
+    private String compo_pg;
+    @Column(name="compo_book")
+    private int compo_book;
 
 	//ref
     @Column(name="order_id", insertable=false, updatable=false)
@@ -40,6 +46,8 @@ public class OrderBook extends AbstractEntity {
     private String book_part_name;
     @Column(name="book_part", insertable=false, updatable=false)
     private int book_part;
+    @Column(name="compo_type_name", insertable=false, updatable=false)
+    private String compo_type_name;
     
     /*
     @Column(name="state2", insertable=false, updatable=false)
@@ -153,6 +161,30 @@ public class OrderBook extends AbstractEntity {
 	}
 	public void setOrder_id(String order_id) {
 		this.order_id = order_id;
+	}
+	public int getCompo_type() {
+		return compo_type;
+	}
+	public void setCompo_type(int compo_type) {
+		this.compo_type = compo_type;
+	}
+	public String getCompo_pg() {
+		return compo_pg;
+	}
+	public void setCompo_pg(String compo_pg) {
+		this.compo_pg = compo_pg;
+	}
+	public int getCompo_book() {
+		return compo_book;
+	}
+	public void setCompo_book(int compo_book) {
+		this.compo_book = compo_book;
+	}
+	public String getCompo_type_name() {
+		return compo_type_name;
+	}
+	public void setCompo_type_name(String compo_type_name) {
+		this.compo_type_name = compo_type_name;
 	}
 	
 	/*

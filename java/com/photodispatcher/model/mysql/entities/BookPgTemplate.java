@@ -134,6 +134,9 @@ public class BookPgTemplate extends AbstractEntity {
     @Transient
     private List<BookPgAltPaper> altPaper;
 
+    @Transient
+    private int compo_type;
+
 	public int getId() {
 		return id;
 	}
@@ -475,6 +478,12 @@ public class BookPgTemplate extends AbstractEntity {
 	}
 	public void setLaminat_name(String laminat_name) {
 		this.laminat_name = laminat_name;
+	}
+	public int getCompo_type() {
+		return compo_type;
+	}
+	public void setCompo_type(int compo_type) {
+		this.compo_type = compo_type;
 	}
 
 }

@@ -158,6 +158,7 @@ public abstract class AbstractDAO {
 	
 	protected <T> SqlResult runUpdateBatch(List<T> targetList){
 		SqlResult result= new SqlResult();
+		if (targetList==null || targetList.isEmpty()) return result;
 		Connection connection = null;
 		try {
 			connection=ConnectionFactory.getConnection();
@@ -224,6 +225,7 @@ public abstract class AbstractDAO {
 
 	protected <T> SqlResult runInsertBatch(List<T> targetList){
 		SqlResult result= new SqlResult();
+		if (targetList==null || targetList.isEmpty()) return result;
 		Connection connection = null;
 		try {
 			connection=ConnectionFactory.getConnection();
@@ -257,6 +259,7 @@ public abstract class AbstractDAO {
 
 	protected <T> SqlResult runDeleteBatch(List<T> targetList){
 		SqlResult result= new SqlResult();
+		if (targetList==null || targetList.isEmpty()) return result;
 		Connection connection = null;
 		try {
 			connection=ConnectionFactory.getConnection();

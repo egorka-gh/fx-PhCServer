@@ -6,6 +6,7 @@ import org.granite.messaging.service.annotations.RemoteDestination;
 
 import com.photodispatcher.model.mysql.entities.BookPgTemplate;
 import com.photodispatcher.model.mysql.entities.BookSynonym;
+import com.photodispatcher.model.mysql.entities.BookSynonymCompo;
 import com.photodispatcher.model.mysql.entities.BookSynonymGlue;
 import com.photodispatcher.model.mysql.entities.GlueCommand;
 import com.photodispatcher.model.mysql.entities.SelectResult;
@@ -23,4 +24,5 @@ public interface BookSynonymService {
 	SelectResult<GlueCommand> persistGlueCommandBatch(List<GlueCommand> items);
 	SelectResult<BookSynonymGlue> loadBookGlueEdit(int book);
 	SqlResult persistBookGlue(List<BookSynonymGlue> items);
+	SelectResult<BookSynonymCompo> loadCompo(int book);
 }
