@@ -77,6 +77,8 @@ public class PrintGroup extends AbstractEntity {
     private int sheets_per_file;
     @Column(name="is_revers")
     private boolean is_revers;
+    @Column(name="compo_type")
+    private int compo_type;
 
     
     /*
@@ -113,6 +115,8 @@ public class PrintGroup extends AbstractEntity {
     private int max_sheet;
     @Column(name="laminat_name", updatable=false, insertable=false)
     private String laminat_name;
+    @Column(name="compo_type_name", updatable=false, insertable=false)
+    private String compo_type_name;
 
     //childs
     @Transient
@@ -486,6 +490,22 @@ public class PrintGroup extends AbstractEntity {
 
 	public void setLaminat_name(String laminat_name) {
 		this.laminat_name = laminat_name;
+	}
+
+	public int getCompo_type() {
+		return compo_type;
+	}
+
+	public void setCompo_type(int compo_type) {
+		this.compo_type = compo_type;
+	}
+
+	public String getCompo_type_name() {
+		return compo_type_name;
+	}
+
+	public void setCompo_type_name(String compo_type_name) {
+		this.compo_type_name = compo_type_name;
 	}
     
 }

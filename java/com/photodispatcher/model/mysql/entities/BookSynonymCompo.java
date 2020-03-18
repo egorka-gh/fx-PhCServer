@@ -1,7 +1,6 @@
 package com.photodispatcher.model.mysql.entities;
 
 import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -28,6 +27,7 @@ public class BookSynonymCompo extends AbstractEntity {
 		return parent;
 	}
 
+	
 	public void setParent(int parent) {
 		this.parent = parent;
 	}

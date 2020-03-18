@@ -45,6 +45,13 @@ public class DictionaryServiceImpl extends AbstractDAO implements DictionaryServ
 		result=runSelect(FieldValue.class, sql);
 		return result;
 	}
+	@Override
+	public SelectResult<FieldValue> getCompoTypeValueList(){
+		SelectResult<FieldValue> result;
+		String sql="SELECT id value, name label FROM compo_type";
+		result=runSelect(FieldValue.class, sql);
+		return result;
+	}
 
 	@Override
 	public SelectResult<FieldValue> getStaffValueList(){
