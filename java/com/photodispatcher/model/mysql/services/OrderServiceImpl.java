@@ -190,7 +190,61 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		return runSelect(SubOrder.class,sql);
 	}
 
-	
+
+	@Override
+	public SelectResult<PrintGroup> loadCompoChilds(String compoID){
+		String sql;
+		
+		sql="SELECT pg.*, o.source source_id, s.name source_name, o.ftp_folder order_folder, os.name state_name,"+
+				" p.value paper_name, fr.value frame_name, cr.value correction_name, cu.value cutting_name, la.value laminat_name,"+
+				" lab.name lab_name, bt.name book_type_name, bp.name book_part_name, IFNULL(so.alias, pg.path) alias, ct.name compo_type_name"+
+			" FROM print_group pg"+
+				" INNER JOIN orders o ON pg.order_id = o.id"+
+				" INNER JOIN sources s ON o.source = s.id"+
+				" INNER JOIN order_state os ON pg.state = os.id"+
+				" INNER JOIN attr_value p ON pg.paper = p.id"+
+				" INNER JOIN attr_value fr ON pg.frame = fr.id"+
+				" INNER JOIN attr_value cr ON pg.correction = cr.id"+
+				" INNER JOIN attr_value cu ON pg.cutting = cu.id"+
+				" INNER JOIN attr_value la ON pg.laminat = la.id"+
+				" INNER JOIN book_type bt ON pg.book_type = bt.id"+
+				" INNER JOIN book_part bp ON pg.book_part = bp.id"+
+				" INNER JOIN compo_type ct ON pg.compo_type = ct.id"+
+				" LEFT OUTER JOIN lab ON pg.destination = lab.id"+
+				" LEFT OUTER JOIN suborders so ON so.order_id = pg.order_id AND so.sub_id = pg.sub_id"+
+			" WHERE pg.id IN "+
+				" (SELECT pg1.id FROM print_group pg"+
+					" INNER JOIN order_books ob ON ob.compo_pg = pg.id"+
+					" INNER JOIN print_group pg1 ON pg1.id = ob.pg_id"+
+					" WHERE pg.order_id = ? AND pg.is_reprint = 0)";
+		SelectResult<PrintGroup> result=runSelect(PrintGroup.class,sql, compoID);
+		if(!result.isComplete()) return result;
+		//load childs
+		if (result.getData()!=null && !result.getData().isEmpty() ){
+			sql="SELECT pgf.*, pg.path"+
+					" FROM print_group pg INNER JOIN print_group_file pgf ON pg.id = pgf.print_group"+
+					" WHERE pg.id = ?";
+			for (PrintGroup pg : result.getData()){
+				//files
+				SelectResult<PrintGroupFile> fRes=runSelect(PrintGroupFile.class,sql, pg.getId());
+				if(!fRes.isComplete()){
+					result.cloneError(fRes);
+					return result;
+				}
+				pg.setFiles(fRes.getData());
+				//books
+				SelectResult<OrderBook> bRes = loadPGBooks(pg.getId());
+				if(!bRes.isComplete()){
+					result.cloneError(bRes);
+					return result;
+				}
+				pg.setBooks(bRes.getData());
+			}			
+		}
+
+		return result;
+	}
+
 	@Override
 	public SelectResult<Order> loadOrderVsChilds(String id){
 		SelectResult<Order> result=loadOrder(id);
@@ -248,6 +302,14 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 				return result;
 			}
 			order.setPrintGroups(pgRes.getData());
+
+			SelectResult<OrderBook> obRes=loadOrderBooks(id);
+			if(!obRes.isComplete()){
+				result.cloneError(obRes);
+				return result;
+			}
+			order.setBooks(obRes.getData());
+
 		}
 		return result;
 	}
@@ -414,6 +476,23 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 				  " WHERE pg.order_id = ?"+
 				 " ORDER BY pg.sub_id, ob.pg_id, ob.book";
 		return runSelect(OrderBook.class, sql, orderId);
+	}
+
+	@Override
+	public SelectResult<OrderBook> loadPGBooks(String pgId){
+		String sql="SELECT pg.order_id, pg.sub_id, os.name state_name, pg.book_part, bp.name book_part_name, s.name staff_name, sat.name sa_type_name, sa.remark sa_remark, ob.*, ct.name compo_type_name"+
+				 " FROM print_group pg"+
+				   " INNER JOIN order_books ob ON pg.id = ob.pg_id"+
+				   " INNER JOIN order_state os ON ob.state = os.id"+
+				   " INNER JOIN book_part bp ON bp.id = pg.book_part"+
+				   " INNER JOIN compo_type ct ON ob.compo_type = ct.id"+
+				   " LEFT OUTER JOIN print_group_rejects pgr ON pg.id = pgr.print_group AND pgr.book=ob.book"+
+				   " LEFT OUTER JOIN staff_activity sa ON pgr.activity = sa.id"+
+				   " LEFT OUTER JOIN staff s ON s.id = sa.staff"+
+				   " LEFT OUTER JOIN staff_activity_type sat ON sa.sa_type = sat.id"+
+				  " WHERE pg.id = ?"+
+				 " ORDER BY ob.book";
+		return runSelect(OrderBook.class, sql, pgId);
 	}
 	
 	@Override
@@ -644,7 +723,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 			//add extra messages
 			OrmElf.insertOrUpdateListBatched(connection, emsg);
 			//add printGroups
-			OrmElf.insertListBatched(connection, printGroups);
+			OrmElf.insertOrUpdateListBatched(connection, printGroups);
 			//add files
 			OrmElf.insertListBatched(connection, pgFiles);
 			//add books

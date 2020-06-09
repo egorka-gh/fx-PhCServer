@@ -123,6 +123,8 @@ public class PrintGroup extends AbstractEntity {
     private List<PrintGroupFile> files;
     @Transient
     private List<PrintGroupReject> rejects;
+    @Transient
+    private List<OrderBook> books;
 
 	public String getId() {
 		return id;
@@ -506,6 +508,14 @@ public class PrintGroup extends AbstractEntity {
 
 	public void setCompo_type_name(String compo_type_name) {
 		this.compo_type_name = compo_type_name;
+	}
+
+	public List<OrderBook> getBooks() {
+		return books;
+	}
+
+	public void setBooks(List<OrderBook> books) {
+		this.books = books;
 	}
     
 }

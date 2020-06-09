@@ -65,7 +65,7 @@ BEGIN
   IF vNewSynonym IS NOT NULL
   THEN
     -- create
-    INSERT INTO book_synonym (src_typ, synonym, book_type, is_horizontal, synonym_type, has_backprint, order_program, compo_type)
+    INSERT INTO book_synonym (src_type, synonym, book_type, is_horizontal, synonym_type, has_backprint, order_program, compo_type)
       SELECT src_type, vNewSynonym, book_type, is_horizontal, synonym_type, has_backprint, order_program, compo_type
         FROM book_synonym
         WHERE id = pId;
@@ -221,10 +221,8 @@ $$
 
 DELIMITER ;
 
-INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES
-(185, 'Ожидание комбо', 0, 0, 0, 0),
-(186, 'Ожидание сборки комбо', 0, 0, 0, 0),
-(187, 'Сборка комбо', 0, 0, 0, 0);
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES (185, 'Ожидание комбо', 0, 0, 0, 0);
+INSERT INTO order_state(id, name, runtime, extra, tech, book_part) VALUES(162, 'Сборка комбо', 1, 0, 0, 0);
 
 DROP PROCEDURE IF EXISTS syncSource;
 
@@ -585,6 +583,127 @@ $$
 
 DELIMITER ;
 
+CREATE TABLE tmpt_compo_child (
+  pg_id varchar(50) NOT NULL,
+  book int(5) NOT NULL,
+  width int(11) DEFAULT NULL,
+  sheets int(5) DEFAULT NULL,
+  forced tinyint(1) DEFAULT 0,
+  compo_book int(5) DEFAULT NULL,
+  compo_pg int(5) DEFAULT NULL,
+  PRIMARY KEY (pg_id, book)
+)
+ENGINE = INNODB,
+AVG_ROW_LENGTH = 8192,
+CHARACTER SET utf8,
+COLLATE utf8_general_ci;
+
+CREATE TABLE tmpt_compo_parent (
+  pg_num int(5) NOT NULL,
+  book int(5) NOT NULL,
+  book_unbroken int(5) DEFAULT 0,
+  width int(11) DEFAULT NULL,
+  sheets int(5) DEFAULT NULL,
+  forsed tinyint(1) DEFAULT 0,
+  PRIMARY KEY (book, pg_num)
+)
+ENGINE = INNODB,
+AVG_ROW_LENGTH = 5461,
+CHARACTER SET utf8,
+COLLATE utf8_general_ci;
+
+DROP PROCEDURE IF EXISTS orderCancel;
+
+DELIMITER $$
+
+CREATE 
+PROCEDURE orderCancel (IN pId varchar(50), IN pState int)
+MODIFIES SQL DATA
+BEGIN
+  DECLARE vDate datetime DEFAULT NOW();
+  DECLARE vState int;
+
+  SET vState = IFNULL(pState, 510);
+
+  IF vState < 500
+  THEN
+    SET vState = 510;
+  END IF;
+
+  UPDATE print_group pg
+    SET pg.state = vState,
+        pg.state_date = vDate
+    WHERE pg.order_id = pId;
+
+  -- clear compo links
+  UPDATE order_books b
+  INNER JOIN print_group pg ON b.compo_pg = pg.id
+    SET b.state = 185,
+        b.compo_pg = NULL,
+        b.compo_book = NULL
+    WHERE pg.order_id = pId AND pg.compo_type = 2;
+
+  UPDATE suborders s
+    SET s.state = vState,
+        s.state_date = vDate
+    WHERE s.order_id = pId;
+
+  UPDATE orders o
+    SET o.state = vState,
+        o.state_date = vDate
+    WHERE o.id = pId;
+
+  DELETE
+    FROM rack_orders
+  WHERE order_id = pId;
+
+END
+$$
+
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS fill_order;
+
+DELIMITER $$
+
+CREATE 
+PROCEDURE fill_order (IN p_orderid varchar(50))
+MODIFIES SQL DATA
+COMMENT 'post process order after fill'
+BEGIN
+  -- fill  books
+  INSERT INTO order_books (pg_id, target_pg, book, sheets, state, state_date, compo_type)
+    SELECT pg.id,
+      pg.id,
+      gk.n,
+      pg.sheet_num,
+      pg.state,
+      NOW(),
+      pg.compo_type
+      FROM print_group pg
+        INNER JOIN generator_1k gk ON gk.n BETWEEN 1 AND pg.book_num
+      WHERE pg.order_id = p_orderid
+        AND pg.is_reprint = 0
+  ON DUPLICATE KEY UPDATE state = pg.state, state_date = NOW();
+
+  -- update compo childs
+  UPDATE order_books b
+  INNER JOIN print_group pg ON b.compo_pg = pg.id
+    SET b.state = pg.state,
+        b.state_date = NOW()
+    WHERE pg.order_id = p_orderid AND pg.compo_type = 2;
+
+  UPDATE print_group pgc
+  INNER JOIN order_books b ON b.pg_id = pgc.id
+  INNER JOIN print_group pg ON b.compo_pg = pg.id
+    SET pgc.state = pg.state,
+        pgc.state_date = NOW()
+    WHERE pg.order_id = p_orderid AND pg.compo_type = 2;
+END
+$$
+
+DELIMITER ;
+
 DROP PROCEDURE IF EXISTS compo_fulfill;
 
 DELIMITER $$
@@ -662,15 +781,17 @@ this_proc:
   main_block:
     BEGIN
       -- load books
-      INSERT INTO tmp_compo_child (pg_id, book, width, sheets, forced, compo_book)
-        SELECT ob.pg_id, ob.book, bpt.width, pg.sheet_num, IF(pwaite_limit = 0 OR HOUR(TIMEDIFF(NOW(), ob.state_date)) < pwaite_limit, 0, 1) forced
+      INSERT INTO tmp_compo_child (pg_id, book, width, sheets, forced)
+        SELECT ob.pg_id, ob.book, bpt.sheet_width, pg.sheet_num, IF(pwaite_limit = 0 OR HOUR(TIMEDIFF(NOW(), ob.state_date)) < pwaite_limit, 0, 1) forced
           FROM order_books ob
             INNER JOIN print_group pg ON ob.pg_id = pg.id AND pg.book_part = vParentBookPart
             INNER JOIN book_synonym bs ON pg.alias = bs.synonym
             INNER JOIN book_synonym_compo bsc ON bs.id = bsc.child AND bsc.parent = pparent_alias
             INNER JOIN book_pg_template bpt ON bs.id = bpt.book AND bpt.book_part = vParentBookPart
-          WHERE ob.state = 185;
-      --        ORDER BY pg.sheet_num, IF(pwaite_limit = 0 OR HOUR(TIMEDIFF(NOW(), ob.state_date)) < pwaite_limit, 0, 1) DESC, bpt.width DESC;
+          WHERE ob.state = 185
+            AND ob.compo_type = 1
+            AND ob.compo_pg IS NULL;
+      --        ORDER BY pg.sheet_num, IF(pwaite_limit = 0 OR HOUR(TIMEDIFF(NOW(), ob.state_date)) < pwaite_limit, 0, 1) DESC, bpt.sheet_width DESC;
       IF ROW_COUNT() = 0
       THEN
         LEAVE main_block;
@@ -766,6 +887,7 @@ this_proc:
           THEN
             -- new printgroup, reset book counter
             SET vCompoMaxBook = 0;
+            SET vCurrPg = vCompoPg;
           END IF;
           SET vCompoMaxBook = vCompoMaxBook + 1;
           UPDATE tmp_compo_parent
@@ -779,9 +901,9 @@ this_proc:
         -- run in trans 
         START TRANSACTION;
           -- create compo order, pgs, books
-          -- orders state 186 - waite compo preprocess
+          -- orders state 150 - waite compo preprocess
           INSERT INTO orders (id, source, src_id, src_date, data_ts, state, state_date, ftp_folder, fotos_num)
-            VALUES (vOrderID, psource_id, NOW(), NOW(), 186, NOW(), vOrderID, 0);
+            VALUES (vOrderID, psource_id, vOrderID, NOW(), NOW(), 150, NOW(), vOrderID, 0);
           -- extra info
           INSERT INTO order_extra_info (id, books)
             SELECT vOrderID, COUNT(*)
@@ -790,17 +912,17 @@ this_proc:
           INSERT INTO print_group (id, order_id, sub_id, state, state_date, width, height, paper, path
           , alias, file_num, book_type, book_part, book_num, sheet_num
           , is_pdf, prints, is_revers, laminat, compo_type)
-            SELECT CONCAT_WS('_', vOrderID, p.pg_num), vOrderID, '', 186, NOW(), bpt.width, bpt.height, bpt.paper, CONCAT_WS('_', vOrderID, p.pg_num)
+            SELECT CONCAT_WS('_', vOrderID, p.pg_num), vOrderID, '', 150, NOW(), bpt.width, bpt.height, bpt.paper, CONCAT_WS('_', vOrderID, p.pg_num)
               , bs.synonym, MAX(p.book_unbroken) * p.sheets, bs.book_type, bpt.book_part, MAX(p.book_unbroken), p.sheets
               , bpt.is_pdf, MAX(p.book_unbroken) * p.sheets, bpt.revers, bpt.laminat, 2
               FROM book_synonym bs
-                INNER JOIN book_pg_template bpt ON bs.id = bpt.book AND bpt.book_part = 2
+                INNER JOIN book_pg_template bpt ON bs.id = bpt.book AND bpt.book_part = vParentBookPart
                 INNER JOIN tmp_compo_parent p
               WHERE bs.id = pparent_alias
               GROUP BY p.pg_num;
           -- create books
           INSERT INTO order_books (pg_id, target_pg, book, sheets, state, state_date, compo_type)
-            SELECT CONCAT_WS('_', vOrderID, p.pg_num), CONCAT_WS('_', vOrderID, p.pg_num), p.book_unbroken, p.sheets, 186, NOW(), 2
+            SELECT CONCAT_WS('_', vOrderID, p.pg_num), CONCAT_WS('_', vOrderID, p.pg_num), p.book_unbroken, p.sheets, 150, NOW(), 2
               FROM tmp_compo_parent p;
           -- update child books
           UPDATE order_books b
@@ -808,7 +930,7 @@ this_proc:
             AND b.book = t.book
           INNER JOIN tmp_compo_parent tp ON t.compo_pg = tp.pg_num
             AND t.compo_book = tp.book
-            SET b.state = 186,
+            SET b.state = 150,
                 b.state_date = NOW(),
                 b.compo_pg = CONCAT_WS('_', vOrderID, tp.pg_num),
                 b.compo_book = tp.book_unbroken;
