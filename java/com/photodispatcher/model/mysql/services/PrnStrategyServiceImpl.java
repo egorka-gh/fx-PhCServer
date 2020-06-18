@@ -114,7 +114,9 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 	}
 
 	/**
-	 * returns created queue Id in resultCode (0 - not created)  
+	 * returns created queue Id in resultCode (0 - not created)
+	 * don't use
+	 * db proc is not actual  
 	 */
 	@Override
 	public SqlResult createQueue(int strategy, int lab, PrintGroup params){
