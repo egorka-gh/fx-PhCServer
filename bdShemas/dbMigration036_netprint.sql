@@ -431,3 +431,118 @@ END
 $$
 
 DELIMITER ;
+
+DROP PROCEDURE IF EXISTS printLoadQueueByLab;
+
+DELIMITER $$
+
+CREATE 
+PROCEDURE printLoadQueueByLab (IN p_lab int, IN p_strategy int, IN p_booksonly int, IN p_noqueued int)
+BEGIN
+  DECLARE vLabType int;
+
+  SELECT MIN(l.src_type)
+  INTO vLabType
+    FROM lab l
+    WHERE l.id = p_lab;
+
+  -- load pg by lab
+  CALL loadPgByLabInternal(vLabType, 200);
+
+  -- get queues for strategy
+  IF p_strategy = 1
+  THEN
+    -- by paper & width (roll)
+    -- exclude roll?
+    SELECT pg.is_reprint,
+      av.value paper_name,
+      pg.paper,
+      pg.width,
+      MIN(pg.state_date) state_date,
+      SUM(pg.prints) prints,
+      SUM(pg.height * pg.prints) height
+      FROM tmp_pgid tp
+        INNER JOIN lab l ON l.id = p_lab
+        INNER JOIN lab_device ld ON ld.lab = l.id
+        INNER JOIN lab_rolls lr ON ld.id = lr.lab_device
+        INNER JOIN print_group pg ON pg.id = tp.id
+          AND pg.width = lr.width
+          AND pg.paper = lr.paper
+        INNER JOIN attr_value av ON av.id = pg.paper
+          AND av.attr_tp = 2
+      WHERE (p_noqueued = 0 || pg.prn_queue = 0)
+        AND (p_booksonly != 1 OR pg.book_type IN (1, 2, 3))
+      GROUP BY pg.is_reprint,
+        av.value,
+        pg.paper,
+        pg.width
+      ORDER BY pg.is_reprint DESC, SUM(pg.height * pg.prints) DESC;
+  ELSEIF p_strategy = 3
+  THEN
+    -- by alias & book part & sheet number (part)
+    SELECT pg.is_reprint,
+      pg.alias,
+      pg.book_part,
+      bp.name book_part_name,
+      pg.sheet_num,
+      pg.paper,
+      av.value paper_name,
+      pg.width,
+      MIN(pg.state_date) state_date,
+      SUM(pg.prints) prints,
+      SUM(pg.height * pg.prints) height
+      FROM tmp_pgid tp
+        INNER JOIN print_group pg ON pg.id = tp.id
+        INNER JOIN book_part bp ON bp.id = pg.book_part
+        INNER JOIN attr_value av ON av.id = pg.paper
+          AND av.attr_tp = 2
+      WHERE (p_noqueued = 0 || pg.prn_queue = 0)
+        AND (p_booksonly != 1 OR pg.book_type IN (1, 2, 3))
+      GROUP BY pg.is_reprint,
+        pg.alias,
+        pg.book_part,
+        bp.name,
+        pg.sheet_num,
+        pg.paper,
+        av.value,
+        pg.width
+      ORDER BY pg.is_reprint DESC, SUM(pg.prints) DESC;
+  ELSEIF p_strategy = 4
+  THEN
+    -- by alias & book part & butt (part)
+    SELECT pg.is_reprint,
+      pg.alias,
+      pg.book_part,
+      bp.name book_part_name,
+      pg.butt,
+      pg.paper,
+      av.value paper_name,
+      MAX(pg.width) width,
+      MIN(pg.state_date) state_date,
+      SUM(pg.prints) prints,
+      SUM(pg.height * pg.prints) height
+      FROM tmp_pgid tp
+        INNER JOIN print_group pg ON pg.id = tp.id
+        INNER JOIN book_part bp ON bp.id = pg.book_part
+        INNER JOIN attr_value av ON av.id = pg.paper
+          AND av.attr_tp = 2
+      WHERE (p_noqueued = 0 || pg.prn_queue = 0)
+        AND (p_booksonly != 1 OR pg.book_type IN (1, 2, 3))
+      GROUP BY pg.is_reprint,
+        pg.alias,
+        pg.book_part,
+        bp.name,
+        pg.butt,
+        pg.paper,
+        av.value
+      ORDER BY pg.is_reprint DESC, SUM(pg.prints) DESC;
+  END IF;
+
+  -- kill temp
+  DROP TEMPORARY TABLE tmp_pgid;
+
+END
+$$
+
+DELIMITER ;
+
