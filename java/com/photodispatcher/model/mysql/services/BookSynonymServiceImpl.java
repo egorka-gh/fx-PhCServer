@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.photodispatcher.model.mysql.entities.BookPgAltPaper;
 import com.photodispatcher.model.mysql.entities.BookPgTemplate;
 import com.photodispatcher.model.mysql.entities.BookSynonym;
+import com.photodispatcher.model.mysql.entities.BookSynonymCompo;
 import com.photodispatcher.model.mysql.entities.BookSynonymGlue;
 import com.photodispatcher.model.mysql.entities.GlueCommand;
 import com.photodispatcher.model.mysql.entities.SelectResult;
@@ -23,31 +24,37 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 		String sql="SELECT l.* FROM book_synonym l " +
 				" WHERE l.synonym_type!=-1";
 		result=runSelect(BookSynonym.class, sql);
-		if (result.isComplete()){
-			//load childs
-			for (BookSynonym item : result.getData()){
-				/*
-				sql="SELECT t.*"+
-					" FROM book_pg_template t"+
-					" WHERE t.book=?";
-				SelectResult<BookPgTemplate> childs=runSelect(BookPgTemplate.class, sql, item.getId());
-				*/
-				SelectResult<BookPgTemplate> childs=loadTemplates(item.getId());
-				if(childs.isComplete()){
-					item.setTemplates(childs.getData());
-				}else{
-					result.cloneError(childs);
-					break;
-				}
+		if (!result.isComplete()) return result;
+	
+		//load childs
+		for (BookSynonym item : result.getData()){
+			//load compo
+			SelectResult<BookSynonymCompo> compos=loadCompo(item.getId());
+			if(!compos.isComplete()){
+				result.cloneError(compos);
+				break;
+			}
+			item.setCompos(compos.getData());
+			
+			//templates
+			SelectResult<BookPgTemplate> childs=loadTemplates(item.getId());
+			if(!childs.isComplete()){
+				result.cloneError(childs);
+				break;
+			}
+			item.setTemplates(childs.getData());
+			
+			for (BookPgTemplate pgt : item.getTemplates()){
+				pgt.setCompo_type(item.getCompo_type());
+			}
 
-				//load glues
-				SelectResult<BookSynonymGlue> glues=loadGlue(item.getId());
-				if(glues.isComplete()){
-					item.setGlueCommands(glues.getData());
-				}else{
-					result.cloneError(glues);
-					break;
-				}
+			//load glues
+			SelectResult<BookSynonymGlue> glues=loadGlue(item.getId());
+			if(glues.isComplete()){
+				item.setGlueCommands(glues.getData());
+			}else{
+				result.cloneError(glues);
+				break;
 			}
 		}
 		return result;
@@ -58,21 +65,23 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 		SelectResult<BookSynonym> result;
 		String sql;
 		if(contentFilter==0){
-			sql="SELECT l.*, st.name src_type_name, bt.name book_type_name, 1 is_allow, bst.name synonym_type_name, op.name order_program_name"+
+			sql="SELECT l.*, st.name src_type_name, bt.name book_type_name, 1 is_allow, bst.name synonym_type_name, op.name order_program_name, ct.name compo_type_name"+
 				" FROM book_synonym l"+
 				" INNER JOIN src_type st ON l.src_type = st.id " +
 				" INNER JOIN book_type bt ON l.book_type = bt.id"+
 				" INNER JOIN book_synonym_type bst ON l.synonym_type = bst.id"+
 				" INNER JOIN order_program op ON l.order_program=op.id"+
+				" INNER JOIN compo_type ct ON l.compo_type = ct.id"+
 				" WHERE l.src_type = ?"+
 				" ORDER BY l.synonym";
 			result=runSelect(BookSynonym.class, sql, src_type);
 		}else{
-			sql="SELECT l.*, st.name src_type_name, bt.name book_type_name, ifnull(fa.alias,0) is_allow, op.name order_program_name"+
+			sql="SELECT l.*, st.name src_type_name, bt.name book_type_name, ifnull(fa.alias,0) is_allow, op.name order_program_name, ct.name compo_type_name"+
 				" FROM book_synonym l" +
 				" INNER JOIN src_type st ON l.src_type = st.id"+
 				" INNER JOIN book_type bt ON l.book_type = bt.id"+
 				" INNER JOIN order_program op ON l.order_program=op.id"+
+				" INNER JOIN compo_type ct ON l.compo_type = ct.id"+
 				" LEFT OUTER JOIN content_filter_alias fa ON fa.filter= ? AND l.id=fa.alias"+
 				" WHERE l.src_type = ?"+
 				" ORDER BY l.synonym";
@@ -107,6 +116,15 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public SelectResult<BookSynonymCompo> loadCompo(int book){
+		String sql="SELECT bsc.*, bs.synonym AS child_alias" +
+					 " FROM book_synonym_compo bsc"+
+					   " INNER JOIN book_synonym bs ON bsc.child = bs.id"+
+					 " WHERE bsc.parent = ?";
+		return runSelect(BookSynonymCompo.class, sql, book);
 	}
 
 	private SelectResult<BookPgAltPaper> loadAltPaper(int template){
@@ -212,12 +230,27 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 		List<BookPgAltPaper> insertAltPaperList=new ArrayList<BookPgAltPaper>();
 		List<BookPgAltPaper> updateAltPaperList=new ArrayList<BookPgAltPaper>();
 		List<BookPgAltPaper> delAltPaperList=new ArrayList<BookPgAltPaper>();
+		List<BookSynonymCompo> delCompo=new ArrayList<BookSynonymCompo>();
+		List<BookSynonymCompo> addCompo=new ArrayList<BookSynonymCompo>();
+		List<BookSynonymCompo> updateCompo=new ArrayList<BookSynonymCompo>();
 
 		for(BookSynonym item : items){
 			if(item.getPersistState()==0){
 				insertList.add(item);
 			}else if(item.getPersistState()==-1){
 				updateList.add(item);
+			}
+			//compo's
+			if(item.getCompos()!=null){
+				for (BookSynonymCompo c : item.getCompos()){
+					if(c.isDeleted()){
+						delCompo.add(c);
+					}else if(c.getPersistState()==0 ){
+						addCompo.add(c);
+					}else{
+						updateCompo.add(c);
+					}
+				}
 			}
 			//childs
 			if(item.getPersistState()!=0 && item.getTemplates()!=null){
@@ -274,8 +307,20 @@ public class BookSynonymServiceImpl extends AbstractDAO implements BookSynonymSe
 		if(result.isComplete() && !delAltPaperList.isEmpty()){
 			result=runDeleteBatch(delAltPaperList);
 		}
+		if(!result.isComplete()) return result;
 
-		return result;
+		//compo's
+		result=runDeleteBatch(delCompo);
+		if(!result.isComplete()) return result;
+		result=runInsertBatch(addCompo);
+		if(!result.isComplete()) return result;
+		result=runUpdateBatch(updateCompo);
+		if(!result.isComplete()) return result;
+		//clear wrong compo's
+		String sql="DELETE FROM book_synonym_compo"+
+					" WHERE NOT EXISTS (SELECT 1 FROM book_synonym bs WHERE bs.id = book_synonym_compo.parent AND bs.compo_type = 2)"+
+					 " OR NOT EXISTS (SELECT 1 FROM book_synonym bs WHERE bs.id = book_synonym_compo.child AND bs.compo_type = 1)";
+		return runDML(sql) ;
 	}
 
 	@Override

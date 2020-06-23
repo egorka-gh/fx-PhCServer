@@ -31,6 +31,9 @@ public class BookSynonym extends AbstractEntity {
     private boolean has_backprint;
     @Column(name="order_program")
     private int order_program;
+    @Column(name="compo_type")
+    private int compo_type;
+    
 
     //ref name
     @Column(name="src_type_name", updatable=false, insertable=false)
@@ -41,12 +44,17 @@ public class BookSynonym extends AbstractEntity {
     private String synonym_type_name;
     @Column(name="order_program_name", updatable=false, insertable=false)
     private String order_program_name;
+    @Column(name="compo_type_name", updatable=false, insertable=false)
+    private String compo_type_name;
 	//content filter mark
     @Column(name="is_allow", updatable=false, insertable=false)
     private boolean is_allow;
     
     @Transient
     private List<BookPgTemplate> templates;
+
+    @Transient
+    private List<BookSynonymCompo> compos;
 
     @Transient
     private List<BookSynonymGlue> glueCommands;
@@ -169,6 +177,30 @@ public class BookSynonym extends AbstractEntity {
 
 	public void setOrder_program_name(String order_program_name) {
 		this.order_program_name = order_program_name;
+	}
+
+	public int getCompo_type() {
+		return compo_type;
+	}
+
+	public void setCompo_type(int compo_type) {
+		this.compo_type = compo_type;
+	}
+
+	public String getCompo_type_name() {
+		return compo_type_name;
+	}
+
+	public void setCompo_type_name(String compo_type_name) {
+		this.compo_type_name = compo_type_name;
+	}
+
+	public List<BookSynonymCompo> getCompos() {
+		return compos;
+	}
+
+	public void setCompos(List<BookSynonymCompo> compos) {
+		this.compos = compos;
 	}
 
 	

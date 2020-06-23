@@ -57,4 +57,6 @@ public interface OrderService {
 	SelectResult<PrintGroupReject> loadRejects4Order(String pgId);
 	SelectResult<OrderBook> loadOrderBooks(String orderId);
 	SelectResult<OrderBook> loadSubOrderBooks(String orderId, String subId);
+	SelectResult<OrderBook> loadPGBooks(String pgId);
+	SelectResult<PrintGroup> loadCompoChilds(String compoID);
 }

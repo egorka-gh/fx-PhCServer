@@ -41,5 +41,6 @@ public interface DictionaryService {
 	SelectResult<FieldValue> getGlueCmdValueList();
 	SelectResult<FieldValue> getOrderProgramValueList();
 	SelectResult<FieldValue> getPrnStrategyManualValueList();
+	SelectResult<FieldValue> getCompoTypeValueList();
 
 }
