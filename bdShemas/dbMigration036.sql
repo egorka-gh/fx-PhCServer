@@ -956,3 +956,54 @@ this_proc:
   $$
 
 DELIMITER ;
+
+DROP PROCEDURE IF EXISTS compo_create;
+
+DELIMITER $$
+
+CREATE 
+PROCEDURE compo_create (IN pwaite_limit int)
+BEGIN
+  DECLARE vNotFound int;
+  DECLARE vSrcId int;
+  DECLARE vCompoId int;
+  DECLARE vCur CURSOR FOR
+  SELECT bs.id
+    FROM book_synonym bs
+    WHERE bs.compo_type = 2;
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND
+  BEGIN
+    SET vNotFound = 1;
+  END;
+
+  SET vNotFound = 0;
+  -- get first internal source
+  SELECT s.id
+  INTO vSrcId
+    FROM sources s
+    WHERE s.type = 26 LIMIT 1;
+  IF vNotFound = 0
+  THEN
+    -- check all compo alias
+    OPEN vCur;
+  wet:
+    LOOP
+      SET vNotFound = 0;
+      FETCH vCur INTO vCompoId;
+      IF vNotFound = 1
+      THEN
+        -- complited
+        LEAVE wet;
+      END IF;
+      CALL compo_fulfill(vSrcId, vCompoId, pwaite_limit);
+    END LOOP wet;
+    CLOSE vCur;
+  END IF;
+END
+$$
+
+DELIMITER ;
+
+ALTER TABLE app_config ADD COLUMN pq_sheet_limit INT(5) DEFAULT 0;
+

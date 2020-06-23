@@ -1043,4 +1043,9 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		return res;
 	}
 
+	@Override
+	public SqlResult createCompo( int waiteLimit){
+		return runCall("{CALL compo_create(?)}", waiteLimit);
+	}
+
 }

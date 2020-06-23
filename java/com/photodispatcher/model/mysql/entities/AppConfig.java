@@ -34,6 +34,8 @@ public class AppConfig extends AbstractEntity {
     private boolean print_revers;
     @Column(name="cfg_pwd")
     private String cfg_pwd;
+    @Column(name="pq_sheet_limit")
+    private int pqSheetLimit;
 
     //ref name
     @Column(name="production_name", updatable=false, insertable=false)
@@ -142,6 +144,14 @@ public class AppConfig extends AbstractEntity {
 
 	public void setCfg_pwd(String cfg_pwd) {
 		this.cfg_pwd = cfg_pwd;
+	}
+
+	public int getPqSheetLimit() {
+		return pqSheetLimit;
+	}
+
+	public void setPqSheetLimit(int pqSheetLimit) {
+		this.pqSheetLimit = pqSheetLimit;
 	}
 
 }

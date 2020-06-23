@@ -59,4 +59,5 @@ public interface OrderService {
 	SelectResult<OrderBook> loadSubOrderBooks(String orderId, String subId);
 	SelectResult<OrderBook> loadPGBooks(String pgId);
 	SelectResult<PrintGroup> loadCompoChilds(String compoID);
+	SqlResult createCompo(int waiteLimit);
 }
