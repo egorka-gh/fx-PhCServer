@@ -117,6 +117,8 @@ public class PrintGroup extends AbstractEntity {
     private String laminat_name;
     @Column(name="compo_type_name", updatable=false, insertable=false)
     private String compo_type_name;
+    @Column(name="sequence", updatable=false, insertable=false)
+    private int sequence;
 
     //childs
     @Transient
@@ -516,6 +518,14 @@ public class PrintGroup extends AbstractEntity {
 
 	public void setBooks(List<OrderBook> books) {
 		this.books = books;
+	}
+
+	public int getSequence() {
+		return sequence;
+	}
+
+	public void setSequence(int sequence) {
+		this.sequence = sequence;
 	}
     
 }

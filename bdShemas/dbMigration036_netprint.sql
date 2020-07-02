@@ -38,6 +38,8 @@ BEGIN
 END
 $$
 
+DELIMITER ;
+
 ALTER TABLE sources_sync 
   ADD COLUMN np_sync_tstamp INT(11) DEFAULT 0;
   
