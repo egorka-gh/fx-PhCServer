@@ -175,3 +175,6 @@ END
 $$
 
 DELIMITER ;
+
+ALTER TABLE delivery_type_dictionary 
+  ADD COLUMN set_send TINYINT(4) DEFAULT 0;

@@ -350,7 +350,7 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 
 	@Override
 	public SelectResult<DeliveryTypeDictionary> loadDeliveryTypeDictionar4Edit(int source){
-		String sql="SELECT s.id source, dt.id delivery_type, IFNULL(dtd.site_id, 0) site_id, dt.name delivery_type_name, s.name source_name"+
+		String sql="SELECT s.id source, dt.id delivery_type, IFNULL(dtd.site_id, 0) site_id, IFNULL(dtd.set_send, 0) set_send, dt.name delivery_type_name, s.name source_name"+
 					 " FROM sources s"+
 					   " INNER JOIN delivery_type dt"+
 					   " LEFT OUTER JOIN delivery_type_dictionary dtd ON dt.id = dtd.delivery_type AND dtd.source = s.id"+

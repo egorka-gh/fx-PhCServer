@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.photodispatcher.mail.SendMailByGoogle;
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.Lab;
 import com.photodispatcher.model.mysql.entities.LabDevice;

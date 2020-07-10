@@ -696,6 +696,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 		if(order.getPrintGroups()!=null && !order.getPrintGroups().isEmpty()){
 			for (PrintGroup pg : order.getPrintGroups()){
 				pg.setOrder_id(order.getId());
+				if (pg.getSub_id() == null ) pg.setSub_id("");
 				pg.setState(order.getState());
 				pg.setState_date(order.getState_date());
 				printGroups.add(pg);

@@ -16,6 +16,8 @@ public class DeliveryTypeDictionary extends AbstractEntity {
     private int delivery_type;
     @Column(name="site_id")
     private int site_id;
+    @Column(name="set_send")
+    private boolean setSend;
     
     //ref cols
     @Column(name="source_name", updatable=false, insertable=false)
@@ -52,6 +54,12 @@ public class DeliveryTypeDictionary extends AbstractEntity {
 	}
 	public void setDelivery_type_name(String delivery_type_name) {
 		this.delivery_type_name = delivery_type_name;
+	}
+	public boolean isSetSend() {
+		return setSend;
+	}
+	public void setSetSend(boolean setSend) {
+		this.setSend = setSend;
 	}
 
 
