@@ -498,7 +498,7 @@ public class OrderServiceImpl extends AbstractDAO implements OrderService {
 	@Override
 	public SelectResult<OrderBook> loadSubOrderBooks(String orderId, String subId){
 		if(subId==null) subId="";
-		String sql="SELECT pg.order_id, pg.sub_id, os.name state_name, pg.book_part, bp.name book_part_name, s.name staff_name, sat.name sa_type_name, sa.remark sa_remark, ob., ct.name compo_type_name*"+
+		String sql="SELECT pg.order_id, pg.sub_id, os.name state_name, pg.book_part, bp.name book_part_name, s.name staff_name, sat.name sa_type_name, sa.remark sa_remark, ob.*, ct.name compo_type_name"+
 				 " FROM print_group pg"+
 				   " INNER JOIN order_books ob ON pg.id = ob.pg_id"+
 				   " INNER JOIN compo_type ct ON ob.compo_type = ct.id"+

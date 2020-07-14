@@ -1007,3 +1007,4 @@ DELIMITER ;
 
 ALTER TABLE app_config ADD COLUMN pq_sheet_limit INT(5) DEFAULT 0;
 
+ -- 2020-07-13 applied on main cycle

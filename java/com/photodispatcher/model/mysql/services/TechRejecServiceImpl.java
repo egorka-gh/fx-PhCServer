@@ -46,7 +46,7 @@ public class TechRejecServiceImpl extends AbstractDAO implements TechRejecServic
 	
 	@Override
 	public SelectResult<Order> loadReprintWaiteAsOrder(){
-		String sql="SELECT o.id, tr.state, MIN(tr.state_date) state_date, s.name source_name, os.name state_name, o.ftp_folder, o.group_id, o.src_date, 'reject' tag"+
+		String sql="SELECT o.id, o.source, tr.state, MIN(tr.state_date) state_date, s.name source_name, os.name state_name, o.ftp_folder, o.group_id, o.src_date, 'reject' tag"+
 				  " FROM tech_reject tr"+
 				    " INNER JOIN orders o ON tr.order_id = o.id"+
 				    " INNER JOIN order_state os ON tr.state = os.id"+

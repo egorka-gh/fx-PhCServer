@@ -178,3 +178,22 @@ DELIMITER ;
 
 ALTER TABLE delivery_type_dictionary 
   ADD COLUMN set_send TINYINT(4) DEFAULT 0;
+  
+ALTER TABLE prn_queue_link 
+   DROP FOREIGN KEY FK_prn_queue_link_prn_queue;
+
+ALTER TABLE prn_queue_link 
+   DROP PRIMARY KEY;
+
+ALTER TABLE prn_queue_link 
+  CHANGE COLUMN prn_queue_link prn_queue_link INT(11) NOT NULL;
+
+ALTER TABLE prn_queue_link 
+  ADD PRIMARY KEY (prn_queue, prn_queue_link);
+
+ALTER TABLE prn_queue_link 
+  ADD CONSTRAINT FK_prn_queue_link_prn_queue FOREIGN KEY (prn_queue)
+    REFERENCES prn_queue(id) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- 2020-07-13 applied on main cycle
+    
