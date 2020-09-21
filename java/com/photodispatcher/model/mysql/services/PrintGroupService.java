@@ -7,6 +7,7 @@ import org.granite.messaging.service.annotations.RemoteDestination;
 
 import com.photodispatcher.model.mysql.entities.DmlResult;
 import com.photodispatcher.model.mysql.entities.PrintGroup;
+import com.photodispatcher.model.mysql.entities.PrintGroupFile;
 import com.photodispatcher.model.mysql.entities.SelectResult;
 import com.photodispatcher.model.mysql.entities.SqlResult;
 
@@ -27,5 +28,6 @@ public interface PrintGroupService {
 	SelectResult<PrintGroup> printComplitePrepare(String pgid);
 	SqlResult printComplite(PrintGroup printGroup);
 	SelectResult<PrintGroup> findeById(String id);
+	SelectResult<PrintGroupFile> loadFiles(String pgId);
 	
 }

@@ -113,6 +113,10 @@ public class BookPgTemplate extends AbstractEntity {
     private String queue_offset="+0+0";
     @Column(name="laminat")
     private int laminat=0;
+    @Column(name="queue_book_size")
+    private int queue_book_size=0;
+    @Column(name="queue_book_offset")
+    private String queue_book_offset="+0+0";
 
     //ref name
     @Column(name="book_part_name", updatable=false, insertable=false)
@@ -484,6 +488,18 @@ public class BookPgTemplate extends AbstractEntity {
 	}
 	public void setCompo_type(int compo_type) {
 		this.compo_type = compo_type;
+	}
+	public String getQueue_book_offset() {
+		return queue_book_offset;
+	}
+	public void setQueue_book_offset(String queue_book_offset) {
+		this.queue_book_offset = queue_book_offset;
+	}
+	public int getQueue_book_size() {
+		return queue_book_size;
+	}
+	public void setQueue_book_size(int queue_book_size) {
+		this.queue_book_size = queue_book_size;
 	}
 
 }

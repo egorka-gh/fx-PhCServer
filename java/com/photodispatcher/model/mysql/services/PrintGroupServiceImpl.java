@@ -363,7 +363,8 @@ public class PrintGroupServiceImpl extends AbstractDAO implements PrintGroupServ
 		return runDML(sql, printGroup.getId());
 	}
 	
-	private SelectResult<PrintGroupFile> loadFiles(String pgId){
+	@Override
+	public SelectResult<PrintGroupFile> loadFiles(String pgId){
 		//load print files
 		String sql="SELECT pgf.* FROM print_group_file pgf WHERE pgf.print_group = ? ORDER BY pgf.print_forvard DESC, pgf.id";
 		return runSelect(PrintGroupFile.class,sql, pgId);

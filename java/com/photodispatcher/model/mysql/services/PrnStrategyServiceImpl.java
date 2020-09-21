@@ -382,7 +382,9 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 
 
 	private SelectResult<PrintGroup> loadQueueItems(int queue, int subQueue, boolean all){
-		String sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder, IFNULL(s.alias, pg.path) alias, os.name state_name, av.value paper_name"+
+		String sql="SELECT pg.*, o.source source_id, o.ftp_folder order_folder,"+
+						" IFNULL(s.alias, pg.path) alias, os.name state_name, av.value paper_name,"+
+						" pqi.seq sequence, pqi.books_offset"+
 					 " FROM prn_queue_items pqi"+
 					   " INNER JOIN print_group pg ON pg.id = pqi.print_group"+
 					   " INNER JOIN orders o ON pg.order_id = o.id"+
@@ -391,7 +393,7 @@ public class PrnStrategyServiceImpl extends AbstractDAO implements PrnStrategySe
 					   " LEFT OUTER JOIN suborders s ON pg.order_id = s.order_id AND pg.sub_id = s.sub_id"+
 					  " WHERE pqi.prn_queue = ? AND pqi.sub_queue = ?";
 		if(!all) sql=sql +" AND o.state<450";
-		sql=sql +" ORDER BY pqi.seq";
+		sql=sql +" ORDER BY IF(pg.is_revers = 1, -1, 1) * pqi.seq";
 		return runSelect(PrintGroup.class, sql, queue, subQueue);
 	}
 
