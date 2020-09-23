@@ -17,6 +17,7 @@ import com.photodispatcher.model.mysql.entities.MailPackage;
 import com.photodispatcher.model.mysql.entities.MailPackageBarcode;
 import com.photodispatcher.model.mysql.entities.MailPackageProperty;
 import com.photodispatcher.model.mysql.entities.Order;
+import com.photodispatcher.model.mysql.entities.OrderExtraInfo;
 import com.photodispatcher.model.mysql.entities.RackOrders;
 import com.photodispatcher.model.mysql.entities.RackOrdersLog;
 import com.photodispatcher.model.mysql.entities.RackSpace;
@@ -209,6 +210,17 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 					" INNER JOIN sources s ON o.source = s.id"+
 					" WHERE o.source = ? AND o.group_id=? AND o.state<500";
 		result=runSelect(Order.class,sql, source, id);
+		if (result.isComplete()){
+			OrderService osvc = new OrderServiceImpl();
+			for (Order o : result.getData()){
+				SelectResult<OrderExtraInfo> res  = osvc.loadExtraIfo(o.getId(), "");
+				if(!res.isComplete()){
+					result.cloneError(res);
+					return result;
+				}
+				if (res.getData().size()>0) o.setExtraInfo(res.getData().get(0));
+			}
+		}
 		return result;
 	}
 

@@ -396,5 +396,7 @@ $$
 
 DELIMITER ;
 
+INSERT INTO book_type(id, name) VALUES(9, 'Сертификат');
+
 -- 2020-09-01 applied on test cycle
 -- 2020-09-14 applied on main cycle
