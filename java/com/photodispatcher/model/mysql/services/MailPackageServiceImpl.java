@@ -316,7 +316,8 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 					" WHERE id IN (SELECT o.id"+
 								   " FROM orders o"+
 								   " WHERE o.source = ? AND o.group_id = ?)"+
-					" AND sub_id = '' AND state > 450 AND state < ? AND state_date IS NULL";
+					//" AND sub_id = '' AND state > 450 AND state < ? AND state_date IS NULL";
+					" AND sub_id = '' AND state < ? AND state_date IS NULL";
 		return runDML(sql, item.getState_date(), item.getSource(), item.getId(), item.getState());
 	}
 
