@@ -36,6 +36,8 @@ public class Source extends AbstractEntity {
     private boolean online;
     @Column(name="code")
     private String code;
+    @Column(name="has_boxes")
+    private boolean hasBoxes;
     
     //ref name
     @Column(name="type_name", updatable=false, insertable=false)
@@ -145,6 +147,12 @@ public class Source extends AbstractEntity {
 	}
 	public void setFtpServices(List<SourceSvc> ftpServices) {
 		this.ftpServices = ftpServices;
+	}
+	public boolean isHasBoxes() {
+		return hasBoxes;
+	}
+	public void setHasBoxes(boolean hasBoxes) {
+		this.hasBoxes = hasBoxes;
 	}
 
 }

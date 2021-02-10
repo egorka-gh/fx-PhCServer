@@ -55,7 +55,7 @@ public class MailPackage extends AbstractEntity {
     private int min_ord_state;
     @Column(name="min_ord_state_name", updatable=false, insertable=false)
     private String min_ord_state_name;
-    
+
     //childs
     @Transient
     private List<MailPackageProperty> properties;
@@ -65,6 +65,12 @@ public class MailPackage extends AbstractEntity {
     private List<MailPackageBarcode> barcodes;
     @Transient
     private List<MailPackageMessage> messages;
+    @Transient
+    private MailPackageBox box;
+    @Transient
+    private List<MailPackageBox> boxes;
+    @Transient
+    private RackSpace rackSpace;
 
     
 	public int getId() {
@@ -205,6 +211,23 @@ public class MailPackage extends AbstractEntity {
 	public void setSrc_date(Date src_date) {
 		this.src_date = src_date;
 	}
-
+	public List<MailPackageBox> getBoxes() {
+		return boxes;
+	}
+	public void setBoxes(List<MailPackageBox> boxes) {
+		this.boxes = boxes;
+	}
+	public MailPackageBox getBox() {
+		return box;
+	}
+	public void setBox(MailPackageBox box) {
+		this.box = box;
+	}
+	public RackSpace getRackSpace() {
+		return rackSpace;
+	}
+	public void setRackSpace(RackSpace rackSpace) {
+		this.rackSpace = rackSpace;
+	}
 
 }

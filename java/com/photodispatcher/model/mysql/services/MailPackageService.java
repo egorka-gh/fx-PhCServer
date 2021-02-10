@@ -44,4 +44,10 @@ public interface MailPackageService {
 	SelectResult<DeliveryType> loadDeliveryType();
 	SqlResult persistsDeliveryTypeBatch(List<DeliveryType> items);
 	SelectResult<FieldValue> getProductsCount(int source, int id);
+	SelectResult<MailPackage> loadBoxByPG(String printgroupID, int book);
+	SelectResult<MailPackage> loadBox(int source, int groupID, String boxId);
+	SelectResult<RackSpace> usedSpaces(int rack);
+	SelectResult<RackSpace> getBoxSpace(int source, int pPackage, String box, int rack);
+	SelectResult<RackSpace> loadBoxSpace(int source, int pPackage, String box);
+	SqlResult BoxStartOTK(String boxID, String pgID);
 }

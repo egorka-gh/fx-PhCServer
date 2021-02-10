@@ -13,6 +13,8 @@ public class RackOrders extends AbstractEntity {
     private String order_id;
     @Column(name="space")
     private int space;
+    @Column(name="is_box")
+    private boolean isBox;
 
     //ref
     @Column(name="rack", updatable=false, insertable=false)
@@ -27,6 +29,8 @@ public class RackOrders extends AbstractEntity {
     private String source_name;
     @Column(name="group_id", updatable=false, insertable=false)
     private int group_id;
+    @Column(name="box_num", updatable=false, insertable=false)
+    private int boxNum;
     
 	public String getOrder_id() {
 		return order_id;
@@ -75,6 +79,18 @@ public class RackOrders extends AbstractEntity {
 	}
 	public void setRack(int rack) {
 		this.rack = rack;
+	}
+	public boolean isBox() {
+		return isBox;
+	}
+	public void setBox(boolean isBox) {
+		this.isBox = isBox;
+	}
+	public int getBoxNum() {
+		return boxNum;
+	}
+	public void setBoxNum(int boxNum) {
+		this.boxNum = boxNum;
 	}
 
 }

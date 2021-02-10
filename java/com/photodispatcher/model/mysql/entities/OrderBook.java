@@ -48,6 +48,10 @@ public class OrderBook extends AbstractEntity {
     private int book_part;
     @Column(name="compo_type_name", insertable=false, updatable=false)
     private String compo_type_name;
+    @Column(name="book_type", insertable=false, updatable=false)
+    private int bookType;
+    @Column(name="book_type_name", insertable=false, updatable=false)
+    private String bookTypeName;
     
     /*
     @Column(name="state2", insertable=false, updatable=false)
@@ -58,6 +62,8 @@ public class OrderBook extends AbstractEntity {
     private String state_name2;
     */
 
+    @Column(name="alias", updatable=false, insertable=false)
+    private String alias;
     @Column(name="sa_type_name", updatable=false, insertable=false)
     private String sa_type_name;
     @Column(name="staff_name", updatable=false, insertable=false)
@@ -185,6 +191,24 @@ public class OrderBook extends AbstractEntity {
 	}
 	public void setCompo_type_name(String compo_type_name) {
 		this.compo_type_name = compo_type_name;
+	}
+	public String getAlias() {
+		return alias;
+	}
+	public void setAlias(String alias) {
+		this.alias = alias;
+	}
+	public int getBookType() {
+		return bookType;
+	}
+	public void setBookType(int bookType) {
+		this.bookType = bookType;
+	}
+	public String getBookTypeName() {
+		return bookTypeName;
+	}
+	public void setBookTypeName(String bookTypeName) {
+		this.bookTypeName = bookTypeName;
 	}
 	
 	/*

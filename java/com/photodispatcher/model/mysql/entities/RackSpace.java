@@ -21,6 +21,14 @@ public class RackSpace extends AbstractEntity {
     @Column(name="name")
     private String name;
 
+    @Column(name="package_source")
+    private int source;
+    @Column(name="package_id")
+    private int packageID;
+    @Column(name="box_id")
+    private String boxID;
+
+    
     @Column(name="width")
     private int width;
     @Column(name="height")
@@ -33,6 +41,8 @@ public class RackSpace extends AbstractEntity {
     private String rack_type_name;
     @Column(name="rack_name", updatable=false, insertable=false)
     private String rack_name;
+    @Column(name="source_name", updatable=false, insertable=false)
+    private String sourceName;
     @Column(name="unused_weight", updatable=false, insertable=false)
     private double unused_weight;
     @Column(name="rating", updatable=false, insertable=false)
@@ -121,6 +131,30 @@ public class RackSpace extends AbstractEntity {
 	}
 	public void setEmpty(boolean empty) {
 		this.empty = empty;
+	}
+	public int getSource() {
+		return source;
+	}
+	public void setSource(int source) {
+		this.source = source;
+	}
+	public int getPackageID() {
+		return packageID;
+	}
+	public void setPackageID(int packageID) {
+		this.packageID = packageID;
+	}
+	public String getBoxID() {
+		return boxID;
+	}
+	public void setBoxID(String boxID) {
+		this.boxID = boxID;
+	}
+	public String getSourceName() {
+		return sourceName;
+	}
+	public void setSourceName(String sourceName) {
+		this.sourceName = sourceName;
 	}
     
 
