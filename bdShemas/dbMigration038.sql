@@ -14,4 +14,5 @@ ALTER TABLE sources
   
 ALTER TABLE rack_orders 
   ADD COLUMN is_box TINYINT(1) DEFAULT 0;  
-  
+
+INSERT INTO book_type(id, name) VALUES(10, 'Polaroid');  
