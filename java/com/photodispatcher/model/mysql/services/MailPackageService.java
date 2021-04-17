@@ -8,7 +8,10 @@ import com.photodispatcher.model.mysql.entities.DeliveryType;
 import com.photodispatcher.model.mysql.entities.DeliveryTypeDictionary;
 import com.photodispatcher.model.mysql.entities.FieldValue;
 import com.photodispatcher.model.mysql.entities.MailPackage;
+import com.photodispatcher.model.mysql.entities.MailPackageBox;
+import com.photodispatcher.model.mysql.entities.MailPackageBoxItem;
 import com.photodispatcher.model.mysql.entities.Order;
+import com.photodispatcher.model.mysql.entities.OrderBook;
 import com.photodispatcher.model.mysql.entities.RackOrders;
 import com.photodispatcher.model.mysql.entities.RackOrdersLog;
 import com.photodispatcher.model.mysql.entities.RackSpace;
@@ -46,8 +49,13 @@ public interface MailPackageService {
 	SelectResult<FieldValue> getProductsCount(int source, int id);
 	SelectResult<MailPackage> loadBoxByPG(String printgroupID, int book);
 	SelectResult<MailPackage> loadBox(int source, int groupID, String boxId);
-	SelectResult<RackSpace> usedSpaces(int rack);
 	SelectResult<RackSpace> getBoxSpace(int source, int pPackage, String box, int rack);
 	SelectResult<RackSpace> loadBoxSpace(int source, int pPackage, String box);
 	SqlResult BoxStartOTK(String boxID, String pgID);
+	SqlResult setBoxItemOTK(MailPackageBoxItem bi);
+	SqlResult setBoxOTK(MailPackageBox b);
+	SelectResult<RackSpace> usedSpaces(int techPoint, int state);
+	SqlResult setBoxPacked(MailPackageBox b);
+	SqlResult setBoxIncomplete(String boxId, MailPackageBoxItem[] items,
+			OrderBook[] books);
 }

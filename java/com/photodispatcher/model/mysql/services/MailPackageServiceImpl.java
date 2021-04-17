@@ -101,7 +101,10 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 
 	private SelectResult<MailPackageBox> loadBoxInternal(String boxId){
 		//load box 
-	 	String sql="SELECT * FROM package_box pb WHERE pb.box_id = ?";
+	 	String sql="SELECT pb.*, os.name state_name"+
+					" FROM package_box pb"+
+					  " INNER JOIN order_state os ON os.id = pb.state"+
+					" WHERE pb.box_id = ?";
 	 	SelectResult<MailPackageBox> result = runSelect(MailPackageBox.class, sql, boxId);
 		if(!result.isComplete()){
 			return result;
@@ -115,12 +118,13 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 		MailPackageBox box=result.getData().get(0);
 		//load box items
 		SelectResult<MailPackageBoxItem> biRes;
-		sql="SELECT bi.box_id, bi.order_id, bi.alias, bi.item_from, bi.item_to, '' sub_id, bt.id book_type, bt.name book_type_name"+
-			 " FROM package_box_item bi"+
-			   " INNER JOIN print_group pg ON pg.order_id = bi.order_id AND bi.alias = IFNULL(pg.alias, pg.path)"+
-			   " INNER JOIN book_type bt ON pg.book_type = bt.id"+
-			  " WHERE bi.box_id = ?"+
-			  " GROUP BY bi.box_id, bi.order_id, bi.alias, bi.item_from, bi.item_to, bt.id, bt.name";
+		sql="SELECT bi.box_id, bi.order_id, bi.alias, bi.item_from, bi.item_to, '' sub_id, bt.id book_type, bt.name book_type_name, bi.state, bi.state_date, os.name state_name"+
+			  " FROM package_box_item bi"+
+			  " INNER JOIN order_state os ON os.id=bi.state"+ 
+			  " INNER JOIN print_group pg ON pg.order_id = bi.order_id AND bi.alias = IFNULL(pg.alias, pg.path)"+ 
+			  " INNER JOIN book_type bt ON pg.book_type = bt.id"+
+			  " WHERE bi.box_id = ?"+ 
+			  " GROUP BY bi.box_id, bi.order_id, bi.alias, bi.item_from, bi.item_to, bt.id, bt.name, bi.state, bi.state_date, os.name ";
 		biRes = runSelect(MailPackageBoxItem.class, sql, box.getBoxID());
 		if(!biRes.isComplete()){
 			result.cloneError(biRes);
@@ -151,75 +155,44 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 		return result;
 	}
 
-	
 	@Override
 	public SelectResult<MailPackage> loadBox(int source, int groupID, String boxId){
 		SelectResult<MailPackage> result = load(source, groupID);
 		if (!result.isComplete()){
 			return result;
 		}
-
-		MailPackageBox box;
+		
 		if (boxId.length()==0){
 			//create default box
-			box = new MailPackageBox();
-			box.setSource(source);
-			box.setPackageID(groupID);
-			box.setBoxID(boxId);
-			box.setBoxNum(0);
-			//box items
-			String sql="SELECT '' box_id, pg.order_id, pg.sub_id, bt.id book_type, bt.name book_type_name, pg.alias, 1 item_from,  MAX(pg.book_num) item_to"+
-						" FROM orders o" +
-						" INNER JOIN print_group pg ON o.id = pg.order_id" +
-						" INNER JOIN book_type bt ON pg.book_type = bt.id" +
-						" WHERE o.source = ? AND o.group_id = ?"+
-						" GROUP BY pg.order_id, pg.sub_id, bt.name, pg.alias";
-			SelectResult<MailPackageBoxItem> biRes = runSelect(MailPackageBoxItem.class, sql, source, groupID);
-			if(!biRes.isComplete()){
-				result.cloneError(biRes);
+			//packageBoxCreate(IN pSource int, IN pGroup int)
+			String sql="{CALL packageBoxCreate(?, ?)}";
+			SqlResult r = runCall(sql, source, groupID);
+			if(!r.isComplete()){
+				result.cloneError(r);
 				return result;
 			}
-			//fill items with printgroups
-			if (biRes.getData()!= null){
-				for(MailPackageBoxItem it:biRes.getData()){
-					sql="SELECT pg.* FROM print_group pg WHERE pg.order_id = ? AND pg.sub_id=? AND pg.alias = ?";
-					SelectResult<PrintGroup> pgRes = runSelect(PrintGroup.class, sql, it.getOrderID(), it.getSubID(), it.getAlias());
-					if(!pgRes.isComplete()){
-						result.cloneError(pgRes);
-						return result;
-					}
-					it.setPrintGroups(pgRes.getData());
-				}
-			}
-			box.setItems(biRes.getData());
-
-			//books
-			SelectResult<OrderBook>  obRes = loadDefaultBoxBooks(source, groupID);
-			if(!obRes.isComplete()){
-				result.cloneError(obRes);
-				return result;
-			}
-			box.setBooks(obRes.getData());
-		}else{
-			//load box 
-		 	SelectResult<MailPackageBox> bres = loadBoxInternal(boxId);
-			if(!bres.isComplete()){
-				result.cloneError(bres);
-				return result;
-			}
-			box=bres.getData().get(0);
-			//remove orders not in box
-			List<Order> ol = new ArrayList<Order>();
-			for (Order o : result.getData().get(0).getOrders()){
-				for (MailPackageBoxItem bi : box.getItems()){
-					if (o.getId().equals(bi.getOrderID())){
-						ol.add(o);
-						break;
-					}
-				}
-			}
-			result.getData().get(0).setOrders(ol);
+			boxId=String.valueOf(source)+"-"+String.valueOf(groupID);
+			//TODO barcode, price weight is not filled
 		}
+		//load box 
+	 	SelectResult<MailPackageBox> bres = loadBoxInternal(boxId);
+		if(!bres.isComplete()){
+			result.cloneError(bres);
+			return result;
+		}
+		MailPackageBox box=bres.getData().get(0);
+		//remove orders not in box
+		List<Order> ol = new ArrayList<Order>();
+		for (Order o : result.getData().get(0).getOrders()){
+			for (MailPackageBoxItem bi : box.getItems()){
+				if (o.getId().equals(bi.getOrderID())){
+					ol.add(o);
+					break;
+				}
+			}
+		}
+		result.getData().get(0).setOrders(ol);
+
 		result.getData().get(0).setBox(box);
 		
 		SelectResult<RackSpace>  rsRes =  loadBoxSpace(box.getSource() , box.getPackageID(), box.getBoxID());
@@ -369,6 +342,7 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 		return result;
 	}
 	
+	/*
 	private SelectResult<OrderBook> loadDefaultBoxBooks(int source, int packageID){
 		//load books for whole package 
 		//TODO add subID?
@@ -383,18 +357,17 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 			   " INNER JOIN book_type bt ON t.book_type = bt.id" ;
 		return runSelect(OrderBook.class,sql, source, packageID);
 	}
+	*/
 	
 	private SelectResult<OrderBook> loadBoxBooks(String boxID){
-		String sql="SELECT t.order_id, t.alias, t.book_type, t.book, t.state, os.name state_name, bt.name book_type_name"+
-					 " FROM (SELECT pg.order_id, pg.alias, pg.book_type, IFNULL(ob.book, 0) book, MIN(IFNULL(ob.state, pg.state)) state"+
-					     " FROM package_box pb"+
-					       " INNER JOIN package_box_item bi ON pb.box_id = bi.box_id"+
-					       " INNER JOIN print_group pg ON pg.order_id = bi.order_id AND pg.alias = bi.alias AND pg.is_reprint = 0"+
-					       " LEFT OUTER JOIN order_books ob ON ob.pg_id = pg.id AND ob.book BETWEEN bi.item_from AND bi.item_to"+
-					      " WHERE pb.box_id = ?"+
-					      " GROUP BY pg.order_id, pg.alias, pg.book_type, ob.book) t"+
-					   " INNER JOIN order_state os ON t.state = os.id"+
-					   " INNER JOIN book_type bt ON t.book_type = bt.id";
+		String sql="SELECT pg.order_id, pg.alias, pg.book_type, IFNULL(ob.pg_id, pg.id) pg_id, IFNULL(ob.target_pg, pg.id) target_pg, IFNULL(ob.is_rejected, 0) is_rejected, IFNULL(ob.is_reject, 0) is_reject, IFNULL(ob.book, 0) book, IFNULL(ob.state, pg.state) state, os.name state_name, bt.name book_type_name"+
+					" FROM package_box pb"+
+					  " INNER JOIN package_box_item bi ON pb.box_id = bi.box_id"+
+					  " INNER JOIN print_group pg ON pg.order_id = bi.order_id AND pg.alias = bi.alias AND pg.is_reprint = 0"+
+					  " INNER JOIN book_type bt ON pg.book_type = bt.id"+
+					  " LEFT OUTER JOIN order_books ob ON ob.pg_id = pg.id AND ob.book BETWEEN bi.item_from AND bi.item_to"+
+					  " LEFT OUTER JOIN order_state os ON os.id = IFNULL(ob.state, pg.state)"+
+					" WHERE pb.box_id = ?";
 		return runSelect(OrderBook.class,sql, boxID);
 	}
 
@@ -637,15 +610,17 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	}
 
 	@Override
-	public SelectResult<RackSpace> usedSpaces(int techPoint){
-		String sql= "SELECT rs.*, r.name rack_name, s.name source_name"+
-				" FROM rack_tech_point rtp" +
-				" INNER JOIN rack_space rs ON rtp.rack = rs.rack AND rs.package_id != 0"+
-				" INNER JOIN rack r ON rs.rack = r.id"+
-				" INNER JOIN sources s ON rs.package_source = s.id"+
-				" WHERE rtp.tech_point = ?"+
-				" ORDER BY r.name, rs.name";
-		return runSelect(RackSpace.class, sql, techPoint);
+	public SelectResult<RackSpace> usedSpaces(int techPoint, int state){
+		String sql= "SELECT rs.*, r.name rack_name, s.name source_name, pb.state, pb.state_date, os.name state_name, pb.box_num"+
+					" FROM rack_tech_point rtp"+
+					  " INNER JOIN rack_space rs ON rtp.rack = rs.rack AND rs.package_id != 0"+
+					  " INNER JOIN rack r ON rs.rack = r.id"+
+					  " INNER JOIN sources s ON rs.package_source = s.id"+
+					  " INNER JOIN package_box pb ON rs.box_id = pb.box_id"+
+					  " INNER JOIN order_state os ON pb.state = os.id"+
+					" WHERE rtp.tech_point = ? AND pb.state = ?"+
+					" ORDER BY r.name, rs.name";
+		return runSelect(RackSpace.class, sql, techPoint, state);
 	}
 
 	@Override
@@ -724,6 +699,60 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 					 " WHERE rol.order_id LIKE ?"+
 					 " ORDER BY rol.event_time DESC";
 		return runSelect(RackOrdersLog.class, sql, "%"+order);
+	}
+
+	@Override
+	public SqlResult  setBoxItemOTK(MailPackageBoxItem bi){
+		//packageSetBoxItemOTK(IN pBox varchar(50), IN pOrder varchar(50), IN pAlias varchar(100))
+		String sql= "{CALL packageSetBoxItemOTK(?,?,?)}";
+		SelectResult<FieldValue> fv =runCallSelect(FieldValue.class, sql, bi.getBoxID(), bi.getOrderID(), bi.getAlias());
+		if (!fv.isComplete()) return fv;
+		SqlResult r = new SqlResult();
+		r.setComplete(true);
+		r.setResultCode(fv.getData().get(0).getValue());
+		return r;
+	}
+
+	@Override
+	public SqlResult  setBoxOTK(MailPackageBox b){
+		//packageSetBoxOTK(IN pBox varchar(50))
+		String sql= "{CALL packageSetBoxOTK(?)}";
+		SelectResult<FieldValue> fv =runCallSelect(FieldValue.class, sql, b.getBoxID());
+		if (!fv.isComplete()) return fv;
+		SqlResult r = new SqlResult();
+		r.setComplete(true);
+		r.setResultCode(fv.getData().get(0).getValue());
+		return r;
+	}
+
+	@Override
+	public SqlResult setBoxPacked(MailPackageBox b){
+		//packageSetBoxPacked(IN pBox varchar(50))
+		String sql= "{CALL packageSetBoxPacked(?)}";
+		SelectResult<FieldValue> fv =runCallSelect(FieldValue.class, sql, b.getBoxID());
+		if (!fv.isComplete()) return fv;
+		SqlResult r = new SqlResult();
+		r.setComplete(true);
+		r.setResultCode(fv.getData().get(0).getValue());
+		return r;
+	}
+
+	@Override
+	public SqlResult setBoxIncomplete(String boxId, MailPackageBoxItem[] items, OrderBook[] books ){
+		String sql = "UPDATE package_box pb SET pb.state = 449, pb.state_date = NOW() WHERE pb.box_id = ?";
+		SqlResult r = runDML(sql, boxId);
+		if(!r.isComplete()) return r;
+		sql = "UPDATE package_box_item pbi SET pbi.state = 449 WHERE pbi.box_id = ? AND pbi.order_id = ? AND pbi.alias = ?";
+		for(MailPackageBoxItem it : items){
+			r = runDML(sql, it.getBoxID(), it.getOrderID(), it.getAlias());
+			if(!r.isComplete()) return r;
+		}
+		OrderStateServiceImpl svc = new OrderStateServiceImpl();
+		for (OrderBook book : books){
+			r = svc.setEntireBookState(book);
+			if(!r.isComplete()) return r;
+		}
+		return r;
 	}
 
 }

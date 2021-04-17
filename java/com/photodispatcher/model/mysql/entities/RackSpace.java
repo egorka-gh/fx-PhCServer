@@ -1,5 +1,6 @@
 package com.photodispatcher.model.mysql.entities;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -49,6 +50,14 @@ public class RackSpace extends AbstractEntity {
     private double rating;
     @Column(name="empty", updatable=false, insertable=false)
     private boolean empty;
+    @Column(name="state", updatable=false, insertable=false)
+    private int state;
+    @Column(name="state_date", updatable=false, insertable=false)
+    private Date state_date;
+    @Column(name="state_name", updatable=false, insertable=false)
+    private String state_name;
+    @Column(name="box_num", updatable=false, insertable=false)
+    private int box_num;
     
     @Transient
     private List<Order> orders;
@@ -156,6 +165,29 @@ public class RackSpace extends AbstractEntity {
 	public void setSourceName(String sourceName) {
 		this.sourceName = sourceName;
 	}
-    
+	public int getState() {
+		return state;
+	}
+	public void setState(int state) {
+		this.state = state;
+	}
+	public Date getState_date() {
+		return state_date;
+	}
+	public void setState_date(Date state_date) {
+		this.state_date = state_date;
+	}
+	public String getState_name() {
+		return state_name;
+	}
+	public void setState_name(String state_name) {
+		this.state_name = state_name;
+	}
+	public int getBox_num() {
+		return box_num;
+	}
+	public void setBox_num(int box_num) {
+		this.box_num = box_num;
+	}
 
 }

@@ -26,13 +26,13 @@ public class MailPackageBoxItem extends AbstractEntity {
     private int itemFrom;
     @Column(name="item_to")
     private int itemTo;
-    
-    @Column(name="state", updatable=false, insertable=false)
+    @Column(name="state")
     private int state;
-    @Column(name="state_date", updatable=false, insertable=false)
+    @Column(name="state_date")
     private Date state_date;
-    @Column(name="sub_id", updatable=false, insertable=false)
-    private String subID;
+    
+    @Column(name="state_name", updatable=false, insertable=false)
+    private String state_name;
     @Column(name="book_type", updatable=false, insertable=false)
     private int bookType;
     @Column(name="book_type_name", updatable=false, insertable=false)
@@ -91,12 +91,6 @@ public class MailPackageBoxItem extends AbstractEntity {
 	public void setPrintGroups(List<PrintGroup> printGroups) {
 		this.printGroups = printGroups;
 	}
-	public String getSubID() {
-		return subID;
-	}
-	public void setSubID(String subID) {
-		this.subID = subID;
-	}
 	public String getBookTypeName() {
 		return bookTypeName;
 	}
@@ -108,6 +102,12 @@ public class MailPackageBoxItem extends AbstractEntity {
 	}
 	public void setBookType(int bookType) {
 		this.bookType = bookType;
+	}
+    public String getState_name() {
+		return state_name;
+	}
+	public void setState_name(String state_name) {
+		this.state_name = state_name;
 	}
 
     
