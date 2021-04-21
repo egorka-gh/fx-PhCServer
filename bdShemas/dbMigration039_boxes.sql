@@ -647,27 +647,8 @@ BEGIN
   DECLARE vState integer(5) DEFAULT (0);
   DECLARE vPgID varchar(50);
   -- check if all books over OTK state, checks printgroup state if photo
-  IF pBox = '' THEN
-    -- no box, get by printgroup
-    SELECT pg.id, MIN(IFNULL(ob.state, pg.state)) state INTO vPgID, vState
-    FROM print_group pg
-      LEFT OUTER JOIN order_books ob ON pg.id = ob.pg_id
-    WHERE pg.order_id = pOrder
-      AND pAlias = IFNULL(pg.alias, pg.path)
-      AND pg.is_reprint = 0
-    GROUP BY pg.id;
-
-    IF vState >= 450 THEN
-      -- set pg state
-      UPDATE print_group pg
-      SET pg.state = 450,
-          pg.state_date = NOW()
-      WHERE pg.id = vPgID
-        AND pg.state < 450;
-    END IF;
-  ELSE
     -- get by box item 
-    SELECT MIN(IFNULL(ob.state, pg.state)) state INTO vState
+    SELECT MIN(IFNULL(ob.state, 450)) state INTO vState
     FROM package_box_item bi
       INNER JOIN print_group pg ON pg.order_id = bi.order_id
       AND bi.alias = IFNULL(pg.alias, pg.path)
@@ -687,7 +668,6 @@ BEGIN
         AND pbi.alias = pAlias
         AND pbi.state < 450;
     END IF;
-  END IF;
 
   SELECT 'state' field, vState value;
 END
@@ -910,7 +890,7 @@ BEGIN
   , type
   , state
   , state_date)
-    SELECT CONCAT_WS('-', pSource, pGroup), pg.order_id, pg.alias, 1 item_from, MAX(pg.book_num) item_to, bt.name book_type_name, 449, NOW()
+    SELECT CONCAT_WS('-', pSource, pGroup), pg.order_id, IFNULL(pg.alias, pg.path) alias, 1 item_from, MAX(pg.book_num) item_to, bt.name book_type_name, 449, NOW()
     FROM orders o
       INNER JOIN print_group pg ON o.id = pg.order_id
       INNER JOIN book_type bt ON pg.book_type = bt.id
