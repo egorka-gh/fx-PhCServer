@@ -320,6 +320,18 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	}
 
 	@Override
+	public SelectResult<MailPackageBox> loadBoxesByState(int state){
+		String sql="SELECT pb.*, s.name source_name, s.code source_code, os.name state_name"+
+					" FROM package_box pb"+
+					  " INNER JOIN sources s ON pb.source = s.id"+
+					  " INNER JOIN order_state os ON os.id = pb.state"+
+					" WHERE pb.state = ?"+
+					" ORDER BY pb.state_date";
+		SelectResult<MailPackageBox> res=runSelect(MailPackageBox.class,sql, state);
+		return res;
+	}
+
+	@Override
 	public SelectResult<Order> loadChildOrders(int source, int id){
 		SelectResult<Order> result;
 		String sql="SELECT o.*, s.name source_name, s.code source_code, os.name state_name"+
@@ -729,6 +741,18 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	public SqlResult setBoxPacked(MailPackageBox b){
 		//packageSetBoxPacked(IN pBox varchar(50))
 		String sql= "{CALL packageSetBoxPacked(?)}";
+		SelectResult<FieldValue> fv =runCallSelect(FieldValue.class, sql, b.getBoxID());
+		if (!fv.isComplete()) return fv;
+		SqlResult r = new SqlResult();
+		r.setComplete(true);
+		r.setResultCode(fv.getData().get(0).getValue());
+		return r;
+	}
+
+	@Override
+	public SqlResult setBoxSend(MailPackageBox b){
+		//packageSetBoxSend(IN pBox varchar(50))
+		String sql= "{CALL packageSetBoxSend(?)}";
 		SelectResult<FieldValue> fv =runCallSelect(FieldValue.class, sql, b.getBoxID());
 		if (!fv.isComplete()) return fv;
 		SqlResult r = new SqlResult();

@@ -591,7 +591,7 @@ BEGIN
 
 
   -- check boxes & set group state
-  SELECT MIN(pb.state1) INTO vState
+  SELECT MIN(pb.state) INTO vState
   FROM package_box pb
   WHERE pb.source = vSource
     AND pb.package_id = vGroup;
@@ -876,7 +876,7 @@ BEGIN
   , weight
   , state
   , state_date)
-    SELECT p.source, p.id, CONCAT_WS('-', p.source, p.id), 0, '', 0, 0, 449, NOW()
+    SELECT p.source, p.id, CONCAT_WS('-', p.source, p.id), 0, IFNULL((SELECT pb.barcode FROM package_barcode pb WHERE pb.source = p.source AND pb.id = p.id AND pb.barcode IS NOT NULL AND pb.barcode != '' LIMIT 1), ''), 0, 0, 449, NOW()
     FROM package p
     WHERE p.source = pSource
       AND p.id = pGroup;
@@ -897,10 +897,81 @@ BEGIN
     WHERE o.source = pSource
       AND o.group_id = pGroup
     GROUP BY pg.order_id, bt.name, pg.alias;
-
 END
 $$
 
 DELIMITER ;
 
 -- 2020-04-17 test cycle
+
+DROP PROCEDURE IF EXISTS packageSetBoxSend;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE packageSetBoxSend (IN pBox varchar(50))
+BEGIN
+  DECLARE vState integer(5) DEFAULT (0);
+  DECLARE vGroup integer;
+  DECLARE vSource integer;
+
+  -- set box state
+  UPDATE package_box pb
+  SET pb.state = 465,
+      pb.state_date = NOW()
+  WHERE pb.box_id = pBox
+    AND pb.state < 465;
+
+  SELECT pb.package_id, pb.source INTO vGroup, vSource
+  FROM package_box pb
+  WHERE pb.box_id = pBox;
+
+  -- check boxes & set group state
+  SELECT MIN(pb.state) INTO vState
+  FROM package_box pb
+  WHERE pb.source = vSource
+    AND pb.package_id = vGroup;
+
+  IF vState >= 465 THEN
+    UPDATE package p
+    SET p.state = 465,
+        p.state_date = NOW()
+    WHERE p.source = vSource
+      AND p.id = vGroup
+      AND p.state < 465;
+
+    -- set orders state
+    UPDATE orders o
+    SET o.state = 465,
+        o.state_date = NOW()
+    WHERE o.source = vSource
+      AND o.group_id = vGroup
+      AND o.state < 465;
+
+    -- fix order extra state
+    INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date)
+      SELECT o.id, '', 465, NOW(), NOW()
+      FROM orders o
+      WHERE o.source = vSource
+        AND o.group_id = vGroup
+    ON DUPLICATE KEY UPDATE state_date = NOW();
+
+    -- stop all started order extra states
+    UPDATE order_extra_state es
+    INNER JOIN orders o
+      ON es.id = o.id
+    SET es.state_date = NOW()
+    WHERE o.source = vSource
+      AND o.group_id = vGroup
+      AND es.state < 465
+      AND es.state_date IS NULL
+    ORDER BY es.id, es.sub_id, es.state;
+
+  END IF;
+
+  SELECT 'package_state' field, vState value;
+
+END
+$$
+
+DELIMITER ;

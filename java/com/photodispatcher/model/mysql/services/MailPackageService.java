@@ -58,4 +58,6 @@ public interface MailPackageService {
 	SqlResult setBoxPacked(MailPackageBox b);
 	SqlResult setBoxIncomplete(String boxId, MailPackageBoxItem[] items,
 			OrderBook[] books);
+	SelectResult<MailPackageBox> loadBoxesByState(int state);
+	SqlResult setBoxSend(MailPackageBox b);
 }

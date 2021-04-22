@@ -37,6 +37,10 @@ public class MailPackageBox extends AbstractEntity {
     //ref
     @Column(name="state_name", updatable=false, insertable=false)
     private String state_name;
+    @Column(name="source_name", updatable=false, insertable=false)
+    private String source_name;
+    @Column(name="source_code", updatable=false, insertable=false)
+    private String source_code;
     
     //childs
     @Transient
@@ -138,6 +142,22 @@ public class MailPackageBox extends AbstractEntity {
 
 	public void setBooks(List<OrderBook> books) {
 		this.books = books;
+	}
+
+	public String getSource_name() {
+		return source_name;
+	}
+
+	public void setSource_name(String source_name) {
+		this.source_name = source_name;
+	}
+
+	public String getSource_code() {
+		return source_code;
+	}
+
+	public void setSource_code(String source_code) {
+		this.source_code = source_code;
 	}
 
 }
