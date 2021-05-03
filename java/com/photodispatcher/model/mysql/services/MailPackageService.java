@@ -52,12 +52,12 @@ public interface MailPackageService {
 	SelectResult<RackSpace> getBoxSpace(int source, int pPackage, String box, int rack);
 	SelectResult<RackSpace> loadBoxSpace(int source, int pPackage, String box);
 	SqlResult BoxStartOTK(String boxID, String pgID);
-	SqlResult setBoxItemOTK(MailPackageBoxItem bi);
-	SqlResult setBoxOTK(MailPackageBox b);
 	SelectResult<RackSpace> usedSpaces(int techPoint, int state);
-	SqlResult setBoxPacked(MailPackageBox b);
 	SqlResult setBoxIncomplete(String boxId, MailPackageBoxItem[] items,
 			OrderBook[] books);
 	SelectResult<MailPackageBox> loadBoxesByState(int state);
-	SqlResult setBoxSend(MailPackageBox b);
+	SqlResult setBoxItemOTK(String boxID, String orderID, String alias);
+	SqlResult setBoxOTK(String boxID);
+	SqlResult setBoxPacked(String boxID);
+	SqlResult setBoxSend(String boxID);
 }

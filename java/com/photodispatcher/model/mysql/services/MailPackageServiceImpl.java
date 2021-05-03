@@ -714,10 +714,10 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	}
 
 	@Override
-	public SqlResult  setBoxItemOTK(MailPackageBoxItem bi){
+	public SqlResult  setBoxItemOTK(String boxID, String orderID, String alias){
 		//packageSetBoxItemOTK(IN pBox varchar(50), IN pOrder varchar(50), IN pAlias varchar(100))
 		String sql= "{CALL packageSetBoxItemOTK(?,?,?)}";
-		SelectResult<FieldValue> fv =runCallSelect(FieldValue.class, sql, bi.getBoxID(), bi.getOrderID(), bi.getAlias());
+		SelectResult<FieldValue> fv =runCallSelect(FieldValue.class, sql, boxID, orderID, alias);
 		if (!fv.isComplete()) return fv;
 		SqlResult r = new SqlResult();
 		r.setComplete(true);
@@ -726,10 +726,10 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	}
 
 	@Override
-	public SqlResult  setBoxOTK(MailPackageBox b){
+	public SqlResult  setBoxOTK(String boxID){
 		//packageSetBoxOTK(IN pBox varchar(50))
 		String sql= "{CALL packageSetBoxOTK(?)}";
-		SelectResult<FieldValue> fv =runCallSelect(FieldValue.class, sql, b.getBoxID());
+		SelectResult<FieldValue> fv =runCallSelect(FieldValue.class, sql, boxID);
 		if (!fv.isComplete()) return fv;
 		SqlResult r = new SqlResult();
 		r.setComplete(true);
@@ -738,10 +738,10 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	}
 
 	@Override
-	public SqlResult setBoxPacked(MailPackageBox b){
+	public SqlResult setBoxPacked(String boxID){
 		//packageSetBoxPacked(IN pBox varchar(50))
 		String sql= "{CALL packageSetBoxPacked(?)}";
-		SelectResult<FieldValue> fv =runCallSelect(FieldValue.class, sql, b.getBoxID());
+		SelectResult<FieldValue> fv =runCallSelect(FieldValue.class, sql, boxID);
 		if (!fv.isComplete()) return fv;
 		SqlResult r = new SqlResult();
 		r.setComplete(true);
@@ -750,10 +750,10 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 	}
 
 	@Override
-	public SqlResult setBoxSend(MailPackageBox b){
+	public SqlResult setBoxSend(String boxID){
 		//packageSetBoxSend(IN pBox varchar(50))
 		String sql= "{CALL packageSetBoxSend(?)}";
-		SelectResult<FieldValue> fv =runCallSelect(FieldValue.class, sql, b.getBoxID());
+		SelectResult<FieldValue> fv =runCallSelect(FieldValue.class, sql, boxID);
 		if (!fv.isComplete()) return fv;
 		SqlResult r = new SqlResult();
 		r.setComplete(true);
