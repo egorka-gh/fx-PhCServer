@@ -763,14 +763,22 @@ public class MailPackageServiceImpl extends AbstractDAO implements MailPackageSe
 
 	@Override
 	public SqlResult setBoxIncomplete(String boxId, MailPackageBoxItem[] items, OrderBook[] books ){
+		//TODO refactor to sql proc? or update in transaction
+		//set box state
 		String sql = "UPDATE package_box pb SET pb.state = 449, pb.state_date = NOW() WHERE pb.box_id = ?";
 		SqlResult r = runDML(sql, boxId);
 		if(!r.isComplete()) return r;
+		//set box items state
 		sql = "UPDATE package_box_item pbi SET pbi.state = 449 WHERE pbi.box_id = ? AND pbi.order_id = ? AND pbi.alias = ?";
 		for(MailPackageBoxItem it : items){
 			r = runDML(sql, it.getBoxID(), it.getOrderID(), it.getAlias());
 			if(!r.isComplete()) return r;
 		}
+		//set orders state
+		sql = "UPDATE orders o SET o.state = 449, o.state_date = NOW() WHERE o.id IN (SELECT pbi.order_id FROM package_box_item pbi WHERE pbi.box_id = ? AND pbi.state = 449)";
+		r = runDML(sql, boxId);
+		if(!r.isComplete()) return r;
+		//set books state
 		OrderStateServiceImpl svc = new OrderStateServiceImpl();
 		for (OrderBook book : books){
 			r = svc.setEntireBookState(book);

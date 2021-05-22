@@ -975,3 +975,347 @@ END
 $$
 
 DELIMITER ;
+
+DROP PROCEDURE IF EXISTS packageSetBoxItemOTK;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE packageSetBoxItemOTK (IN pBox varchar(50), IN pOrder varchar(50), IN pAlias varchar(100))
+BEGIN
+  DECLARE vState integer(5) DEFAULT (0);
+  DECLARE vPgID varchar(50);
+  -- check if all books over OTK state, checks printgroup state if photo
+  SELECT MIN(IFNULL(ob.state, 450)) state INTO vState
+  FROM package_box_item bi
+    INNER JOIN print_group pg ON pg.order_id = bi.order_id
+    AND bi.alias = IFNULL(pg.alias, pg.path)
+    AND pg.is_reprint = 0
+    LEFT OUTER JOIN order_books ob ON pg.id = ob.pg_id
+    AND ob.book BETWEEN bi.item_from AND bi.item_to
+  WHERE bi.box_id = pBox
+    AND bi.order_id = pOrder
+    AND bi.alias = pAlias;
+  IF vState >= 450 THEN
+    -- set item state
+    UPDATE package_box_item pbi
+    SET pbi.state = 450,
+        pbi.state_date = NOW()
+    WHERE pbi.box_id = pBox
+      AND pbi.order_id = pOrder
+      AND pbi.alias = pAlias
+      AND pbi.state < 450;
+  END IF;
+
+  -- check if order complited (in all boxes)
+  SELECT MIN(ob.state) state INTO vState
+  FROM package_box_item bi
+  WHERE bi.order_id = pOrder;
+  IF vState >= 450 THEN
+    -- set order state
+    UPDATE orders o
+    SET o.state = 450,
+        o.state_date = NOW()
+    WHERE o.id = pOrder;
+  END IF;
+  -- TODO close extra state
+  SELECT 'state' field, vState value;
+END
+$$
+
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS packageSetBoxPacked;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE packageSetBoxPacked (IN pBox varchar(50))
+BEGIN
+  DECLARE vState integer(5) DEFAULT (0);
+  DECLARE vGroup integer;
+  DECLARE vSource integer;
+
+  DECLARE vOrder varchar(50);
+  DECLARE vIsEnd int DEFAULT (0);
+
+  DECLARE vCur CURSOR FOR
+  SELECT pbi.order_id
+  FROM package_box pb
+    INNER JOIN package_box_item pbi ON pb.box_id = pbi.box_id
+  WHERE pb.source = vSource
+    AND pb.package_id = vGroup
+  GROUP BY pbi.order_id
+  HAVING MIN(pbi.state) >= 460;
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET vIsEnd = 1;
+
+  -- set box state
+  UPDATE package_box pb
+  SET pb.state = 460,
+      pb.state_date = NOW()
+  WHERE pb.box_id = pBox;
+
+  SELECT pb.package_id, pb.source INTO vGroup, vSource
+  FROM package_box pb
+  WHERE pb.box_id = pBox;
+
+  -- clean rack
+  UPDATE rack_space
+  SET package_source = 0,
+      package_id = 0,
+      box_id = ''
+  WHERE package_source = vSource
+    AND package_id = vGroup
+    AND box_id = pBox;
+
+  -- check completed orders 
+  OPEN vCur;
+wet:
+  LOOP
+    FETCH vCur INTO vOrder;
+    IF vIsEnd THEN
+      LEAVE wet;
+    END IF;
+    -- update order
+    UPDATE orders o
+    SET o.state = 460,
+        o.state_date = NOW()
+    WHERE o.id = vOrder;
+  END LOOP wet;
+  CLOSE vCur;
+
+  -- check boxes & set group state
+  SELECT MIN(pb.state) INTO vState
+  FROM package_box pb
+  WHERE pb.source = vSource
+    AND pb.package_id = vGroup;
+
+  IF vState >= 460 THEN
+    UPDATE package p
+    SET p.state = 460,
+        p.state_date = NOW()
+    WHERE p.source = vSource
+      AND p.id = vGroup
+      AND p.state < 460;
+    UPDATE orders o
+    SET o.state = 460,
+        o.state_date = NOW()
+    WHERE o.source = vSource
+      AND o.group_id = vGroup
+      AND o.state < 460;
+  END IF;
+  -- TODO fix extra states
+
+  SELECT 'package_state' field, vState value;
+
+END
+$$
+
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS packageSetBoxItemOTK;
+
+DELIMITER $$
+
+--
+-- Создать процедуру `packageSetBoxItemOTK`
+--
+CREATE
+PROCEDURE packageSetBoxItemOTK (IN pBox varchar(50), IN pOrder varchar(50), IN pAlias varchar(100))
+BEGIN
+  DECLARE vState integer(5) DEFAULT (0);
+  DECLARE vPgID varchar(50);
+  -- check if all books over OTK state, checks printgroup state if photo
+  SELECT MIN(IFNULL(ob.state, 450)) state INTO vState
+  FROM package_box_item bi
+    INNER JOIN print_group pg ON pg.order_id = bi.order_id
+    AND bi.alias = IFNULL(pg.alias, pg.path)
+    AND pg.is_reprint = 0
+    LEFT OUTER JOIN order_books ob ON pg.id = ob.pg_id
+    AND ob.book BETWEEN bi.item_from AND bi.item_to
+  WHERE bi.box_id = pBox
+    AND bi.order_id = pOrder
+    AND bi.alias = pAlias;
+  IF vState >= 450 THEN
+    -- set item state
+    UPDATE package_box_item pbi
+    SET pbi.state = 450,
+        pbi.state_date = NOW()
+    WHERE pbi.box_id = pBox
+      AND pbi.order_id = pOrder
+      AND pbi.alias = pAlias
+      AND pbi.state < 450;
+  END IF;
+
+  -- check if order complited (in all boxes)
+  SELECT MIN(bi.state) state INTO vState
+  FROM package_box_item bi
+  WHERE bi.order_id = pOrder;
+  IF vState >= 450 THEN
+    -- set order state
+    UPDATE orders o
+    SET o.state = 450,
+        o.state_date = NOW()
+    WHERE o.id = pOrder;
+  END IF;
+  -- TODO close extra state
+  SELECT 'state' field, vState value;
+END
+$$
+
+DELIMITER ;
+
+-- 2020-05-05 test cycle
+
+INSERT INTO order_state (id, name, runtime, extra, tech, book_part) VALUES
+(445, 'Производство', 0, 0, 0, 0);
+
+DROP PROCEDURE IF EXISTS packageBoxCreate;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE packageBoxCreate (IN pSource int, IN pGroup int)
+BEGIN
+  -- box
+  INSERT IGNORE INTO package_box (source
+  , package_id
+  , box_id
+  , box_num
+  , barcode
+  , price
+  , weight
+  , state
+  , state_date)
+    SELECT p.source, p.id, CONCAT_WS('-', p.source, p.id), 0, IFNULL((SELECT pb.barcode FROM package_barcode pb WHERE pb.source = p.source AND pb.id = p.id AND pb.barcode IS NOT NULL AND pb.barcode != '' LIMIT 1), ''), 0, 0, 445, NOW()
+    FROM package p
+    WHERE p.source = pSource
+      AND p.id = pGroup;
+
+  -- items
+  INSERT IGNORE INTO package_box_item (box_id
+  , order_id
+  , alias
+  , item_from
+  , item_to
+  , type
+  , state
+  , state_date)
+    SELECT CONCAT_WS('-', pSource, pGroup), pg.order_id, IFNULL(pg.alias, pg.path) alias, 1 item_from, MAX(pg.book_num) item_to, bt.name book_type_name, 445, NOW()
+    FROM orders o
+      INNER JOIN print_group pg ON o.id = pg.order_id
+      INNER JOIN book_type bt ON pg.book_type = bt.id
+    WHERE o.source = pSource
+      AND o.group_id = pGroup
+    GROUP BY pg.order_id, bt.name, pg.alias;
+
+END
+$$
+
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS packageBoxStartOTK;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE packageBoxStartOTK (IN pBoxID varchar(50), IN pPgID varchar(50))
+BEGIN
+  DECLARE vSource int;
+  DECLARE vGroupID int;
+  DECLARE vOrderID varchar(50);
+  DECLARE vSubID varchar(50);
+  DECLARE vAlias varchar(100);
+
+  SELECT o.source, o.group_id, o.id, pg.sub_id, pg.alias INTO vSource, vGroupID, vOrderID, vSubID, vAlias
+  FROM print_group pg
+    INNER JOIN orders o ON pg.order_id = o.id
+  WHERE pg.id = pPgID;
+
+  -- package state
+  UPDATE package p
+  SET p.state = 449,
+      p.state_date = NOW()
+  WHERE p.source = vSource
+    AND p.id = vGroupID
+    AND p.state < 449;
+
+  -- box state
+  UPDATE package_box pb
+  SET pb.state = 449,
+      pb.state_date = NOW()
+  WHERE pb.box_id = pBoxID
+    AND pb.state < 449;
+
+  -- item state
+  UPDATE package_box_item pbi
+  SET pbi.state = 449,
+      pbi.state_date = NOW()
+  WHERE pbi.box_id = pBoxID
+    AND pbi.state < 449;
+
+  -- start order exta state
+  CALL extraStateStart(vOrderID, vSubID, 450, NOW());
+
+END
+$$
+
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS packageSetBoxItemOTK;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE packageSetBoxItemOTK (IN pBox varchar(50), IN pOrder varchar(50), IN pAlias varchar(100))
+BEGIN
+  DECLARE vState integer(5) DEFAULT (0);
+  DECLARE vOrderState integer(5) DEFAULT (0);
+  DECLARE vPgID varchar(50);
+  -- check if all books over OTK state, checks printgroup state if photo
+  SELECT MIN(IFNULL(ob.state, 450)) state INTO vState
+  FROM package_box_item bi
+    INNER JOIN print_group pg ON pg.order_id = bi.order_id
+    AND bi.alias = IFNULL(pg.alias, pg.path)
+    AND pg.is_reprint = 0
+    LEFT OUTER JOIN order_books ob ON pg.id = ob.pg_id
+    AND ob.book BETWEEN bi.item_from AND bi.item_to
+  WHERE bi.box_id = pBox
+    AND bi.order_id = pOrder
+    AND bi.alias = pAlias;
+  IF vState >= 450 THEN
+    -- set item state
+    UPDATE package_box_item pbi
+    SET pbi.state = 450,
+        pbi.state_date = NOW()
+    WHERE pbi.box_id = pBox
+      AND pbi.order_id = pOrder
+      AND pbi.alias = pAlias
+      AND pbi.state < 450;
+  END IF;
+
+  -- check if order complited (in all boxes)
+  SELECT MIN(bi.state) state INTO vOrderState
+  FROM package_box_item bi
+  WHERE bi.order_id = pOrder;
+  IF vOrderState >= 450 THEN
+    -- set order state
+    UPDATE orders o
+    SET o.state = 450,
+        o.state_date = NOW()
+    WHERE o.id = pOrder;
+  END IF;
+  -- TODO close extra state
+  SELECT 'state' field, vState value;
+END
+$$
+
+DELIMITER ;
+
+-- 2020-06-05 test cycle
+
+INSERT INTO delivery_type (id, name, hideClient) VALUES
+(18, 'До отделения Европочты', 0),
+(19, 'PickPoint', 0),
+(20, 'Boxberry ', 0);
