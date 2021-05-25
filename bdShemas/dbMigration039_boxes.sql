@@ -1313,9 +1313,267 @@ $$
 
 DELIMITER ;
 
--- 2020-06-05 test cycle
+-- 2020-05-06 test cycle
 
 INSERT INTO delivery_type (id, name, hideClient) VALUES
 (18, 'До отделения Европочты', 0),
 (19, 'PickPoint', 0),
 (20, 'Boxberry ', 0);
+
+-- 2020-05-25 stone cycle
+
+DROP PROCEDURE IF EXISTS packageSetBoxOTK;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE packageSetBoxOTK (IN pBox varchar(50))
+BEGIN
+  DECLARE vState integer(5) DEFAULT (0);
+
+  DECLARE vGroup integer;
+  DECLARE vSource integer;
+  DECLARE vOrder varchar(50);
+  DECLARE vIsEnd int DEFAULT (0);
+
+  DECLARE vCur CURSOR FOR
+  SELECT pbi.order_id
+  FROM package_box pb
+    INNER JOIN package_box_item pbi ON pb.box_id = pbi.box_id
+  WHERE pb.source = vSource
+    AND pb.package_id = vGroup
+  GROUP BY pbi.order_id
+  HAVING MIN(pbi.state) >= 450;
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET vIsEnd = 1;
+
+  -- check if all box items over OTK state
+  -- get state by box items 
+  SELECT MIN(bi.state) state INTO vState
+  FROM package_box_item bi
+  WHERE bi.box_id = pBox;
+  IF vState >= 450 THEN
+    -- set box state
+    UPDATE package_box pb
+    SET pb.state = 450,
+        pb.state_date = NOW()
+    WHERE pb.box_id = pBox;
+  END IF;
+
+  SELECT pb.source, pb.package_id INTO vSource, vGroup
+  FROM package_box pb
+  WHERE pb.box_id = pBox;
+
+  -- check completed orders 
+  OPEN vCur;
+wet:
+  LOOP
+    FETCH vCur INTO vOrder;
+    IF vIsEnd THEN
+      LEAVE wet;
+    END IF;
+
+    -- update order
+    UPDATE orders o
+    SET o.state = 450,
+        o.state_date = NOW()
+    WHERE o.id = vOrder;
+
+    -- fix order extra state
+    INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date)
+      VALUES (vOrder, '', 450, NOW(), NOW())
+    ON DUPLICATE KEY UPDATE state_date = NOW();
+
+    -- stop all started order extra states
+    UPDATE order_extra_state es
+    SET es.state_date = NOW()
+    WHERE es.id = vOrder
+      -- AND es.sub_id = ''
+      AND es.state < 450
+      AND es.state_date IS NULL
+    ORDER BY es.sub_id, es.state;
+
+  END LOOP wet;
+  CLOSE vCur;
+
+  SELECT 'state' field, vState value;
+
+
+END
+$$
+
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS packageSetBoxPacked;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE packageSetBoxPacked (IN pBox varchar(50))
+BEGIN
+  DECLARE vState integer(5) DEFAULT (0);
+  DECLARE vGroup integer;
+  DECLARE vSource integer;
+
+  DECLARE vOrder varchar(50);
+  DECLARE vIsEnd int DEFAULT (0);
+
+  DECLARE vCur CURSOR FOR
+  SELECT pbi.order_id
+  FROM package_box pb
+    INNER JOIN package_box_item pbi ON pb.box_id = pbi.box_id
+  WHERE pb.source = vSource
+    AND pb.package_id = vGroup
+  GROUP BY pbi.order_id
+  HAVING MIN(pbi.state) >= 460;
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET vIsEnd = 1;
+
+  -- set box state
+  UPDATE package_box pb
+  SET pb.state = 460,
+      pb.state_date = NOW()
+  WHERE pb.box_id = pBox;
+
+  SELECT pb.package_id, pb.source INTO vGroup, vSource
+  FROM package_box pb
+  WHERE pb.box_id = pBox;
+
+  -- clean rack
+  UPDATE rack_space
+  SET package_source = 0,
+      package_id = 0,
+      box_id = ''
+  WHERE package_source = vSource
+    AND package_id = vGroup
+    AND box_id = pBox;
+
+  -- check completed orders 
+  OPEN vCur;
+wet:
+  LOOP
+    FETCH vCur INTO vOrder;
+    IF vIsEnd THEN
+      LEAVE wet;
+    END IF;
+    -- update order
+    UPDATE orders o
+    SET o.state = 460,
+        o.state_date = NOW()
+    WHERE o.id = vOrder;
+
+    -- fix order extra state
+    INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date)
+      VALUES (vOrder, '', 460, NOW(), NOW())
+    ON DUPLICATE KEY UPDATE state_date = NOW();
+
+    -- stop all started order extra states
+    UPDATE order_extra_state es
+    SET es.state_date = NOW()
+    WHERE es.id = vOrder
+      -- AND es.sub_id = ''
+      AND es.state < 460
+      AND es.state_date IS NULL
+    ORDER BY es.sub_id, es.state;
+
+  END LOOP wet;
+  CLOSE vCur;
+
+  -- check boxes & set group state
+  SELECT MIN(pb.state) INTO vState
+  FROM package_box pb
+  WHERE pb.source = vSource
+    AND pb.package_id = vGroup;
+
+  IF vState >= 460 THEN
+    UPDATE package p
+    SET p.state = 460,
+        p.state_date = NOW()
+    WHERE p.source = vSource
+      AND p.id = vGroup
+      AND p.state < 460;
+    UPDATE orders o
+    SET o.state = 460,
+        o.state_date = NOW()
+    WHERE o.source = vSource
+      AND o.group_id = vGroup
+      AND o.state < 460;
+  END IF;
+
+  SELECT 'package_state' field, vState value;
+
+END
+$$
+
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS packageSetBoxSend;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE packageSetBoxSend (IN pBox varchar(50))
+BEGIN
+  DECLARE vState integer(5) DEFAULT (0);
+  DECLARE vGroup integer;
+  DECLARE vSource integer;
+
+  -- set box state
+  UPDATE package_box pb
+  SET pb.state = 465,
+      pb.state_date = NOW()
+  WHERE pb.box_id = pBox
+    AND pb.state < 465;
+
+  SELECT pb.package_id, pb.source INTO vGroup, vSource
+  FROM package_box pb
+  WHERE pb.box_id = pBox;
+
+  -- check boxes & set group state
+  SELECT MIN(pb.state) INTO vState
+  FROM package_box pb
+  WHERE pb.source = vSource
+    AND pb.package_id = vGroup;
+
+  IF vState >= 465 THEN
+    UPDATE package p
+    SET p.state = 465,
+        p.state_date = NOW()
+    WHERE p.source = vSource
+      AND p.id = vGroup
+      AND p.state < 465;
+
+    -- set orders state
+    UPDATE orders o
+    SET o.state = 465,
+        o.state_date = NOW()
+    WHERE o.source = vSource
+      AND o.group_id = vGroup
+      AND o.state < 465;
+
+    -- fix order extra state
+    INSERT INTO order_extra_state (id, sub_id, state, start_date, state_date)
+      SELECT o.id, '', 465, NOW(), NOW()
+      FROM orders o
+      WHERE o.source = vSource
+        AND o.group_id = vGroup
+    ON DUPLICATE KEY UPDATE state_date = NOW();
+
+    -- stop all started order extra states
+    UPDATE order_extra_state es
+    INNER JOIN orders o
+      ON es.id = o.id
+    SET es.state_date = NOW()
+    WHERE o.source = vSource
+      AND o.group_id = vGroup
+      AND es.state < 465
+      AND es.state_date IS NULL;
+
+  END IF;
+
+  SELECT 'package_state' field, vState value;
+
+END
+$$
+
+DELIMITER ;
