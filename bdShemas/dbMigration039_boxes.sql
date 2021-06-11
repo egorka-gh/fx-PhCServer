@@ -1577,3 +1577,26 @@ END
 $$
 
 DELIMITER ;
+
+ALTER TABLE sources 
+ MODIFY caption VARCHAR(100) DEFAULT NULL AFTER name;
+ALTER TABLE lab 
+  ADD COLUMN url VARCHAR(100) DEFAULT NULL;
+  
+INSERT INTO form_field (id, name, parametr, simplex) VALUES
+(20, 'Коментарий', 'pcomment', 1);
+INSERT INTO form_field_items (id, form_field, sequence, is_field, child_field, attr_type, delemiter, prefix, sufix) VALUES
+(18, 20, 0, 0, 0, 70, '', '', '');
+INSERT INTO form (id, name, report) VALUES
+(10, 'Наклейка', 'frmUniSticker');
+INSERT INTO delivery_type_form (delivery_type, form) VALUES
+(0, 10);
+INSERT INTO form_parametr (form, form_field) VALUES
+(10, 7),
+(10, 1),
+(10, 5),
+(10, 18),
+(10, 11),
+(10, 20);
+INSERT INTO src_type (id, loc_type, name, state, book_part) VALUES
+(27, 2, 'Efi', 0, 0);

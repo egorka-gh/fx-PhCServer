@@ -1,0 +1,10 @@
+<element-set>
+  <element name="rpbody">
+    <sql>
+      <![CDATA[
+      SELECT :pbarcode barcode, :pprovider_id provider_id, :pdelivery_name delivery_name, :pgroup_hm group_hm, :pfio fio, :pphone phone, :paddress address, :psource_name source_name, :pcomment comment
+	  ]]>
+    </sql>
+  </element>
+
+</element-set>

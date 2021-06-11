@@ -30,6 +30,8 @@ public class Source extends AbstractEntity {
     private int id;
     @Column(name="name")
     private String name;
+    @Column(name="caption")
+    private String caption;
     @Column(name="type")
     private int type;
     @Column(name="online")
@@ -38,6 +40,7 @@ public class Source extends AbstractEntity {
     private String code;
     @Column(name="has_boxes")
     private boolean hasBoxes;
+    
     
     //ref name
     @Column(name="type_name", updatable=false, insertable=false)
@@ -153,6 +156,12 @@ public class Source extends AbstractEntity {
 	}
 	public void setHasBoxes(boolean hasBoxes) {
 		this.hasBoxes = hasBoxes;
+	}
+	public String getCaption() {
+		return caption;
+	}
+	public void setCaption(String caption) {
+		this.caption = caption;
 	}
 
 }

@@ -40,6 +40,8 @@ public class Lab extends AbstractEntity {
     
     @Column(name="pusher_enabled")
     private boolean pusher_enabled;
+    @Column(name="url")
+    private String url;
     
   //db drived
     @Column(name="src_type_name", updatable=false, insertable=false)
@@ -172,6 +174,14 @@ public class Lab extends AbstractEntity {
 
 	public void setPusher_enabled(boolean pusher_enabled) {
 		this.pusher_enabled = pusher_enabled;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 }
