@@ -1584,7 +1584,7 @@ ALTER TABLE lab
   ADD COLUMN url VARCHAR(100) DEFAULT NULL;
   
 INSERT INTO form_field (id, name, parametr, simplex) VALUES
-(20, 'Коментарий', 'pcomment', 1);
+(20, 'Коментарий', 'pcomment', 0);
 INSERT INTO form_field_items (id, form_field, sequence, is_field, child_field, attr_type, delemiter, prefix, sufix) VALUES
 (18, 20, 0, 0, 0, 70, '', '', '');
 INSERT INTO form (id, name, report) VALUES
@@ -1600,3 +1600,69 @@ INSERT INTO form_parametr (form, form_field) VALUES
 (10, 20);
 INSERT INTO src_type (id, loc_type, name, state, book_part) VALUES
 (27, 2, 'Efi', 0, 0);
+
+DROP PROCEDURE IF EXISTS techEfiPgPrinted;
+
+DELIMITER $$
+
+CREATE
+PROCEDURE techEfiPgPrinted (IN pPgroup varchar(50), IN pTechPoint int)
+MODIFIES SQL DATA
+BEGIN
+  DECLARE vDataValid int;
+  DECLARE vOrderId varchar(50);
+  DECLARE vSubId varchar(50);
+  DECLARE vrepgroup varchar(50);
+  DECLARE vState int;
+  DECLARE vBooks int;
+  DECLARE vPrints int;
+  DECLARE vIsReprint int;
+  DECLARE vDate datetime;
+  DECLARE vBookPart int;
+  DECLARE vMinState int;
+
+  SET vDate = NOW();
+  SET vState = 300;
+  BEGIN
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET vDataValid = 0;
+
+    SELECT pg.order_id, pg.sub_id, pg.book_num, pg.prints, pg.is_reprint, pg.book_part, 1 INTO vOrderId, vSubId, vBooks, vPrints, vIsReprint, vBookPart, vDataValid
+    FROM print_group pg
+    WHERE pg.id = pPgroup;
+  END;
+
+  IF vDataValid = 1 THEN
+    UPDATE print_group pg
+    SET pg.state = vState,
+        pg.state_date = vDate,
+        pg.prints_done = pg.prints
+    WHERE pg.id = pPgroup
+      AND pg.state >= 250
+      AND pg.state < 300;
+
+    -- set books
+    UPDATE order_books b
+    SET b.state = vState,
+        b.state_date = vDate
+    WHERE b.pg_id = pPgroup;
+
+    -- check order pringroups
+    SELECT IFNULL(MIN(pg.state), 0) INTO vMinState
+    FROM print_group pg
+    WHERE pg.order_id = vOrderId
+      AND pg.sub_id = vSubId
+      AND pg.is_reprint = 0;
+
+    IF vMinState >= 300 THEN
+      -- all pg printed end order/suborder
+      CALL extraStateSet(vOrderId, vSubId, vState, vDate);
+    END IF;
+
+  END IF;
+
+END
+$$
+
+DELIMITER ;
+
+-- 2021-06-12 stone cycle
