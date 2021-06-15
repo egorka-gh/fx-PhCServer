@@ -40,8 +40,8 @@ public class Lab extends AbstractEntity {
     
     @Column(name="pusher_enabled")
     private boolean pusher_enabled;
-    @Column(name="url")
-    private String url;
+    @Column(name="efi")
+    private boolean efi;
     
   //db drived
     @Column(name="src_type_name", updatable=false, insertable=false)
@@ -176,12 +176,12 @@ public class Lab extends AbstractEntity {
 		this.pusher_enabled = pusher_enabled;
 	}
 
-	public String getUrl() {
-		return url;
+	public boolean isEfi() {
+		return efi;
 	}
 
-	public void setUrl(String url) {
-		this.url = url;
+	public void setEfi(boolean efi) {
+		this.efi = efi;
 	}
 
 }

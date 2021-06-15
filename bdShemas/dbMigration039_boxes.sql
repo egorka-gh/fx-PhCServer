@@ -1579,9 +1579,9 @@ $$
 DELIMITER ;
 
 ALTER TABLE sources 
- MODIFY caption VARCHAR(100) DEFAULT NULL AFTER name;
+ ADD COLUMN caption VARCHAR(100) DEFAULT NULL AFTER name;
 ALTER TABLE lab 
-  ADD COLUMN url VARCHAR(100) DEFAULT NULL;
+  ADD COLUMN efi TINYINT(1) DEFAULT 0;
   
 INSERT INTO form_field (id, name, parametr, simplex) VALUES
 (20, 'Коментарий', 'pcomment', 0);
