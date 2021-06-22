@@ -1666,3 +1666,27 @@ $$
 DELIMITER ;
 
 -- 2021-06-12 stone cycle
+
+INSERT INTO attr_type (id, attr_fml, name, field, list, persist) VALUES
+(100, 6, 'Отделение BoxBerry', 'bbPickup', 0, 1),
+(101, 6, 'pickpoint город', 'ppCity', 0, 1),
+(102, 6, 'pickup точка выдачи', 'ppName', 0, 1);
+
+UPDATE form_field_items SET sequence = 3 WHERE id = 16;
+
+INSERT INTO form_field (id, name, parametr, simplex) VALUES
+(21, 'Отделение BoxBerry', 'pBBpoint', 0),
+(22, 'Отделение pickpoint', 'pPPpoint', 0);
+
+INSERT INTO form_field_items (id, form_field, sequence, is_field, child_field, attr_type, delemiter, prefix, sufix) VALUES
+(20, 21, 0, 0, 0, 100, '', '-', ''),
+(21, 18, 1, 1, 21, 0, '', '', ''),
+(22, 22, 0, 0, 0, 101, '', '', ''),
+(23, 22, 1, 0, 0, 102, ' ', '', ''),
+(24, 18, 2, 1, 22, 0, ' ', '', '');
+
+INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES(0, 100, 'address.bbPickup');
+INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES(0, 101, 'pickpoint.city');
+INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES(0, 102, 'pickpoint.pickup_name');
+
+-- 2021-06-22 stone cycle
