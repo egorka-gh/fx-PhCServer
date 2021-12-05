@@ -1690,3 +1690,5 @@ INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES(0, 101, 'pickpoi
 INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES(0, 102, 'pickpoint.pickup_name');
 
 -- 2021-06-22 stone cycle
+
+INSERT INTO form (id, name, report) VALUES (11, 'Европочта', 'evropochta');
