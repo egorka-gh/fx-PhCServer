@@ -1692,3 +1692,5 @@ INSERT INTO attr_json_map(src_type, attr_type, json_key) VALUES(0, 102, 'pickpoi
 -- 2021-06-22 stone cycle
 
 INSERT INTO form (id, name, report) VALUES (11, 'Европочта', 'evropochta');
+
+-- 2021-12-05 cycle
